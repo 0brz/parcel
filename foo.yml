@@ -1,0 +1,117 @@
+text:
+  tagval:
+    begins_from: start
+    tag: word
+    value: "single: "
+      # single: fixed: word% text%.number%=ip -- strong formatted value
+      # single: word|number|version|email|ip|link  -- by priors
+      
+      # "nested: nested_of:"
+      # "nested: word|number|"
+      # "" 
+
+  text: tagval: tag: word, val: single:  
+
+
+text: 
+
+  block: 
+    starts: 0
+    ends: ' . '
+    format: 
+      - single: 
+      - nested: 
+
+  format: 
+    starts: 0
+    ends: '      '
+    single:   
+    #nested
+
+
+#sample list
+tagval:
+  tag: word
+  val: word|number|version|ip
+
+  app:
+  -good
+  -feels
+  -nice
+
+
+$list_words: 
+  list: word
+  delim: '.|-'
+
+$text_single:
+  str:
+    begins: alpha
+    ends: " "
+    # ends: tag
+    # ends: tag: "connection"
+
+#text one. text second. connection=
+
+$tagval_word:
+  tagval:
+    tag: word OR ""
+    val:
+      #single: word
+      #nested: {{}}
+      #list: a,b,1.4
+      
+# list with delims
+$list_with_delim:
+  list:
+    delim: '-'
+    name: "word|ip"
+    value: "word|ip"
+
+
+
+# blocks
+
+
+
+go: 
+  - block:
+      $
+
+# struct:
+# 
+
+# check(format)
+  # type=list -> check(_list)
+  # type=any -> check(_all)
+_go: "list|single"
+  list: list_with_delim('-', "block")
+  single: $any
+      
+
+# ext_all(tagval)
+# ext_text() ->
+# ext_text('begins', 'ends') -> text
+# ext_texts() -> list<texts>
+# ext_tags(tag=) -> list<block*>
+# check()
+
+# get() -> list<block*>
+
+
+this is text text first.\n
+pluses:
+  - short
+  - long
+connection: bnqidud891289d
+from: a,b,c,123
+
+
+
+#features
+- defined functions
+!find(_begins_with) {
+  -> word: begins: $_begins_with
+}
+
+-args
