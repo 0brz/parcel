@@ -1,0 +1,10 @@
+^C:\GIT.LOCAL\PARSING\BOUND_PARSING\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/git.local/parsing/bound_parsing -BC:/git.local/parsing/bound_parsing/build --check-stamp-file C:/git.local/parsing/bound_parsing/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

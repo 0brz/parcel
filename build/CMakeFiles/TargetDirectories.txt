@@ -1,0 +1,3 @@
+C:/git.local/parsing/bound_parsing/build/CMakeFiles/tt.dir
+C:/git.local/parsing/bound_parsing/build/CMakeFiles/ALL_BUILD.dir
+C:/git.local/parsing/bound_parsing/build/CMakeFiles/ZERO_CHECK.dir

@@ -29,6 +29,8 @@ text:
     #nested
 
 
+# block: block | value
+
 #sample list
 tagval:
   tag: word
