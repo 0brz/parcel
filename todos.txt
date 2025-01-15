@@ -1,23 +1,10 @@
 
 /*
 
-structs:
-    - format_block
-    - format
+lexer
+format_analyzer
 
-    - block
-    - text
-    - tagval
-    - list
-    - nested: -> linked_list of blocks
-
-    - pbuff
-
-    - begins_end
-
-    ---
-    build_format
-
+parser
 
 */
 

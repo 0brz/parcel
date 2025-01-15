@@ -164,7 +164,7 @@ class lexer {
         void cursor_move(int delta) {this->_cursor += delta;};
         void cursor_set(int pos) {this->_cursor = pos;}; 
 
-        void skip(char s) {
+        void skip(const char* s) {
             int ofs = _src.find_first_not_of(s, _cursor);
             if (ofs != string::npos) {
                 cursor_move(ofs-_cursor);
@@ -183,7 +183,7 @@ class lexer {
         short next_word(string& out) {
             
             short sz = 0;
-            skip(' ');
+            skip(" ");
             int cur = this->_cursor;
             while(cur < _sz) {
                 if (_src[cur] >= 'a' && _src[cur] <= 'z') {
@@ -204,7 +204,7 @@ class lexer {
 
         short next_id(string& out) {
             short sz = 0;
-            skip(' ');
+            skip(" ");
             int cur = this->_cursor;
             printf("_curs=%i\n", cur);
             while(cur < _sz) {
@@ -227,6 +227,80 @@ class lexer {
             return sz;
         }
 
+        short next_float(string& out) {
+            // 123.123
+            // 123.3
+            // 123
+            short sz = 0;
+            skip(" ");
+            int cur = this->_cursor;
+            int dotp = 0;
+            //printf("_curs=%i\n", cur);
+            while(cur < _sz) {
+                //printf("_cursor=%c\n", _src[cur]);
+                if ((_src[cur] >= '0' && _src[cur] <= '9')) {
+                    sz++;
+                    cur ++;
+                }
+                else if (_src[cur] == '.') {
+                    if (sz == 0) {
+                        return lexer::npos;
+                    }
+                    else {
+                        if (dotp != 0) {
+                            break;
+                        }
+                        else 
+                        {
+                            dotp = cur;
+                            sz++;
+                            cur++;
+                        }
+                    }
+                }
+                else break;
+            }
+
+            if (sz == 0) {
+                return lexer::npos;
+            }
+
+            out = _src.substr(this->_cursor, sz);
+            cursor_move(sz);
+            return sz;
+        };
+
+        short next_int(string& out) {
+            short sz = 0;
+            skip(" ");
+            int cur = this->_cursor;
+            int dotp = 0;
+            //printf("_curs=%i\n", cur);
+            while(cur < _sz) {
+                //printf("_cursor=%c\n", _src[cur]);
+                if ((_src[cur] >= '0' && _src[cur] <= '9')) {
+                    sz++;
+                    cur ++;
+                }
+                else {
+                    break;
+                }
+            }
+
+            if (sz == 0) {
+                return lexer::npos;
+            }
+
+            out = _src.substr(this->_cursor, sz);
+            cursor_move(sz);
+            return sz;
+        }
+
+        // next_like(begins, ends)
+        // next_ends
+        // next_between(s, e) curs move to e
+
+  
         void back_symbol() {
             this->cursor_move(-1);
         };
@@ -245,6 +319,11 @@ class format_analyzer {
     private:
     int cursor;
 
+    // build_tag
+    // build_list
+    // build_block
+    // ...
+
     public:
     format_base_block* build(string& fmt_src) {
         
@@ -255,7 +334,7 @@ class format_analyzer {
 
 
 int main( ){
-    string sr = " apple vibe:";
+    string sr = " apple vibe: .123.42.";
     lexer lx(sr);
     
     string c;
@@ -267,7 +346,18 @@ int main( ){
     lx.next_id(c);
     printf("%s\n", c.c_str());
 
+    lx.cursor_move(1);
+    //printf("%s\n", c.c_str());
 
+    lx.next_float(c);
+    printf("%s\n", c.c_str());
+
+    lx.get_info(cout);
+
+    lx.cursor_move(1);
+
+    lx.next_int(c);
+    printf("%s\n", c.c_str());
 }
 
 
