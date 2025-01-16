@@ -153,6 +153,7 @@ class lexer {
     int _cursor;
     string& _src;
     size_t _sz;
+    
     public:
         const short npos = -1;
         const char* symbols_no_id = " @#$%^&^*()";
@@ -361,8 +362,19 @@ class lexer {
             }
         }
 
-        // next_like(begins, ends)
-        // next_ends
+        short next_between(string& out, const char* begins, const char* ends) {
+            // no trash symbols there
+            // returs first begins and last ends
+
+            if (begins == NULL &&
+                ends == NULL) {
+                    return lexer::npos;
+            }
+
+            auto _s = _src.find(begins, _cursor);
+            //auto _e = _src.fin
+        }
+
         // next_between(s, e) curs move to e
 
   
@@ -378,6 +390,55 @@ class lexer {
             else os << "lexer: cs=" << this->_cursor << "..|...\n";
         }
         
+        static size_t last_ends(string& src, size_t cursor, const char* ends) {
+            int sz = src.size();
+            int t = sz;
+            int sz_ends = strlen(ends);
+            int pos_ends = sz_ends-1;
+
+            while(t >= cursor) {
+                
+                if (pos_ends < 0) {
+                    return t+1;
+                }
+
+                if (src[t] == ends[pos_ends]) {
+                    t--;
+                    pos_ends--;
+                }
+                else {
+                    t--;
+                    pos_ends = sz_ends-1;
+                }
+            }
+
+            return -1;
+        }
+
+        static size_t first_begins(string& src, size_t cursor, const char* ends) {
+            int sz = src.size();
+            int t = cursor;
+            int sz_ends = strlen(ends);
+            int pos_ends = 0;
+
+            while(t < sz) {
+                
+                if (pos_ends == sz_ends) {
+                    return t-sz_ends;
+                }
+
+                if (src[t] == ends[pos_ends]) {
+                    t++;
+                    pos_ends++;
+                }
+                else {
+                    t++;
+                    pos_ends =0;
+                }
+            }
+
+            return -1;
+        }
 };
 
 class format_analyzer {
@@ -399,13 +460,15 @@ class format_analyzer {
 
 
 int main( ){
-    string sr = " app__&^_le vibe: .123.42.";
+    string sr = " app__&^_le vibe _le: .123.42.";
     lexer lx(sr);
     
     string c;
     lx.next_like(c, NULL, "le", " "); // any symbols between, but no ' '
     printf("%s\n", c.c_str());
     
+    int t = lexer::first_begins(sr, 0, "_le");
+    printf("_t=%c tt=%i\n", sr[t], t);
     lx.get_info(cout);
     
 }
