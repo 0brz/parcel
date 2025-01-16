@@ -27,6 +27,7 @@ structs:
 #include <vector>
 #include <map>
 #include <iostream>
+#include <cctype>
 
 using namespace std;
 
@@ -154,6 +155,7 @@ class lexer {
     size_t _sz;
     public:
         const short npos = -1;
+        const char* symbols_no_id = " @#$%^&^*()";
 
         lexer(string& sr) : _src(sr), _sz(_src.size()), _cursor(0) {};
 
@@ -296,6 +298,69 @@ class lexer {
             return sz;
         }
 
+        //inline bool is_alpha(char t) {return t >= 'a' && t <= 'b'};
+
+        // "word: begins: apple ends: s delims: @#$%^^&^&**()"
+        short next_like(string& out, const char* begins, const char* ends, const char* trash_delims) {
+            // or begns or write
+            if (begins == NULL &&
+                ends == NULL) {
+                    return lexer::npos;
+                } 
+
+            // trash symbols logic
+            if (trash_delims == NULL) {
+                trash_delims = lexer::symbols_no_id;
+            }
+
+            skip(" ");
+            if (begins != NULL && ends != NULL) {
+                // begins + ends rule
+                size_t _beg = _src.find_first_of(begins, _cursor);
+                size_t _end = _src.find_first_of(ends, _cursor);
+                if (_beg != string::npos &&
+                    _end != string::npos) {
+                       
+                        // check no trash between
+                        auto sz(_end-_beg + strlen(ends));
+                        string btw = _src.substr(_beg, sz);
+                        //printf("___BTW='%s'\n", btw.c_str());
+                        if (btw.find_first_of(trash_delims, _beg) == string::npos) {
+                            // ok
+                            out = _src.substr(_beg, sz);
+                            cursor_move(sz);
+                            return sz;
+                        }
+                }
+            } 
+            else if (begins != NULL) {
+                // |app|__&^_le
+                // get until trash symbols finded
+                size_t _beg = _src.find(begins, _cursor);
+                size_t _end = _src.find_first_of(trash_delims, _beg);
+                 
+                if (_end == string::npos) {
+                    _end = this->_sz; //
+                }
+                out = _src.substr(_beg, _end-_beg);
+                cursor_move(_end-_beg);
+            }
+            else if (ends != NULL) {
+                // |app__&^|_le|
+                // if no trash between -> app__&^_le 
+                size_t _beg = _src.find(ends, _cursor);
+
+                auto sz(_beg-_cursor+strlen(ends));
+                string btw = _src.substr(_cursor, sz);
+                size_t _end = btw.find_first_of(trash_delims);
+
+                if (_end == string::npos) {
+                    out = btw;
+                    cursor_move(sz);
+                }
+            }
+        }
+
         // next_like(begins, ends)
         // next_ends
         // next_between(s, e) curs move to e
@@ -334,30 +399,15 @@ class format_analyzer {
 
 
 int main( ){
-    string sr = " apple vibe: .123.42.";
+    string sr = " app__&^_le vibe: .123.42.";
     lexer lx(sr);
     
     string c;
-    lx.next_word(c);
+    lx.next_like(c, NULL, "le", " "); // any symbols between, but no ' '
     printf("%s\n", c.c_str());
-
+    
     lx.get_info(cout);
-
-    lx.next_id(c);
-    printf("%s\n", c.c_str());
-
-    lx.cursor_move(1);
-    //printf("%s\n", c.c_str());
-
-    lx.next_float(c);
-    printf("%s\n", c.c_str());
-
-    lx.get_info(cout);
-
-    lx.cursor_move(1);
-
-    lx.next_int(c);
-    printf("%s\n", c.c_str());
+    
 }
 
 
