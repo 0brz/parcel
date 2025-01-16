@@ -156,7 +156,7 @@ class lexer {
     
     public:
         const short npos = -1;
-        const char* symbols_no_id = " @#$%^&^*()";
+        const char* symbols_no_id = " @#%^&^*()";
 
         lexer(string& sr) : _src(sr), _sz(_src.size()), _cursor(0) {};
 
@@ -299,9 +299,6 @@ class lexer {
             return sz;
         }
 
-        //inline bool is_alpha(char t) {return t >= 'a' && t <= 'b'};
-
-        // "word: begins: apple ends: s delims: @#$%^^&^&**()"
         short next_like(string& out, const char* begins, const char* ends, const char* trash_delims) {
             // or begns or write
             if (begins == NULL &&
@@ -312,6 +309,10 @@ class lexer {
             // trash symbols logic
             if (trash_delims == NULL) {
                 trash_delims = lexer::symbols_no_id;
+            }
+
+            if (!can_read()) {
+                return -1;
             }
 
             skip(" ");
@@ -339,26 +340,42 @@ class lexer {
                 // get until trash symbols finded
                 size_t _beg = _src.find(begins, _cursor);
                 size_t _end = _src.find_first_of(trash_delims, _beg);
-                 
+                
+                if (_beg == string::npos) {
+                    return lexer::npos;
+                }
+
                 if (_end == string::npos) {
                     _end = this->_sz; //
+                    printf("____(-1) beg=%zi ends=%zi\n", _beg, _end);
                 }
+                else {
+                     printf("____(+) beg=%zi ends=%zi\n", _beg, _end);
+                }
+
+                //auto sz(_beg-_cursor+strlen(ends));
+                
                 out = _src.substr(_beg, _end-_beg);
-                cursor_move(_end-_beg);
+                //cursor_move(_end-_beg);
+                cursor_set(_end);
             }
             else if (ends != NULL) {
                 // |app__&^|_le|
                 // if no trash between -> app__&^_le 
-                size_t _beg = _src.find(ends, _cursor);
-
-                auto sz(_beg-_cursor+strlen(ends));
+                size_t _beg_ends = _src.find(ends, _cursor);
+                auto sz(_beg_ends-_cursor+strlen(ends));
                 string btw = _src.substr(_cursor, sz);
-                size_t _end = btw.find_first_of(trash_delims);
 
-                if (_end == string::npos) {
-                    out = btw;
-                    cursor_move(sz);
+                size_t _trash_btwn = btw.find_first_of(trash_delims);
+                if (_trash_btwn != string::npos) {
+                    return lexer::npos;
                 }
+
+                //printf("__curs=%i _ends=%i\n", _cursor, _beg_ends);
+                out = btw;
+                cursor_set(_cursor+sz);
+
+                return sz;
             }
         }
 
@@ -384,11 +401,8 @@ class lexer {
             return sz;
         }
 
-        // next_between(s, e) curs move to e
-
-  
-        void back_symbol() {
-            this->cursor_move(-1);
+        void go_back(int delta) {
+            this->cursor_move(delta);
         };
 
         void get_info(ostream& os) {
@@ -457,32 +471,78 @@ class lexer {
 
 class format_analyzer {
     private:
-    int cursor;
+    size_t _cursor;
+    string& _src;
+
 
     // build_tag
     // build_list
     // build_block
     // ...
 
+    /*
+        get tags and try to build instructions (blocks)
+        sequence blocks are defined 
+    */
+
     public:
-    format_base_block* build(string& fmt_src) {
+    //format_analyzer(,)
+
+
+
+    // check_block() -- we need begin, end positions of buff
+    // build_block() -- 
+
+    // check_tagval
+    // check_
+
+    /*
+    format_base_block* build(string& fmt_src, ) {
         
     };
 
+    format_base_block* build_tagval(string& fmt_src, size_t cursor) {
+
+    }
+    */
+
 };
 
+// parser
 
+
+void get_def_hooks(string& sr) {
+    lexer lx(sr);
+
+    string cur;
+    while(lx.next_like(cur, nullptr,"$", ": ") != lx.npos) {
+        //printf("[def_instr] %s\n", cur.c_str());
+        lx.get_info(cout);
+        lx.cursor_move(1);
+    } 
+}
+
+/*
+    tests
+        while(lx.next_like(cur, nullptr,"$", ": ") != lx.npos) {
+        //printf("[def_instr] %s\n", cur.c_str());
+        lx.get_info(cout);
+        lx.cursor_move(1);
+    } 
+
+    get_def_hooks_at_begin
+    " $go: $block_   :   $instr124"
+
+    get_def_hooks_at_end
+    "go$: block_$ :  instr124:$ "
+
+*/
 
 int main( ){
-    string sr = " app__&^_le vibe _le: .123.42.";
-    lexer lx(sr);
-    
-    string c;
+    string src = " $go: $block_   :   $instr124";
+    string src2 = "go$: block_$ :  instr124:$ "; // 
+    get_def_hooks(src2);
 
-    int t = lx.next_between(c, "app", "_le");
-    printf("_t=%s tt=%i\n", c.c_str(), t);
-    lx.get_info(cout);
-    
 }
 
 
