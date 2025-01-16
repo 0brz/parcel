@@ -365,14 +365,23 @@ class lexer {
         short next_between(string& out, const char* begins, const char* ends) {
             // no trash symbols there
             // returs first begins and last ends
+            // ret: 'for |<str> deep 1 <str> deep 2 </str> </str>| example data'
 
             if (begins == NULL &&
                 ends == NULL) {
                     return lexer::npos;
             }
 
-            auto _s = _src.find(begins, _cursor);
-            //auto _e = _src.fin
+            auto _s = lexer::first_begins(_src, _cursor, begins);
+            if (_s == -1) {return lexer::npos;}
+            auto _e = lexer::last_ends(_src, _cursor, ends);
+            printf("__E=%i\n", _e);
+            if (_e== -1) {return lexer::npos;}
+
+            auto sz(_e-_s+strlen(ends));
+            out = _src.substr(_s, sz);
+            cursor_move(sz);
+            return sz;
         }
 
         // next_between(s, e) curs move to e
@@ -391,6 +400,9 @@ class lexer {
         }
         
         static size_t last_ends(string& src, size_t cursor, const char* ends) {
+            
+            if (ends == nullptr) return -1;
+            
             int sz = src.size();
             int t = sz;
             int sz_ends = strlen(ends);
@@ -415,10 +427,12 @@ class lexer {
             return -1;
         }
 
-        static size_t first_begins(string& src, size_t cursor, const char* ends) {
+        static size_t first_begins(string& src, size_t cursor, const char* begins) {
+            if (begins == nullptr) return -1;
+
             int sz = src.size();
             int t = cursor;
-            int sz_ends = strlen(ends);
+            int sz_ends = strlen(begins);
             int pos_ends = 0;
 
             while(t < sz) {
@@ -427,7 +441,7 @@ class lexer {
                     return t-sz_ends;
                 }
 
-                if (src[t] == ends[pos_ends]) {
+                if (src[t] == begins[pos_ends]) {
                     t++;
                     pos_ends++;
                 }
@@ -464,11 +478,9 @@ int main( ){
     lexer lx(sr);
     
     string c;
-    lx.next_like(c, NULL, "le", " "); // any symbols between, but no ' '
-    printf("%s\n", c.c_str());
-    
-    int t = lexer::first_begins(sr, 0, "_le");
-    printf("_t=%c tt=%i\n", sr[t], t);
+
+    int t = lx.next_between(c, "app", "_le");
+    printf("_t=%s tt=%i\n", c.c_str(), t);
     lx.get_info(cout);
     
 }

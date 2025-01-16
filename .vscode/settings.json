@@ -5,6 +5,7 @@
         "initializer_list": "cpp",
         "xutility": "cpp",
         "format": "cpp",
-        "xlocale": "cpp"
+        "xlocale": "cpp",
+        "ostream": "cpp"
     }
 }
