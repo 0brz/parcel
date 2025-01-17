@@ -1,0 +1,8 @@
+go:
+  prob:
+    foo: float
+      it_1: int
+      it_2: str
+    bar:
+      b1: str
+      b2: qwd

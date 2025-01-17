@@ -28,6 +28,7 @@ structs:
 #include <map>
 #include <iostream>
 #include <cctype>
+#include <fstream>
 
 using namespace std;
 
@@ -167,11 +168,14 @@ class lexer {
         void cursor_move(int delta) {this->_cursor += delta;};
         void cursor_set(int pos) {this->_cursor = pos;}; 
 
-        void skip(const char* s) {
+        size_t skip(const char* s) {
             int ofs = _src.find_first_not_of(s, _cursor);
+            size_t old_c = _cursor;
             if (ofs != string::npos) {
                 cursor_move(ofs-_cursor);
             }
+
+            return ofs-old_c;
         }
 
         bool next_symbol(char& s) {
@@ -577,6 +581,7 @@ void get_literals() {
 
 */
 
+
 // ------------------------------------------
 struct lex_graph_path {
     string name;
@@ -587,56 +592,120 @@ struct lex_graph {
     vector<lex_graph_path> entries;
 };
 
+class graph_floor {
+    map<int, vector<lex_graph_path>> _entries;
+    public:
+        void add(lex_graph_path& p, int offset) {
+            auto fn = _entries.find(offset);
+            if (fn != end(_entries)) {
+                (*fn).second.push_back(p);
+            }
+            else {
+                vector<lex_graph_path> v;
+                v.push_back(p);
+                _entries.insert({offset, v});
+            }
+        };
+
+        void dump() {
+            printf("[graph_floor]\n");
+            for(auto &e : _entries) {
+                for(auto&p : e.second) {
+                    printf("[graph_floor].[%i] %s\n", e.first, p.name.c_str());
+                }
+            }
+        }
+};
+
 lex_graph* build_graph(string& src) {
     lex_graph* g = new lex_graph();
+    graph_floor fl;
     lexer lx(src);
 
     string cur;
+    size_t line_offset = 0;
+
     while(lx.can_read()) {
         if (lx.next_id(cur) != lx.npos) {
 
-            //lx.get_info(cout);
-
             char delim;
-            lx.skip(" ");
+            //printf("__[skip] tabs: %zi\n", lx.skip(" \t"));
             lx.next_symbol(delim);
             
-            /*
-                if t==:
-                    next_entry (relate previos path)
-                    add path to parent path
-                if t==|
-                    add paths to this path
-            */
-
             if (delim == ':') {
+                // next_entry (relate previos path)
+                // add path to parent path
+
                 printf("[par.path] %s\n", cur.c_str());
+
+                lex_graph_path pt;
+                pt.name = string(cur.c_str());
+                fl.add(pt, line_offset);
+
             }
             else if (delim == '|') {
+                // add paths to this path
                 printf("[this.path] %s\n", cur.c_str());
+                
+                lex_graph_path pt;
+                pt.name = string(cur.c_str());
+                fl.add(pt, line_offset);
             }
             else {
 
                 lx.go_back(-1);
                 printf("[any] %s\n", cur.c_str());
-                //lx.go_back(cur.)
+                
                 // next tag started.
+                // add to paths in parent
             }
         }
         else {
-            lx.get_info(cout);
+            char delim;
+            lx.next_symbol(delim);
+            if (delim == '\n') {
+                // this is signal to next line
+                // we can left padding size of next level
+                int ofs = lx.skip(" \t");
+                printf("__[NEW_LINE] pad=%i\n", ofs);
+                line_offset = ofs;
+                
+            }
+
+            //printf("__[glob_skip] %c\n", delim);
+            //lx.cursor_move(1);
         }
     }
+
+    fl.dump();
 
     return g;
 }  
 
+#include <sstream>
+
+string file_read_all(const char* path) {
+    ifstream fs(path);
+    if (fs.is_open()) {
+        ostringstream ss;
+        ss << fs.rdbuf();
+        return ss.str();
+    }
+    else {
+        cout << "file bad open\n";
+    }
+}
 
 int main( ){
 
+    string sr = file_read_all("C:/git.local/parsing/bound_parsing/src/fmt.yml");
+    printf("s=%s\n", sr.c_str());
+    build_graph(sr);
+
+
     string s1 = "literal: lit_word|lit_number";
     string s2 = "tagval: tag: literal val: lit_word|lit_number";
-    build_graph(s2);
+    
 
     //get_literals();
     

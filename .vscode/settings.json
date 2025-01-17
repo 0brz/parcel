@@ -8,6 +8,9 @@
         "xlocale": "cpp",
         "ostream": "cpp",
         "iosfwd": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "vector": "cpp",
+        "xtree": "cpp",
+        "utility": "cpp"
     }
 }
