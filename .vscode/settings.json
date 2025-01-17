@@ -11,6 +11,7 @@
         "iostream": "cpp",
         "vector": "cpp",
         "xtree": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "optional": "cpp"
     }
 }

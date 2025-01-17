@@ -583,6 +583,9 @@ void get_literals() {
 
 
 // ------------------------------------------
+
+#include <optional>
+
 struct lex_graph_path {
     string name;
     vector<lex_graph_path> paths; 
@@ -594,7 +597,56 @@ struct lex_graph {
 
 class graph_floor {
     map<int, vector<lex_graph_path>> _entries;
+    int _last_level;
     public:
+
+        graph_floor(): _last_level(0) {};
+
+        bool find(int offset, string& entry_name, lex_graph_path& out) {
+            auto fn = _entries.find(offset);
+            if (fn != end(_entries)) {
+
+                for (const auto &en: (*fn).second) {
+                    if (en.name == entry_name) {
+                        out = en;
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        };
+
+        bool prev(lex_graph_path& out) {
+            auto fn = _entries.find(_last_level);
+            if (fn != end(_entries)) {
+                auto vec = (*fn).second;
+                if (vec.size() > 0) {
+                    out = vec.back();
+                    return true;
+                }
+                
+                return false;
+            }
+            
+            return false;
+        }
+
+        bool parent(int offset, lex_graph_path& out) {
+            auto fn = _entries.find(offset);
+            if (fn != end(_entries)) {
+                auto vec = (*fn).second;
+                if (vec.size() > 0) {
+                    out = vec.back();
+                    return true;
+                }
+                
+                return false;
+            }
+            
+            return false;
+        }
+
         void add(lex_graph_path& p, int offset) {
             auto fn = _entries.find(offset);
             if (fn != end(_entries)) {
@@ -605,6 +657,8 @@ class graph_floor {
                 v.push_back(p);
                 _entries.insert({offset, v});
             }
+
+            _last_level= offset;
         };
 
         void dump() {
@@ -614,12 +668,16 @@ class graph_floor {
                     printf("[graph_floor].[%i] %s\n", e.first, p.name.c_str());
                 }
             }
-        }
+        };
+
+        ~graph_floor() {
+            _entries.clear();
+        };
 };
 
 lex_graph* build_graph(string& src) {
     lex_graph* g = new lex_graph();
-    graph_floor fl;
+    graph_floor floor;
     lexer lx(src);
 
     string cur;
@@ -628,36 +686,75 @@ lex_graph* build_graph(string& src) {
     while(lx.can_read()) {
         if (lx.next_id(cur) != lx.npos) {
 
-            char delim;
-            //printf("__[skip] tabs: %zi\n", lx.skip(" \t"));
+            char delim ;
             lx.next_symbol(delim);
-            
+
+            // find_
+            /*
+            lex_graph_path par;
+            if (floor.parent(line_offset-2, par)) {
+                //printf("(parent) %s\n", par.name.c_str());
+            }
+            else {
+                par.name = "_";
+            }
+            */
+
             if (delim == ':') {
                 // next_entry (relate previos path)
                 // add path to parent path
 
-                printf("[par.path] %s\n", cur.c_str());
+                //printf("[tag] (%s) %s\n", par.name.c_str(), cur.c_str());
 
                 lex_graph_path pt;
                 pt.name = string(cur.c_str());
-                fl.add(pt, line_offset);
+                floor.add(pt, line_offset);
 
+                // par.add()
+                lex_graph_path _par;
+                if (floor.parent(line_offset-2, _par)) {
+                    printf("[g] %s . %s\n", _par.name.c_str(), cur.c_str());
+                    _par.paths.push_back(pt);
+                }
+                else {
+                    printf("[ERR] _par not found\n");
+                }
             }
             else if (delim == '|') {
-                // add paths to this path
-                printf("[this.path] %s\n", cur.c_str());
                 
                 lex_graph_path pt;
                 pt.name = string(cur.c_str());
-                fl.add(pt, line_offset);
+                floor.add(pt, line_offset);
+
+                // prev().add()
+                lex_graph_path _tag;
+                if (floor.prev(_tag)) {
+                    printf("[g] %s . %s\n", _tag.name.c_str(), cur.c_str());
+                    _tag.paths.push_back(pt);
+                }
+                else {
+                    printf("[ERR] _tag not found\n");
+                }
             }
             else {
 
                 lx.go_back(-1);
-                printf("[any] %s\n", cur.c_str());
+                //printf("[val] (%s) %s\n", par.name.c_str(), cur.c_str());
                 
                 // next tag started.
                 // add to paths in parent
+                // prev().add()
+                lex_graph_path pt;
+                pt.name = string(cur.c_str());
+                
+                lex_graph_path _tag;
+                if (floor.prev(_tag)) {
+                    printf("[g] %s . %s\n", _tag.name.c_str(), cur.c_str());
+                    _tag.paths.push_back(pt);
+                }
+                else {
+                    printf("[ERR] _tag not found\n");
+                }
             }
         }
         else {
@@ -666,18 +763,13 @@ lex_graph* build_graph(string& src) {
             if (delim == '\n') {
                 // this is signal to next line
                 // we can left padding size of next level
-                int ofs = lx.skip(" \t");
-                printf("__[NEW_LINE] pad=%i\n", ofs);
-                line_offset = ofs;
+                line_offset = lx.skip(" \t");
                 
             }
-
-            //printf("__[glob_skip] %c\n", delim);
-            //lx.cursor_move(1);
         }
     }
 
-    fl.dump();
+    floor.dump();
 
     return g;
 }  
@@ -699,7 +791,7 @@ string file_read_all(const char* path) {
 int main( ){
 
     string sr = file_read_all("C:/git.local/parsing/bound_parsing/src/fmt.yml");
-    printf("s=%s\n", sr.c_str());
+    //printf("s=%s\n", sr.c_str());
     build_graph(sr);
 
 
