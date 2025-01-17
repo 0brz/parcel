@@ -156,7 +156,7 @@ class lexer {
     
     public:
         const short npos = -1;
-        const char* symbols_no_id = " @#%^&^*()";
+        const char* symbols_no_id = " @#%^&*(){}[]?><";
 
         lexer(string& sr) : _src(sr), _sz(_src.size()), _cursor(0) {};
 
@@ -209,7 +209,7 @@ class lexer {
             short sz = 0;
             skip(" ");
             int cur = this->_cursor;
-            printf("_curs=%i\n", cur);
+            //printf("_curs=%i\n", cur);
             while(cur < _sz) {
                 if ((_src[cur] >= 'a' && _src[cur] <= 'z') ||
                     (_src[cur] >= '0' && _src[cur] <= '9') ||
@@ -234,6 +234,7 @@ class lexer {
             // 123.123
             // 123.3
             // 123
+
             short sz = 0;
             skip(" ");
             int cur = this->_cursor;
@@ -299,7 +300,7 @@ class lexer {
             return sz;
         }
 
-        short next_like(string& out, const char* begins, const char* ends, const char* trash_delims) {
+        short next_like(string& out, const char* begins, const char* ends, const char* trash_delims, bool offset=false) {
             // or begns or write
             if (begins == NULL &&
                 ends == NULL) {
@@ -318,15 +319,16 @@ class lexer {
             skip(" ");
             if (begins != NULL && ends != NULL) {
                 // begins + ends rule
-                size_t _beg = _src.find_first_of(begins, _cursor);
-                size_t _end = _src.find_first_of(ends, _cursor);
+                size_t _beg = _src.find(begins, _cursor);
+                short _ofs = (offset == true ? 1 : 0); 
+                size_t _end = _src.find(ends, _cursor + _ofs);
                 if (_beg != string::npos &&
                     _end != string::npos) {
                        
                         // check no trash between
                         auto sz(_end-_beg + strlen(ends));
                         string btw = _src.substr(_beg, sz);
-                        //printf("___BTW='%s'\n", btw.c_str());
+                        //printf("___BTW='%s' sz=%zi END=%zi\n", btw.c_str(), sz, _end);
                         if (btw.find_first_of(trash_delims, _beg) == string::npos) {
                             // ok
                             out = _src.substr(_beg, sz);
@@ -377,6 +379,10 @@ class lexer {
 
                 return sz;
             }
+        }
+
+        short next_like_rounded(string& out, const char* begins, const char* ends, const char* trash_delims) {
+            return next_like(out, begins, ends, trash_delims, true);
         }
 
         short next_between(string& out, const char* begins, const char* ends) {
@@ -511,38 +517,129 @@ class format_analyzer {
 // parser
 
 
-void get_def_hooks(string& sr) {
-    lexer lx(sr);
-
+void get_literals() {
+    //string litrs = "tagval: tag: \"apple\" val: \"good\" volume: 123.12478"; // 
+    string litrs = "tagval: tag: \"apple\" val: \"good\" volume: 123.12478"; // 
+    lexer lx(litrs);
     string cur;
-    while(lx.next_like(cur, nullptr,"$", ": ") != lx.npos) {
-        //printf("[def_instr] %s\n", cur.c_str());
-        lx.get_info(cout);
-        lx.cursor_move(1);
-    } 
+
+    // we should parse tags and get next format 'word in brackets | float'
+
+    while(lx.can_read()) {
+        char delim;
+        // find tag -> tag=word + :
+        // lx.get_info(cout);
+        short word_len = 0;
+        if ((word_len = lx.next_id(cur)) != lx.npos &&
+            lx.next_symbol(delim) != lx.npos) { // or use next_like with ':'
+            if (delim == ':') {
+                // this is a tag.
+                // 
+                cur += delim;
+                printf("[tag] %s\n", cur.c_str());
+            }
+            else {
+                lx.cursor_move(-1);
+                lx.cursor_move(-word_len);
+                //lx.
+            }
+        }
+        
+        // this is not a our rule.
+        // maybe this is a literal
+            
+        // word litr
+        if (lx.next_like_rounded(cur, "\"",  "\"", "") != lx.npos) {
+            printf("[litr.word] '%s'\n", cur.c_str());
+        }
+        // float litr
+        else if (lx.next_float(cur) != lx.npos) {
+            printf("[litr.float] '%s'\n", cur.c_str());
+        }
+        else  lx.cursor_move(1);
+    }
 }
 
+// get_words
+// get_literals
+// get_
+
+
 /*
-    tests
-        while(lx.next_like(cur, nullptr,"$", ": ") != lx.npos) {
-        //printf("[def_instr] %s\n", cur.c_str());
-        lx.get_info(cout);
-        lx.cursor_move(1);
-    } 
 
-    get_def_hooks_at_begin
-    " $go: $block_   :   $instr124"
+    # check/build (block)
+    tagval:
+    1) tagval
+    2) tag,val
 
-    get_def_hooks_at_end
-    "go$: block_$ :  instr124:$ "
+    str = pick()
+    -> map.find(st)r
 
 */
 
-int main( ){
-    string src = " $go: $block_   :   $instr124";
-    string src2 = "go$: block_$ :  instr124:$ "; // 
-    get_def_hooks(src2);
+// ------------------------------------------
+struct lex_graph_path {
+    string name;
+    vector<lex_graph_path> paths; 
+};
 
+struct lex_graph {
+    vector<lex_graph_path> entries;
+};
+
+lex_graph* build_graph(string& src) {
+    lex_graph* g = new lex_graph();
+    lexer lx(src);
+
+    string cur;
+    while(lx.can_read()) {
+        if (lx.next_id(cur) != lx.npos) {
+
+            //lx.get_info(cout);
+
+            char delim;
+            lx.skip(" ");
+            lx.next_symbol(delim);
+            
+            /*
+                if t==:
+                    next_entry (relate previos path)
+                    add path to parent path
+                if t==|
+                    add paths to this path
+            */
+
+            if (delim == ':') {
+                printf("[par.path] %s\n", cur.c_str());
+            }
+            else if (delim == '|') {
+                printf("[this.path] %s\n", cur.c_str());
+            }
+            else {
+
+                lx.go_back(-1);
+                printf("[any] %s\n", cur.c_str());
+                //lx.go_back(cur.)
+                // next tag started.
+            }
+        }
+        else {
+            lx.get_info(cout);
+        }
+    }
+
+    return g;
+}  
+
+
+int main( ){
+
+    string s1 = "literal: lit_word|lit_number";
+    string s2 = "tagval: tag: literal val: lit_word|lit_number";
+    build_graph(s2);
+
+    //get_literals();
+    
 }
 
 
