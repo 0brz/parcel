@@ -7,6 +7,37 @@ using namespace std;
 using namespace lex;
 
 
+// -------------------------
+graph_block* create_function(string& name, string& args) {
+    graph_block* b = new graph_block();
+    value_function* v = new value_function(name, args);
+    b->type = RULE_TYPE::FUNCTION;
+    b->value = v;
+    return b;
+};
+
+graph_block* create_hook(string& name) {
+    graph_block* b = new graph_block();
+    value_datahook* v = new value_datahook(name);
+    b->type = RULE_TYPE::DATA_HOOK;
+    b->value = v;
+    return b;
+};
+
+template<typename ValueType, RULE_TYPE RuleType>
+graph_block* create_literal(ValueType value) {
+    graph_block* b = new graph_block();
+    value_literal<ValueType, RuleType>* v = new value_literal<ValueType, RuleType>(value);
+    b->type = RuleType;
+    b->value = v;
+    return b;
+};
+
+// float, int, str, char
+
+
+// -----------------------
+
 bool build::is_function(lexer& lx) {
     //printf("______________\n");
     //lx.get_info(cout);
@@ -88,6 +119,8 @@ bool build::is_literal(lexer& lx) {
     return false;
 };
 
+ // ----------------------
+
 graph_block* build::build_function(lexer& lx) {
     // get prefix
     // get name
@@ -108,13 +141,9 @@ graph_block* build::build_function(lexer& lx) {
         return NULL;
     }
 
-    graph_block *b = new graph_block();
-
-    b->type = RULE_TYPE::FUNCTION;
-    //b->value = b;
+    graph_block* bl = create_function(_name, _args);
     printf("[build] fn: %s(%s)\n", _name.c_str(), _args.c_str());
-
-    return b;
+    return bl;
 };
 
 graph_block* build::build_hook(lexer& lx) {
@@ -128,12 +157,8 @@ graph_block* build::build_hook(lexer& lx) {
         return NULL;
     }
 
-    graph_block *b = new graph_block();
-
-    b->type = RULE_TYPE::DATA_HOOK;
-    //b->value = b;
+    graph_block *b = create_hook(_name);
     printf("[build] hook: %s\n", _name.c_str());
-
     return b;
 }
 
@@ -152,6 +177,8 @@ bool check_define_char(lexer& lx) {
 
     return false;
 };
+
+
 
 graph_table<graph_block> *build::build_lex_graph(string &src) {
   graph_table<graph_block> *gt = new graph_table<graph_block>();
@@ -176,22 +203,28 @@ graph_table<graph_block> *build::build_lex_graph(string &src) {
     }
 
     if (is_literal(lx)) {
-        printf("[build] is_lit\n");
+        //printf("[build] is_lit\n");
         if (lx.next_float(cur) != lx.npos) {
-            printf("[build] lit.float\n");
-            // create_float
+            printf("[build] lit.float=%s\n", cur.c_str());
+            int _val = stof(cur.c_str());
+            auto _bl = create_literal<float, RULE_TYPE::LITR_FLOAT>(_val);
         }
         else if (lx.next_int(cur) != lx.npos) {
-            printf("[build] lit.int\n");
-            // create_int
+            printf("[build] lit.int=%s\n", cur.c_str());
+            int _val = stoi(cur.c_str());
+            auto _bl = create_literal<float, RULE_TYPE::LITR_INT>(_val);
         }
         else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos) {
-            printf("[build] lit.str\n");
+            printf("[build] lit.str=%s\n", cur.c_str());
             // create_str
+            string _val = string(cur.c_str());
+            auto _bl = create_literal<string, RULE_TYPE::LITR_STRING>(_val);
         }
         else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos) {
-            printf("[build] lit.char\n");
+            printf("[build] lit.char=%s\n", cur.c_str());
             // create_char
+            char _val = cur[1]; // we can take, because size of char view=3, like 'a', 'b'
+            auto _bl = create_literal<char, RULE_TYPE::LITR_STRING>(_val);
         }
     }
 

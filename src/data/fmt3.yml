@@ -1,2 +1,5 @@
 &def_hook:
   word: "apple"
+  int: 123
+  float: 234.4
+  char: 'a' 

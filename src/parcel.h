@@ -31,8 +31,8 @@ class lexer {
         lexer(string& sr) : _src(sr), _sz(_src.size()), _cursor(0) {};
 
         inline bool can_read() {return this->_cursor < _sz-1;};
-        inline int can_readn() {return _sz-this->_cursor; };
-        inline int can_readn(int count) { return (this->_cursor+count) < _sz ;} 
+        inline int can_readn() {return _sz-1-this->_cursor; };
+        inline int can_readn(int count) { return _sz-1-(this->_cursor+count);} 
 
         static string read_source_file(const char* fpath) {
             ifstream fs(fpath);
@@ -150,6 +150,10 @@ class lexer {
                     }
                 }
                 else break;
+            }
+
+            if (dotp == 0) {
+                return lexer::npos;
             }
 
             if (sz == 0) {
@@ -420,8 +424,10 @@ enum RULE_TYPE {
 
     // literals...
     LITR,
-    LITR_WORD,
-    LITR_NUM,
+    LITR_STRING,
+    LITR_FLOAT,
+    LITR_INT,
+    LITR_CHAR,
 
     // hooks
     DATA_HOOK,
@@ -438,11 +444,34 @@ static map<RULE_TYPE, const char*> typenames {
     {WORD, "word"},
     {NUMBER, "number"},
 
-    {LITR, "literal"},
-    {LITR_WORD, "litr_word"},
-    {LITR_NUM, "litr_num"},
+    {LITR, "litr"},
+    {LITR_CHAR, "litr_char"},
+    {LITR_STRING, "litr_str"},
+    {LITR_FLOAT, "litr_float"},
+    {LITR_INT, "litr_int"},
+
     {DATA_HOOK, "datahook"}, 
 };
+
+static bool has_value(RULE_TYPE type) {
+    switch (type)
+    {
+    case RULE_TYPE::FUNCTION:
+    case RULE_TYPE::DATA_HOOK:
+
+    case RULE_TYPE::LITR_CHAR:
+    case RULE_TYPE::LITR_FLOAT:
+    case RULE_TYPE::LITR_INT:
+    case RULE_TYPE::LITR_STRING:
+
+    case RULE_TYPE::TAGVAL:
+        return true;
+        break;
+    
+    default:
+        return false;
+    }
+}
 
 #pragma endregion
 
@@ -460,17 +489,8 @@ struct value_tagval : public graph_value {
     };
 };
 
-struct value_litr_word : public graph_value {
-    inline RULE_TYPE graph_value::get_type() {
-        return LITR_WORD;
-    };
-};
 
-struct value_litr_num : public graph_value {
-    inline RULE_TYPE graph_value::get_type() {
-        return LITR_NUM;
-    };
-};
+// -------------------
 
 struct value_datahook : public graph_value {
     inline RULE_TYPE graph_value::get_type() {
@@ -478,16 +498,45 @@ struct value_datahook : public graph_value {
     };
 
     string name;
+
+    value_datahook(string& name) {
+        this->name = name;
+    }
+
+    ~value_datahook() {};
 };
 
-struct lexvalue_function : public graph_value {
+struct value_function : public graph_value {
     inline RULE_TYPE graph_value::get_type() {
         return FUNCTION;
     };
 
     string name;
     string args;
+
+    value_function(string& name, string& args) {
+        this->name = name;
+        this->args = args;
+    };
+
+    ~value_function() {};
 };
+
+template<typename ValueType, RULE_TYPE RuleType>
+struct value_literal : public graph_value {
+    inline RULE_TYPE graph_value::get_type() {
+        return RuleType;
+    };
+
+    ValueType value;
+
+    value_literal(ValueType vl) {
+        this->value = vl;
+    };
+
+    ~value_literal() {};
+};
+
 
 #pragma endregion
 
