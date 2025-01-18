@@ -3,3 +3,9 @@
   int: 123
   float: 234.4
   char: 'a' 
+
+tagval:
+  val: "apple"
+  tag: word
+
+vibe: word

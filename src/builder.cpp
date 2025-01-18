@@ -33,9 +33,6 @@ graph_block* create_literal(ValueType value) {
     return b;
 };
 
-// float, int, str, char
-
-
 // -----------------------
 
 bool build::is_function(lexer& lx) {
@@ -162,12 +159,12 @@ graph_block* build::build_hook(lexer& lx) {
     return b;
 }
 
-bool check_define_char(lexer& lx) {
+bool step_char_if_eq(lexer& lx, char check_symbol) {
     lx.skip(" ");
     if (lx.can_read()) {
         char t;
         lx.next_symbol(t);
-        if (t == LANG_PREFIX) {
+        if (t == check_symbol) {
             return true;
         }
         else {
@@ -177,7 +174,6 @@ bool check_define_char(lexer& lx) {
 
     return false;
 };
-
 
 
 graph_table<graph_block> *build::build_lex_graph(string &src) {
@@ -190,14 +186,14 @@ graph_table<graph_block> *build::build_lex_graph(string &src) {
 
   while (lx.can_read()) {
     
-    if (check_define_char(lx)) {
+    if (step_char_if_eq(lx, LANG_PREFIX)) {
         printf("[build].is_def\n");
         if (build::is_function(lx)) {
-            printf("[build].is_fun\n");
+            printf("~%zi [build].is_fun\n", line_offset);
             auto _bl = build::build_function(lx);
         }
         else if (build::is_hook(lx)) {
-            printf("[build].is_hook\n");
+            printf("~zi [build].is_hook\n", line_offset);
             auto _bl = build_hook(lx);
         }
     }
@@ -205,30 +201,50 @@ graph_table<graph_block> *build::build_lex_graph(string &src) {
     if (is_literal(lx)) {
         //printf("[build] is_lit\n");
         if (lx.next_float(cur) != lx.npos) {
-            printf("[build] lit.float=%s\n", cur.c_str());
+            printf("~%zi [build] lit.float=%s\n", line_offset, cur.c_str() );
             int _val = stof(cur.c_str());
             auto _bl = create_literal<float, RULE_TYPE::LITR_FLOAT>(_val);
         }
         else if (lx.next_int(cur) != lx.npos) {
-            printf("[build] lit.int=%s\n", cur.c_str());
+            printf("~%zi [build] lit.int=%s\n", line_offset, cur.c_str());
             int _val = stoi(cur.c_str());
             auto _bl = create_literal<float, RULE_TYPE::LITR_INT>(_val);
         }
         else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos) {
-            printf("[build] lit.str=%s\n", cur.c_str());
+            printf("~%zi [build] lit.str=%s\n", line_offset, cur.c_str());
             // create_str
             string _val = string(cur.c_str());
             auto _bl = create_literal<string, RULE_TYPE::LITR_STRING>(_val);
         }
         else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos) {
-            printf("[build] lit.char=%s\n", cur.c_str());
+            printf("~%zi [build] lit.char=%s\n", line_offset, cur.c_str());
             // create_char
             char _val = cur[1]; // we can take, because size of char view=3, like 'a', 'b'
             auto _bl = create_literal<char, RULE_TYPE::LITR_STRING>(_val);
         }
     }
 
-    lx.cursor_move(1);
+    if (lx.next_word(cur) != lx.npos) {
+        if (step_char_if_eq(lx, LANG_TAG_PREFIX)) {
+            RULE_TYPE _type = lex::typeof(cur);
+            if (_type == RULE_TYPE::_TYPE_ERROR) {
+                // error
+                printf("~%zi [ERR] build: (err type) tag='%s'\n", line_offset, cur.c_str());
+            }
+            else {
+                printf("~%zi [build] tag=%s\n", line_offset, cur.c_str());
+            }
+        }
+    }
+    
+
+    if (step_char_if_eq(lx, '\n')) {
+        //printf("[build] new line\n");
+        // get size of tabs
+        line_offset = lx.skip(" \t");
+    }
+    else  lx.cursor_move(1);
+    
   }
 
   return gt;

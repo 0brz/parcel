@@ -410,17 +410,20 @@ enum RULE_TYPE {
     BLOCK,
     LIST,
 
-    WORD,
-    NUMBER,
     //VERSION,
     //IP
     PRM_BEGINS,
     PRM_ENDS,
     PRM_DELIM,
 
-    TAGVAL, // useword
-    TAGVAL_TAG, // block | value
-    TAGVAL_VAL, // block | value
+    // common types
+    BL_WORD,
+    BL_NUMBER,
+
+    // tagval
+    BL_TAGVAL,
+    BL_VAL,
+    BL_TAG,
 
     // literals...
     LITR,
@@ -433,7 +436,10 @@ enum RULE_TYPE {
     DATA_HOOK,
 
     // functions
-    FUNCTION
+    FUNCTION,
+
+    // spec
+    _TYPE_ERROR,
 };
 
 static map<RULE_TYPE, const char*> typenames {
@@ -441,9 +447,16 @@ static map<RULE_TYPE, const char*> typenames {
     {BLOCK, "block"},
     {LIST, "list"},
 
-    {WORD, "word"},
-    {NUMBER, "number"},
+    // common types
+    {BL_WORD, "word"},
+    {BL_NUMBER, "number"},
 
+    // tagval
+    {BL_TAGVAL, "tagval"},
+    {BL_VAL, "val"},
+    {BL_TAG, "tag"},
+
+    // literals
     {LITR, "litr"},
     {LITR_CHAR, "litr_char"},
     {LITR_STRING, "litr_str"},
@@ -464,14 +477,25 @@ static bool has_value(RULE_TYPE type) {
     case RULE_TYPE::LITR_INT:
     case RULE_TYPE::LITR_STRING:
 
-    case RULE_TYPE::TAGVAL:
+    case RULE_TYPE::BL_TAGVAL:
         return true;
         break;
     
     default:
         return false;
     }
-}
+};
+
+static RULE_TYPE typeof(string& str) {
+    //const char* st = str.c_str();
+    for (auto it = begin(typenames); it != typenames.end(); it++) {
+        if ((*it).second == str) {
+            return (*it).first;
+        }
+    }
+
+    return RULE_TYPE::_TYPE_ERROR;
+};
 
 #pragma endregion
 
@@ -485,7 +509,7 @@ struct graph_value {
 
 struct value_tagval : public graph_value {
     inline RULE_TYPE graph_value::get_type() {
-        return TAGVAL;
+        return BL_TAGVAL;
     };
 };
 
