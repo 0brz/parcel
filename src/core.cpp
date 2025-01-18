@@ -505,68 +505,8 @@ class format_analyzer {
 
     // check_tagval
     // check_
-
-    /*
-    format_base_block* build(string& fmt_src, ) {
-        
-    };
-
-    format_base_block* build_tagval(string& fmt_src, size_t cursor) {
-
-    }
-    */
-
 };
 
-// parser
-
-
-void get_literals() {
-    //string litrs = "tagval: tag: \"apple\" val: \"good\" volume: 123.12478"; // 
-    string litrs = "tagval: tag: \"apple\" val: \"good\" volume: 123.12478"; // 
-    lexer lx(litrs);
-    string cur;
-
-    // we should parse tags and get next format 'word in brackets | float'
-
-    while(lx.can_read()) {
-        char delim;
-        // find tag -> tag=word + :
-        // lx.get_info(cout);
-        short word_len = 0;
-        if ((word_len = lx.next_id(cur)) != lx.npos &&
-            lx.next_symbol(delim) != lx.npos) { // or use next_like with ':'
-            if (delim == ':') {
-                // this is a tag.
-                // 
-                cur += delim;
-                printf("[tag] %s\n", cur.c_str());
-            }
-            else {
-                lx.cursor_move(-1);
-                lx.cursor_move(-word_len);
-                //lx.
-            }
-        }
-        
-        // this is not a our rule.
-        // maybe this is a literal
-            
-        // word litr
-        if (lx.next_like_rounded(cur, "\"",  "\"", "") != lx.npos) {
-            printf("[litr.word] '%s'\n", cur.c_str());
-        }
-        // float litr
-        else if (lx.next_float(cur) != lx.npos) {
-            printf("[litr.float] '%s'\n", cur.c_str());
-        }
-        else  lx.cursor_move(1);
-    }
-}
-
-// get_words
-// get_literals
-// get_
 
 
 /*
@@ -578,6 +518,42 @@ void get_literals() {
 
     str = pick()
     -> map.find(st)r
+
+
+    BUILDING LEX GRAPH
+    g:
+        T? val
+        entries<GraphPath>
+
+    path
+    -name
+    -type
+    -entries
+
+    [lex_graph]
+        building simple objects from source yml file.
+        build:
+             hooks
+             funcs
+             blocks
+             sequences
+    ---
+
+    [format_graph]
+        building a data structure for parsing.
+        data parse distribution for collect data.
+        
+        actions:
+            1) build funcs with args
+            2) build basic blocks
+            3) get hooks
+            4) get vars?
+    ---
+    
+    [value_graph]
+        parse source text files and collect data by provided format graph
+        acts:
+            get values by rules/collect.
 
 */
 
@@ -591,17 +567,15 @@ struct lex_graph_path {
     vector<lex_graph_path> paths; 
 };
 
-struct lex_graph {
-    vector<lex_graph_path> entries;
-};
-
-class graph_floor {
+class graph_line {
     map<int, vector<lex_graph_path>> _entries;
     int _last_level;
+    int _min_level;
     public:
 
-        graph_floor(): _last_level(0) {};
+        graph_line(): _last_level(0), _min_level(6) {};
 
+        // find any path in graph by level and name
         bool find(int offset, string& entry_name, lex_graph_path& out) {
             auto fn = _entries.find(offset);
             if (fn != end(_entries)) {
@@ -617,7 +591,30 @@ class graph_floor {
             return false;
         };
 
-        bool prev(lex_graph_path& out) {
+        // return first paths in graph (entrypoints)
+        bool head(vector<lex_graph_path>& out) {
+            auto fn = _entries.find(_min_level);
+            if (fn != end(_entries)) {
+                out = (*fn).second;
+                return true;
+            }
+            
+            return false;
+        }
+
+        // return last paths in graph (most deepest)
+        bool tail(vector<lex_graph_path>& out) {
+            auto fn = _entries.find(_last_level);
+            if (fn != end(_entries)) {
+                out = (*fn).second;
+                return true;
+            }
+            
+            return false;
+        }
+
+        // return last path of the last added level
+        bool last(lex_graph_path& out) {
             auto fn = _entries.find(_last_level);
             if (fn != end(_entries)) {
                 auto vec = (*fn).second;
@@ -630,8 +627,9 @@ class graph_floor {
             }
             
             return false;
-        }
+        };
 
+        // return last parent path in graph
         bool parent(int offset, lex_graph_path& out) {
             auto fn = _entries.find(offset);
             if (fn != end(_entries)) {
@@ -659,25 +657,48 @@ class graph_floor {
             }
 
             _last_level= offset;
+            _min_level = min(_min_level, offset);
         };
 
         void dump() {
-            printf("[graph_floor]\n");
+            printf("[graph_line]\n");
             for(auto &e : _entries) {
                 for(auto&p : e.second) {
-                    printf("[graph_floor].[%i] %s\n", e.first, p.name.c_str());
+                    printf("[graph_line].[%i] %s\n", e.first, p.name.c_str());
                 }
             }
         };
 
-        ~graph_floor() {
+        ~graph_line() {
             _entries.clear();
         };
 };
 
-lex_graph* build_graph(string& src) {
-    lex_graph* g = new lex_graph();
-    graph_floor floor;
+
+
+/*
+
+    INSTR GRAPH
+    [path]  [func_val]      [func_val]
+    text -> func.begins ->(and) func.ends
+    text -> func.begins ->(or) func.ends
+
+    BASEBLOCKS:
+        tagval
+        sequence
+        list
+        pair
+        ----
+        literal
+*/
+
+
+
+
+
+// for example
+graph_line* build_graph(string& src) {
+    graph_line* floor = new graph_line();
     lexer lx(src);
 
     string cur;
@@ -689,30 +710,17 @@ lex_graph* build_graph(string& src) {
             char delim ;
             lx.next_symbol(delim);
 
-            // find_
-            /*
-            lex_graph_path par;
-            if (floor.parent(line_offset-2, par)) {
-                //printf("(parent) %s\n", par.name.c_str());
-            }
-            else {
-                par.name = "_";
-            }
-            */
-
             if (delim == ':') {
                 // next_entry (relate previos path)
                 // add path to parent path
 
-                //printf("[tag] (%s) %s\n", par.name.c_str(), cur.c_str());
-
                 lex_graph_path pt;
                 pt.name = string(cur.c_str());
-                floor.add(pt, line_offset);
+                floor->add(pt, line_offset);
 
                 // par.add()
                 lex_graph_path _par;
-                if (floor.parent(line_offset-2, _par)) {
+                if (floor->parent(line_offset-2, _par)) {
                     printf("[g] %s . %s\n", _par.name.c_str(), cur.c_str());
                     _par.paths.push_back(pt);
                 }
@@ -724,11 +732,11 @@ lex_graph* build_graph(string& src) {
                 
                 lex_graph_path pt;
                 pt.name = string(cur.c_str());
-                floor.add(pt, line_offset);
+                floor->add(pt, line_offset);
 
                 // prev().add()
                 lex_graph_path _tag;
-                if (floor.prev(_tag)) {
+                if (floor->last(_tag)) {
                     printf("[g] %s . %s\n", _tag.name.c_str(), cur.c_str());
                     _tag.paths.push_back(pt);
                 }
@@ -748,7 +756,7 @@ lex_graph* build_graph(string& src) {
                 pt.name = string(cur.c_str());
                 
                 lex_graph_path _tag;
-                if (floor.prev(_tag)) {
+                if (floor->last(_tag)) {
                     printf("[g] %s . %s\n", _tag.name.c_str(), cur.c_str());
                     _tag.paths.push_back(pt);
                 }
@@ -769,9 +777,10 @@ lex_graph* build_graph(string& src) {
         }
     }
 
-    floor.dump();
+    floor->dump();
+    
 
-    return g;
+    return floor;
 }  
 
 #include <sstream>
@@ -804,31 +813,3 @@ int main( ){
 }
 
 
-
-/*
-
-// format_base_block
-
-// ...
-// format_
-
-struct format_rule {
-    RULE_TYPE type;
-    string* value;
-};
-
-struct format_block {
-    // list of rules
-    vector<format_rule> rules;
-};
-
-struct format_user_rule {
-    format_rule rule;
-    string name;
-};
-
-// nested: all: tagval -> {{apple: good, time: sec}, {foo: bar}}
-// nested:  
-
-// ---------- USER VALUES
-*/
