@@ -11,5 +11,5 @@ add_executable(tt
     src/builder.h
     src/builder.cpp
 
-    src/core.cpp
+    src/test.cpp
 )

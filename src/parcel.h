@@ -17,50 +17,6 @@ using namespace std;
 #define LANG_PREFIX '&'
 #define LANG_TAG_PREFIX ':'
 
-enum RULE_TYPE {
-    GO,
-    
-    BLOCK,
-    LIST,
-
-    WORD,
-    NUMBER,
-    //VERSION,
-    //IP
-    PRM_BEGINS,
-    PRM_ENDS,
-    PRM_DELIM,
-
-    TAGVAL, // useword
-    TAGVAL_TAG, // block | value
-    TAGVAL_VAL, // block | value
-
-    // literals...
-    LITR,
-    LITR_WORD,
-    LITR_NUM,
-
-    // hooks
-    DATA_HOOK,
-
-    // functions
-    FUNCTION
-};
-
-static map<RULE_TYPE, const char*> _typenames {
-    {GO, "go"},
-    {BLOCK, "block"},
-    {LIST, "list"},
-
-    {WORD, "word"},
-    {NUMBER, "number"},
-
-    {LITR, "literal"},
-    {LITR_WORD, "litr_word"},
-    {LITR_NUM, "litr_num"},
-    {DATA_HOOK, "datahook"}, 
-};
-
 class lexer {
     private:
     int _cursor;
@@ -77,7 +33,7 @@ class lexer {
         inline int can_read() {return this->_cursor - _sz; };
         inline int can_read(int count) { return (this->_cursor+count) < _sz ;} 
 
-        string read_source_file(const char* fpath) {
+        static string read_source_file(const char* fpath) {
             ifstream fs(fpath);
             if (fs.is_open()) {
                 ostringstream ss;
@@ -92,6 +48,7 @@ class lexer {
         int cursor_get() {return _cursor;};
         void cursor_move(int delta) {this->_cursor += delta;};
         void cursor_set(int pos) {this->_cursor = pos;}; 
+    
 
         size_t skip(const char* s) {
             int ofs = _src.find_first_not_of(s, _cursor);
@@ -352,13 +309,17 @@ class lexer {
 
             string check_str = string(char_sequence);
             size_t offset = 0;
+            //printf("___seq: cur=%i end=%i\n", cur, check_end);
             while(cur <= check_end) {
                 
                 if (offset == check_str.size())
                     return true;
 
                 if (check_str[offset] == _src[cur])
+                {
+                    //printf("___seq: %c\n", _src[cur]);
                     offset++;
+                }
                  
                 cur++;
             };
@@ -367,10 +328,6 @@ class lexer {
         };
 
         //bool check_closed(const char* beg, const char* end, const char* delimiters);
-
-        void go_back(int delta) {
-            this->cursor_move(delta);
-        };
 
         void get_info(ostream& os) {
             if (this->_cursor > 2) {
@@ -439,9 +396,60 @@ class lexer {
 
 namespace lex {
 
+#pragma region  rules,lex types
+
+enum RULE_TYPE {
+    GO,
+    
+    BLOCK,
+    LIST,
+
+    WORD,
+    NUMBER,
+    //VERSION,
+    //IP
+    PRM_BEGINS,
+    PRM_ENDS,
+    PRM_DELIM,
+
+    TAGVAL, // useword
+    TAGVAL_TAG, // block | value
+    TAGVAL_VAL, // block | value
+
+    // literals...
+    LITR,
+    LITR_WORD,
+    LITR_NUM,
+
+    // hooks
+    DATA_HOOK,
+
+    // functions
+    FUNCTION
+};
+
+static map<RULE_TYPE, const char*> typenames {
+    {GO, "go"},
+    {BLOCK, "block"},
+    {LIST, "list"},
+
+    {WORD, "word"},
+    {NUMBER, "number"},
+
+    {LITR, "literal"},
+    {LITR_WORD, "litr_word"},
+    {LITR_NUM, "litr_num"},
+    {DATA_HOOK, "datahook"}, 
+};
+
+#pragma endregion
+
+
+#pragma region values
+
 struct graph_value {
     inline virtual RULE_TYPE get_type() = 0;
-    inline  const char* get_name() {_typenames[this->get_type()];};
+    inline  const char* get_name() {typenames[this->get_type()];};
 };
 
 struct value_tagval : public graph_value {
@@ -479,12 +487,13 @@ struct lexvalue_function : public graph_value {
     string args;
 };
 
+#pragma endregion
+
 struct graph_block {
     RULE_TYPE type;
     vector<graph_block> entries;
     graph_value* value;
 };
-
 
 };
 

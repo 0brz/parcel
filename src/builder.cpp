@@ -6,18 +6,29 @@
 using namespace std;
 using namespace lex;
 
+
 bool build::is_function(lexer& lx) {
+    //printf("______________\n");
+    //lx.get_info(cout);
     size_t move_back_size = 0;
             string id;
-            if (lx.next_id(id) != lx.npos) {
-                move_back_size+=id.size();
-                if (lx.check_sequence("()", ":\n")) {
-                    lx.go_back(move_back_size);
+            size_t ofs = 0;
+            if ((ofs = lx.next_id(id)) != lx.npos) {
+                //printf("___is_fun: id=%s\n", id.c_str());
+                move_back_size+=ofs;
+                //lx.get_info(cout);
+
+                if (lx.check_sequence("()", ":")) {
+                    //printf("___is_fun: sec=\n");
+                    lx.cursor_move(-move_back_size);
+
+                    //lx.get_info(cout);
+                    //printf("______________\n");
                     return true;
                 }
             }
 
-    lx.go_back(move_back_size);
+    lx.cursor_move(-move_back_size);
     return false;
 } ;
 
@@ -30,13 +41,13 @@ bool build::is_hook(lexer& lx) {
                 if (lx.next_symbol(single_pref)) {
                     move_back_size++;
                     if (single_pref == LANG_TAG_PREFIX) {
-                        lx.go_back(move_back_size);
+                        lx.cursor_move(-move_back_size);
                         return true;
                     }
                 }
             }
 
-    lx.go_back(move_back_size);
+    lx.cursor_move(-move_back_size);
     return false;
 } ;
 
@@ -51,19 +62,19 @@ bool build::is_literal(lexer& lx) {
     char single_pref = '_';
     string cur;
     if (lx.next_float(cur) != lx.npos) { // 123.123
-        lx.go_back(cur.size());
+        lx.cursor_move(-cur.size());
         return true;
     }
     else if (lx.next_int(cur) != lx.npos) { // 123
-        lx.go_back(cur.size());
+        lx.cursor_move(-cur.size());
         return true;
     }
     else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos) { // "app"
-        lx.go_back(cur.size());
+        lx.cursor_move(cur.size());
         return true;
     } 
     else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos) { // 'g'
-        lx.go_back(cur.size());
+        lx.cursor_move(-cur.size());
         if (cur.size() == 3) {
             return true;
         }
@@ -72,24 +83,23 @@ bool build::is_literal(lexer& lx) {
     return false;
 };
 
-graph_block* _build_function(lexer& lx) {
+graph_block* build::build_function(lexer& lx) {
     // get prefix
     // get name
     // get args
-    char _pref = '_';
-    lx.next_symbol(_pref);
-    if (_pref != LANG_PREFIX) {
-        return NULL;
-    }
-
+    lx.get_info(cout);
     string _name;
     if (lx.next_id(_name) == lx.npos) {
+        printf("[ERR] build.function: name\n");
+        lx.get_info(cout);
         return NULL;
     }
 
     string _args;
     if (lx.next_like_rounded(_args, "(", ")", lx.symbols_no_id_nospace) ==
         lx.npos) {
+        printf("[ERR] build.function: args\n");
+        lx.get_info(cout);
         return NULL;
     }
 
@@ -97,10 +107,32 @@ graph_block* _build_function(lexer& lx) {
 
     b->type = RULE_TYPE::FUNCTION;
     //b->value = b;
+    printf("[build] fn: %s(%s)\n", _name.c_str(), _args.c_str());
+
     return b;
 };
 
-graph_table<graph_block> *build_lex_graph(string &src) {
+graph_block* build_hook(lexer& lx) {
+    return NULL;
+}
+
+bool check_define_char(lexer& lx) {
+    lx.skip(" ");
+    if (lx.can_read()) {
+        char t;
+        lx.next_symbol(t);
+        if (t == LANG_PREFIX) {
+            return true;
+        }
+        else {
+            lx.cursor_move(-1);
+        }
+    }
+
+    return false;
+};
+
+graph_table<graph_block> *build::build_lex_graph(string &src) {
   graph_table<graph_block> *gt = new graph_table<graph_block>();
 
   lexer lx(src);
@@ -109,13 +141,41 @@ graph_table<graph_block> *build_lex_graph(string &src) {
   char single_prefix = '_';
 
   while (lx.can_read()) {
+    
+    if (check_define_char(lx)) {
+        printf("[build].is_def\n");
+        if (build::is_function(lx)) {
+            printf("[build].is_fun\n");
+            auto _fn = build::build_function(lx);
+        }
+    }
+    else {
+        //lx.get_info(cout);
+        //printf("_pkd=%c\n", single_prefix);
+        lx.cursor_move(1);
+    }
 
+    /*
+        is_define
+            -is_func()
+            -is_hook
+        
+        is_literal
+            -float()
+            -int()
+        
+        is_tag
+            -id()
+    */
+
+   /*
     if (lx.next_symbol(single_prefix)) {
       if (single_prefix == LANG_PREFIX) {
         if (build::is_function(lx)) {
-          // build_func
+          auto fn = build::build_function(lx);
           printf("[func]\n");
         } else if (build::is_hook(lx)) {
+
           printf("[hook]\n");
         }
       }
@@ -127,20 +187,11 @@ graph_table<graph_block> *build_lex_graph(string &src) {
       } else if (lx.next_id(cur) != lx.npos) {
         printf("[tag]\n");
       }
+
+        //printf("__char=%c\n", single_prefix);
     }
-
-    /*
-        id:
-            is_tag
-            is_literal
-            is_function
-
-        is_hook()
-        is_func()
-        is_tag()
-        is_literal()
-
-    */
+  }
+  */
   }
 
   return gt;

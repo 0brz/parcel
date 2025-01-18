@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-
 #include "parcel.h"
 
 using namespace std;
@@ -242,6 +241,7 @@ int main() {
   // file_read_all("C:/git.local/parsing/bound_parsing/src/fmt2.yml");
   // printf("s=%s\n", sr.c_str());
   // build_lex_graph(sr);
+
 
   // string s1 = "'a' appe";
   string s1 = " \"apple\" good";
