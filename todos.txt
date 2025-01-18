@@ -7,6 +7,55 @@ format_analyzer
 parser
 
 [sep] cursor
+[sep to single] graph
+
+------
+build rules /used blocks describing in predefined yml files
+(FOR PARSING)
+ex: 
+
+
+    (build rule)
+    tagval_spec:
+        tag: $begins('_tag') | $ends('_bob')
+        val: $has('god')
+
+
+    tagval=word:
+
+
+вохзможность описать свои теги с помощью других тегов и функций
+
+use:
+я описал правила для форматирования входного текста
+программа собрала данные по моим правилам -> в граф распаршенныъ обьектов
+
+
+
+
+=========== GOALS
+prepare built-in functions
+describe how i can parse my text/file to get usefull data
+
+
+
+[rules] 
+read rule file
+build rule graph
+
+-- predefined words?
+
+------
+[checking]
+checks instrs from sources
+
+------
+[build]
+build isntrs from sources
+parser
+
+------
+[output format?]
 
 */
 

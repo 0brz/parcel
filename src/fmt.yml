@@ -7,3 +7,40 @@ go:
       b1: str
       b2: qwd
   ln: good 
+
+
+$hook:
+  text: 'apple'
+
+$hook_with_func:
+  text: begins('apple') & ends('g')
+
+&mytag:
+  tagval:
+    tag: begins('tag')
+    val: str
+
+&func:
+  id: "...()"
+
+&func:
+  sequence:
+    - id
+    - '('
+    - list: id?
+    - ')'
+    - ''
+
+&lit.number:
+  liter_number:
+    begins: 99
+    ends: 801
+
+&lit.word:
+  liter_word:
+    begins: 'app'
+    ends: '123'
+
+
+
+begins(str):
