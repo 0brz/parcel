@@ -1,3 +1,6 @@
 
 &mufunc(word):
   tagval: word
+
+&def_hook:
+  word: "apple"

@@ -113,7 +113,23 @@ graph_block* build::build_function(lexer& lx) {
 };
 
 graph_block* build_hook(lexer& lx) {
-    return NULL;
+    // get name
+    // get args
+    //lx.get_info(cout);
+    string _name;
+    if (lx.next_id(_name) == lx.npos) {
+        printf("[ERR] build.hook: name\n");
+        //lx.get_info(cout);
+        return NULL;
+    }
+
+    graph_block *b = new graph_block();
+
+    b->type = RULE_TYPE::DATA_HOOK;
+    //b->value = b;
+    printf("[build] hook: %s\n", _name.c_str());
+
+    return b;
 }
 
 bool check_define_char(lexer& lx) {
@@ -146,7 +162,11 @@ graph_table<graph_block> *build::build_lex_graph(string &src) {
         printf("[build].is_def\n");
         if (build::is_function(lx)) {
             printf("[build].is_fun\n");
-            auto _fn = build::build_function(lx);
+            auto _bl = build::build_function(lx);
+        }
+        else if (build::is_hook(lx)) {
+            printf("[build].is_hook\n");
+            auto _bl = build_hook(lx);
         }
     }
     else {
