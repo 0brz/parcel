@@ -59,6 +59,9 @@ bool build::is_literal(lexer& lx) {
     // 'a' -> litr_symbol
     // "a" -> litr_word
 
+    //printf("______________\n");
+    //lx.get_info(cout);
+
     char single_pref = '_';
     string cur;
     if (lx.next_float(cur) != lx.npos) { // 123.123
@@ -70,7 +73,7 @@ bool build::is_literal(lexer& lx) {
         return true;
     }
     else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos) { // "app"
-        lx.cursor_move(cur.size());
+        lx.cursor_move(-cur.size());
         return true;
     } 
     else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos) { // 'g'
@@ -80,6 +83,8 @@ bool build::is_literal(lexer& lx) {
         }
     }
 
+    //lx.get_info(cout);
+    //printf("______________\n");
     return false;
 };
 
@@ -112,7 +117,7 @@ graph_block* build::build_function(lexer& lx) {
     return b;
 };
 
-graph_block* build_hook(lexer& lx) {
+graph_block* build::build_hook(lexer& lx) {
     // get name
     // get args
     //lx.get_info(cout);
@@ -169,49 +174,28 @@ graph_table<graph_block> *build::build_lex_graph(string &src) {
             auto _bl = build_hook(lx);
         }
     }
-    else {
-        //lx.get_info(cout);
-        //printf("_pkd=%c\n", single_prefix);
-        lx.cursor_move(1);
-    }
 
-    /*
-        is_define
-            -is_func()
-            -is_hook
-        
-        is_literal
-            -float()
-            -int()
-        
-        is_tag
-            -id()
-    */
-
-   /*
-    if (lx.next_symbol(single_prefix)) {
-      if (single_prefix == LANG_PREFIX) {
-        if (build::is_function(lx)) {
-          auto fn = build::build_function(lx);
-          printf("[func]\n");
-        } else if (build::is_hook(lx)) {
-
-          printf("[hook]\n");
+    if (is_literal(lx)) {
+        printf("[build] is_lit\n");
+        if (lx.next_float(cur) != lx.npos) {
+            printf("[build] lit.float\n");
+            // create_float
         }
-      }
-
-      lx.go_back(1);
-      // other stuff.
-      if (build::is_literal(lx)) {
-        printf("[litr]\n");
-      } else if (lx.next_id(cur) != lx.npos) {
-        printf("[tag]\n");
-      }
-
-        //printf("__char=%c\n", single_prefix);
+        else if (lx.next_int(cur) != lx.npos) {
+            printf("[build] lit.int\n");
+            // create_int
+        }
+        else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos) {
+            printf("[build] lit.str\n");
+            // create_str
+        }
+        else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos) {
+            printf("[build] lit.char\n");
+            // create_char
+        }
     }
-  }
-  */
+
+    lx.cursor_move(1);
   }
 
   return gt;

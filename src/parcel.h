@@ -30,8 +30,9 @@ class lexer {
 
         lexer(string& sr) : _src(sr), _sz(_src.size()), _cursor(0) {};
 
-        inline int can_read() {return this->_cursor - _sz; };
-        inline int can_read(int count) { return (this->_cursor+count) < _sz ;} 
+        inline bool can_read() {return this->_cursor < _sz-1;};
+        inline int can_readn() {return _sz-this->_cursor; };
+        inline int can_readn(int count) { return (this->_cursor+count) < _sz ;} 
 
         static string read_source_file(const char* fpath) {
             ifstream fs(fpath);
@@ -61,7 +62,7 @@ class lexer {
         }
 
         bool next_symbol(char& s) {
-            if (can_read()) {
+            if (can_readn()) {
                 s = _src[this->_cursor++];
                 return true;
             }else {
@@ -198,7 +199,7 @@ class lexer {
                 trash_delims = lexer::symbols_no_id;
             }
 
-            if (!can_read()) {
+            if (!can_readn()) {
                 return -1;
             }
 
@@ -270,6 +271,7 @@ class lexer {
         short next_like_rounded(string& out, const char* begins, const char* ends, const char* trash_delims) {
             short sz = next_like(out, begins, ends, trash_delims, true); 
             if (sz == 1) {
+                cursor_move(-1);
                 return -1;
             }
         }
