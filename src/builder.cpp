@@ -198,6 +198,15 @@ bool step_char_if_eq(lexer& lx, char check_symbol) {
     return false;
 };
 
+// ----------------------
+bool _link_last_block(graph_table<graph_block*>* gt, graph_block* bl) {
+    graph_block* last;
+    if (!gt->last(last)) {
+        return false;
+    }
+
+    last->entries.push_back(bl);
+}
 
 graph_table<graph_block*> *build::build_lex_graph(string &src) {
     graph_table<graph_block*>* gt = new graph_table<graph_block*>();
@@ -212,20 +221,24 @@ graph_table<graph_block*> *build::build_lex_graph(string &src) {
     if (step_char_if_eq(lx, LANG_PREFIX)) {
         //printf("[build].is_def\n");
         if (build::is_function(lx)) {
+            // func def
             graph_block* _bl = build::build_function(lx);
             gt->add(_bl, line_offset);
             printf("~%zi [gt].func\n", line_offset);
         }
         else if (build::is_hook(lx)) {
+            // hook def, no linking
             auto _bl = build_hook(lx, false);
             gt->add(_bl, line_offset);
             printf("~%zi [gt].hook\n", line_offset);
             //lx.get_info(cout);
         }
         else if ( is_hook_ref(lx)) {
+            // hook ref, link
             auto _bl = build_hook(lx, true);
             gt->add(_bl, line_offset);
-            printf("~%zi [gt].hook(ref)\n", line_offset);
+            _link_last_block(gt, _bl);
+            printf("~%zi [gt(link.last)] hook(ref)\n", line_offset);
         }
     }
 
@@ -238,26 +251,31 @@ graph_table<graph_block*> *build::build_lex_graph(string &src) {
 
         //printf("[build] is_lit\n");
         if (lx.next_float(cur) != lx.npos) {
-            printf("~%zi [build] lit.float=%s\n", line_offset, cur.c_str() );
             int _val = stof(cur.c_str());
             auto _bl = create_literal<float, RULE_TYPE::LITR_FLOAT>(_val);
+            _last->entries.push_back(_bl);
+            printf("~%zi [gt(link.last)] (float) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str() );
         }
         else if (lx.next_int(cur) != lx.npos) {
-            printf("~%zi [build] lit.int=%s\n", line_offset, cur.c_str());
             int _val = stoi(cur.c_str());
-            auto _bl = create_literal<float, RULE_TYPE::LITR_INT>(_val);
+            auto _bl = create_literal<int, RULE_TYPE::LITR_INT>(_val);
+            _last->entries.push_back(_bl);
+            printf("~%zi [gt(link.last)] (int) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str() );
         }
         else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos) {
             string _val = string(cur.c_str());
             auto _bl = create_literal<string, RULE_TYPE::LITR_STRING>(_val);
-            printf("~%zi [gt] [lit.str] %s.%s\n", line_offset, _last_name.c_str(), cur.c_str());
-
+            _last->entries.push_back(_bl);
+            printf("~%zi [gt(link.last)] (str) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str() );
         }
         else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos) {
-            printf("~%zi [build] lit.char=%s\n", line_offset, cur.c_str());
+            //printf("~%zi [build] lit.char=%s\n", line_offset, cur.c_str());
             // create_char
             char _val = cur[1]; // we can take, because size of char view=3, like 'a', 'b'
-            auto _bl = create_literal<char, RULE_TYPE::LITR_STRING>(_val);
+            auto _bl = create_literal<char, RULE_TYPE::LITR_CHAR>(_val);
+            _last->entries.push_back(_bl);
+            // _link_last_block
+            printf("~%zi [gt(link.last)] (char) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str() );
         }
     }
 
@@ -274,11 +292,14 @@ graph_table<graph_block*> *build::build_lex_graph(string &src) {
             }
 
             if (_type == RULE_TYPE::GO) {
+                // this is a entrypoint, no parent relates
                 graph_block* _bl = create_block(RULE_TYPE::GO, NULL);
                 gt->add(_bl, line_offset);
                 printf("~%zi [gt] [tag].go\n", line_offset);
             }
             else {
+                // gt.link_prev(bl)
+
                 // add to parent
                 graph_block* _last;
                 string _last_name;
@@ -287,7 +308,8 @@ graph_table<graph_block*> *build::build_lex_graph(string &src) {
 
                 graph_block* _bl = create_block(_type, NULL);
                 gt->add(_bl, line_offset);
-                printf("~%zi [gt] %s.%s\n", line_offset, _last_name.c_str(), cur.c_str());
+                _link_last_block(gt, _last);
+                printf("~%zi [gt(link.last)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
             }
 
             continue;

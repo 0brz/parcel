@@ -576,7 +576,7 @@ struct value_literal : public graph_value {
 
 struct graph_block {
     RULE_TYPE type;
-    vector<graph_block> entries;
+    vector<graph_block*> entries;
     graph_value* value;
 
     // ~()
