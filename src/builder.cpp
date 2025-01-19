@@ -86,6 +86,20 @@ bool build::is_hook(lexer& lx) {
     return false;
 } ;
 
+bool is_hook_ref(lexer& lx) {
+    size_t move_back_size = 0;
+    char single_pref = '_';
+            string id;
+            if (lx.next_id(id) != lx.npos) {
+                move_back_size+=id.size();
+                lx.cursor_move(-move_back_size);
+                return true;
+            }
+
+    lx.cursor_move(-move_back_size);
+    return false;
+} ;
+
 bool build::is_literal(lexer& lx) {
     // 123.123.123 (ip...)
     // 123.123 (float)
@@ -150,7 +164,7 @@ graph_block* build::build_function(lexer& lx) {
     return bl;
 };
 
-graph_block* build::build_hook(lexer& lx) {
+graph_block* build::build_hook(lexer& lx, bool is_ref) {
     // get name
     // get args
     //lx.get_info(cout);
@@ -162,7 +176,9 @@ graph_block* build::build_hook(lexer& lx) {
     }
 
     graph_block *b = create_hook(_name);
-    printf("[build] hook: %s\n", _name.c_str());
+    if (is_ref) {
+        b->type == RULE_TYPE::DATA_HOOK_REF;
+    }
     return b;
 }
 
@@ -201,13 +217,25 @@ graph_table<graph_block*> *build::build_lex_graph(string &src) {
             printf("~%zi [gt].func\n", line_offset);
         }
         else if (build::is_hook(lx)) {
-            auto _bl = build_hook(lx);
+            auto _bl = build_hook(lx, false);
             gt->add(_bl, line_offset);
             printf("~%zi [gt].hook\n", line_offset);
+            //lx.get_info(cout);
+        }
+        else if ( is_hook_ref(lx)) {
+            auto _bl = build_hook(lx, true);
+            gt->add(_bl, line_offset);
+            printf("~%zi [gt].hook(ref)\n", line_offset);
         }
     }
 
     if (is_literal(lx)) {
+
+        graph_block* _last;
+        string _last_name;
+        if (gt->last(_last)) _last_name = lex::nameof(_last->type);
+        else _last_name = "<undf>";
+
         //printf("[build] is_lit\n");
         if (lx.next_float(cur) != lx.npos) {
             printf("~%zi [build] lit.float=%s\n", line_offset, cur.c_str() );
@@ -220,10 +248,10 @@ graph_table<graph_block*> *build::build_lex_graph(string &src) {
             auto _bl = create_literal<float, RULE_TYPE::LITR_INT>(_val);
         }
         else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos) {
-            printf("~%zi [build] lit.str=%s\n", line_offset, cur.c_str());
-            // create_str
             string _val = string(cur.c_str());
             auto _bl = create_literal<string, RULE_TYPE::LITR_STRING>(_val);
+            printf("~%zi [gt] [lit.str] %s.%s\n", line_offset, _last_name.c_str(), cur.c_str());
+
         }
         else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos) {
             printf("~%zi [build] lit.char=%s\n", line_offset, cur.c_str());
@@ -233,8 +261,12 @@ graph_table<graph_block*> *build::build_lex_graph(string &src) {
         }
     }
 
+    //lx.get_info(cout);
     if (lx.next_word(cur) != lx.npos) {
+        //printf("___word\n");
+        //lx.get_info(cout);
         if (step_char_if_eq(lx, LANG_TAG_PREFIX)) {
+
             RULE_TYPE _type = lex::typeof(cur);
             if (_type == RULE_TYPE::_TYPE_ERROR) {
                 // error
@@ -250,24 +282,28 @@ graph_table<graph_block*> *build::build_lex_graph(string &src) {
                 // add to parent
                 graph_block* _last;
                 string _last_name;
-                if (gt->last(_last)) {
-                    _last_name = lex::nameof(_last->type);
-                }
+                if (gt->last(_last)) _last_name = lex::nameof(_last->type);
                 else _last_name = "<undf>";
 
-                printf("~%zi [build] %s.%s\n", line_offset, _last_name.c_str(), cur.c_str());
+                graph_block* _bl = create_block(_type, NULL);
+                gt->add(_bl, line_offset);
+                printf("~%zi [gt] %s.%s\n", line_offset, _last_name.c_str(), cur.c_str());
             }
+
+            continue;
+        }
+        else {
+
         }
     }
     
 
     if (step_char_if_eq(lx, '\n')) {
-        //printf("[build] new line\n");
-        // get size of tabs
         line_offset = lx.skip(" \t");
     }
-    else  lx.cursor_move(1);
-    
+    else  {
+        lx.cursor_move(1);
+    }
   }
 
   return gt;

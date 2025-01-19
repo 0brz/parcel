@@ -13,7 +13,7 @@ namespace build {
     bool is_literal(lexer& lx);
 
     graph_block* build_function(lexer& lx);
-    graph_block* build_hook(lexer& lx);
+    graph_block* build_hook(lexer& lx, bool is_ref);
     graph_table<graph_block*> *build_lex_graph(string &src);
 
 };

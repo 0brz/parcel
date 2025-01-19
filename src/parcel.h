@@ -71,7 +71,6 @@ class lexer {
         };
 
         short next_word(string& out) {
-            
             short sz = 0;
             skip(" ");
             int cur = this->_cursor;
@@ -89,6 +88,7 @@ class lexer {
 
             out = _src.substr(this->_cursor, sz);
             cursor_move(sz);
+
             return sz;
         }
 
@@ -434,6 +434,7 @@ enum RULE_TYPE {
 
     // hooks
     DATA_HOOK,
+    DATA_HOOK_REF,
 
     // functions
     FUNCTION,
