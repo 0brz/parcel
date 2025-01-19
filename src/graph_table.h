@@ -1,6 +1,9 @@
 #ifndef _GRAPH_TABLE_
 #define _GRAPH_TABLE_
 
+#include "./parcel.h"
+#include <string>
+#include <iostream>
 #include <vector>
 #include <map>
 
@@ -15,21 +18,80 @@ class graph_table {
     
     public:
         // return first paths in graph (entrypoints)
-        bool head(vector<GraphElement>& out);
+        bool head(vector<GraphElement>& out)  {
+            auto fn = _entries.find(_min_level);
+            if (fn != end(_entries)) {
+                out = (*fn).second;
+                    return true;
+                }
+                    
+            return false;
+        };
 
         // return last paths in graph (most deepest)
-        bool tail(vector<GraphElement>& out);
+        bool tail(vector<GraphElement>& out)  {
+                    auto fn = _entries.find(_last_level);
+                    if (fn != end(_entries)) {
+                        out = (*fn).second;
+                        return true;
+                    }
+                    
+                    return false;
+        };
 
         // return last path of the last added level
-        bool last(GraphElement& out);
+        bool last(GraphElement& out)  {
+                    auto fn = _entries.find(_last_level);
+                    if (fn != end(_entries)) {
+                        auto vec = (*fn).second;
+                        if (vec.size() > 0) {
+                            out = vec.back();
+                            return true;
+                        }
+
+                        return false;
+                    }
+                    
+                    return false;
+        };
 
         // return last parent path in graph
-        bool parent(int offset, GraphElement& out);
+        bool parent(int offset, GraphElement& out) {
+                    auto fn = _entries.find(_last_level);
+                    if (fn != end(_entries)) {
+                        auto vec = (*fn).second;
+                        if (vec.size() > 0) {
+                            out = vec.back();
+                            return true;
+                        }
+                        
+                        return false;
+                    }
+                    
+                    return false;
+        };
 
-        void add(GraphElement& el, int offset);
+        void add(GraphElement el, int offset)  {
+            
+                    auto fn = _entries.find(offset);
+                    if (fn != end(_entries)) {
+                        (*fn).second.push_back(el);
+                    }
+                    else {
+                        vector<GraphElement> v;
+                        v.push_back(el);
+                        _entries.insert({offset, v});
+                    }
+
+                    _last_level= offset;
+                    _min_level = min(_min_level, offset);
+        };
 
         graph_table(): _last_level(0), _min_level(6) {};
-        ~graph_table();
+        ~graph_table() {
+            printf("[graph_table].~()\n");
+            _entries.clear();
+        };
 };
 
 #endif

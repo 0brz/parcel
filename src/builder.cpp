@@ -33,6 +33,13 @@ graph_block* create_literal(ValueType value) {
     return b;
 };
 
+graph_block* create_block(RULE_TYPE type, graph_value* val) {
+    graph_block* bl = new graph_block();
+    bl->type = type;
+    bl->value = val;
+    return bl;
+}
+
 // -----------------------
 
 bool build::is_function(lexer& lx) {
@@ -176,8 +183,8 @@ bool step_char_if_eq(lexer& lx, char check_symbol) {
 };
 
 
-graph_table<graph_block> *build::build_lex_graph(string &src) {
-  graph_table<graph_block> *gt = new graph_table<graph_block>();
+graph_table<graph_block*> *build::build_lex_graph(string &src) {
+    graph_table<graph_block*>* gt = new graph_table<graph_block*>();
 
   lexer lx(src);
   string cur;
@@ -187,14 +194,16 @@ graph_table<graph_block> *build::build_lex_graph(string &src) {
   while (lx.can_read()) {
     
     if (step_char_if_eq(lx, LANG_PREFIX)) {
-        printf("[build].is_def\n");
+        //printf("[build].is_def\n");
         if (build::is_function(lx)) {
-            printf("~%zi [build].is_fun\n", line_offset);
-            auto _bl = build::build_function(lx);
+            graph_block* _bl = build::build_function(lx);
+            gt->add(_bl, line_offset);
+            printf("~%zi [gt].func\n", line_offset);
         }
         else if (build::is_hook(lx)) {
-            printf("~zi [build].is_hook\n", line_offset);
             auto _bl = build_hook(lx);
+            gt->add(_bl, line_offset);
+            printf("~%zi [gt].hook\n", line_offset);
         }
     }
 
@@ -231,8 +240,22 @@ graph_table<graph_block> *build::build_lex_graph(string &src) {
                 // error
                 printf("~%zi [ERR] build: (err type) tag='%s'\n", line_offset, cur.c_str());
             }
+
+            if (_type == RULE_TYPE::GO) {
+                graph_block* _bl = create_block(RULE_TYPE::GO, NULL);
+                gt->add(_bl, line_offset);
+                printf("~%zi [gt] [tag].go\n", line_offset);
+            }
             else {
-                printf("~%zi [build] tag=%s\n", line_offset, cur.c_str());
+                // add to parent
+                graph_block* _last;
+                string _last_name;
+                if (gt->last(_last)) {
+                    _last_name = lex::nameof(_last->type);
+                }
+                else _last_name = "<undf>";
+
+                printf("~%zi [build] %s.%s\n", line_offset, _last_name.c_str(), cur.c_str());
             }
         }
     }

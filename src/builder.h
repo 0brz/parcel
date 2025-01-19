@@ -14,7 +14,7 @@ namespace build {
 
     graph_block* build_function(lexer& lx);
     graph_block* build_hook(lexer& lx);
-    graph_table<graph_block> *build_lex_graph(string &src);
+    graph_table<graph_block*> *build_lex_graph(string &src);
 
 };
 

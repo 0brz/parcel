@@ -497,6 +497,15 @@ static RULE_TYPE typeof(string& str) {
     return RULE_TYPE::_TYPE_ERROR;
 };
 
+static const char* nameof(RULE_TYPE type) {
+    auto fn = typenames.find(type);
+    if (fn == end(typenames)) {
+        return "_";
+    }
+
+    return (*fn).second;
+}
+
 #pragma endregion
 
 
@@ -568,6 +577,8 @@ struct graph_block {
     RULE_TYPE type;
     vector<graph_block> entries;
     graph_value* value;
+
+    // ~()
 };
 
 };

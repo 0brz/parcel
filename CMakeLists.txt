@@ -7,7 +7,6 @@ add_executable(tt
     #parcel.cpp
 
     src/graph_table.h
-    src/graph_table.cpp
     src/builder.h
     src/builder.cpp
 
