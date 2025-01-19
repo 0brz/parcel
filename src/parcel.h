@@ -408,7 +408,7 @@ enum RULE_TYPE {
     GO,
     
     BLOCK,
-    LIST,
+    BL_LIST,
 
     //VERSION,
     //IP
@@ -446,7 +446,7 @@ enum RULE_TYPE {
 static map<RULE_TYPE, const char*> typenames {
     {GO, "go"},
     {BLOCK, "block"},
-    {LIST, "list"},
+    {BL_LIST, "list"},
 
     // common types
     {BL_WORD, "word"},
@@ -464,6 +464,7 @@ static map<RULE_TYPE, const char*> typenames {
     {LITR_FLOAT, "litr_float"},
     {LITR_INT, "litr_int"},
 
+    // hooks
     {DATA_HOOK, "datahook"}, 
 };
 
@@ -505,6 +506,25 @@ static const char* nameof(RULE_TYPE type) {
     }
 
     return (*fn).second;
+}
+
+static bool is_tagword(string& str) {
+    RULE_TYPE tp = typeof(str);
+    switch (tp)
+    {
+    case BL_NUMBER:
+    case BL_TAG:
+    case BL_WORD:
+    case BL_TAGVAL:
+    case BL_VAL:
+    case BLOCK:
+    case BL_LIST:
+    case GO:
+        return true;
+    
+    default:
+        return false;
+    }
 }
 
 #pragma endregion

@@ -281,16 +281,14 @@ graph_table<graph_block*> *build::build_lex_graph(string &src) {
 
     //lx.get_info(cout);
     if (lx.next_word(cur) != lx.npos) {
-        //printf("___word\n");
-        //lx.get_info(cout);
         if (step_char_if_eq(lx, LANG_TAG_PREFIX)) {
 
-            RULE_TYPE _type = lex::typeof(cur);
-            if (_type == RULE_TYPE::_TYPE_ERROR) {
-                // error
-                printf("~%zi [ERR] build: (err type) tag='%s'\n", line_offset, cur.c_str());
+            if (!lex::is_tagword(cur)) {
+                printf("~%zi [ERR] build: (type error) tag='%s'\n", line_offset, cur.c_str());
+                break;
             }
 
+            RULE_TYPE _type = lex::typeof(cur);
             if (_type == RULE_TYPE::GO) {
                 // this is a entrypoint, no parent relates
                 graph_block* _bl = create_block(RULE_TYPE::GO, NULL);
@@ -314,12 +312,8 @@ graph_table<graph_block*> *build::build_lex_graph(string &src) {
 
             continue;
         }
-        else {
-
-        }
     }
     
-
     if (step_char_if_eq(lx, '\n')) {
         line_offset = lx.skip(" \t");
     }
