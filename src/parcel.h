@@ -16,6 +16,8 @@ using namespace std;
 
 #define LANG_PREFIX '&'
 #define LANG_TAG_PREFIX ':'
+#define LANG_VAR "var"
+#define LANG_FUNC "fn"
 
 class lexer {
     private:
@@ -451,10 +453,6 @@ enum RULE_TYPE {
 
     // literals...
     LITR,
-    LITR_STRING,
-    LITR_FLOAT,
-    LITR_INT,
-    LITR_CHAR,
 
     // hooks
     DATA_HOOK,
@@ -463,9 +461,23 @@ enum RULE_TYPE {
     // functions
     FUNCTION,
     FUNCTION_REF,
+    FUNCTION_RET,
+
+    FN_ARG_LIST, // (value)
+    FN_REF, // (block)
+
+    // vars
+    VAR_DEF,
 
     // spec
     _TYPE_ERROR,
+};
+
+enum LITR_TYPE {
+    LITR_CHAR,
+    LITR_STR,
+    LITR_FLOAT,
+    LITR_INT,
 };
 
 static map<RULE_TYPE, const char*> typenames {
@@ -484,13 +496,12 @@ static map<RULE_TYPE, const char*> typenames {
 
     // literals
     {LITR, "litr"},
-    {LITR_CHAR, "litr_char"},
-    {LITR_STRING, "litr_str"},
-    {LITR_FLOAT, "litr_float"},
-    {LITR_INT, "litr_int"},
 
     // hooks
     {DATA_HOOK, "datahook"}, 
+
+    // vars
+    {VAR_DEF, "vardef"}
 };
 
 static bool has_value(RULE_TYPE type) {
@@ -499,12 +510,9 @@ static bool has_value(RULE_TYPE type) {
     case RULE_TYPE::FUNCTION:
     case RULE_TYPE::DATA_HOOK:
 
-    case RULE_TYPE::LITR_CHAR:
-    case RULE_TYPE::LITR_FLOAT:
-    case RULE_TYPE::LITR_INT:
-    case RULE_TYPE::LITR_STRING:
-
+    case RULE_TYPE::LITR:
     case RULE_TYPE::BL_TAGVAL:
+    case VAR_DEF:
         return true;
         break;
     
@@ -585,7 +593,7 @@ struct value_datahook : public graph_value {
     ~value_datahook() {};
 };
 
-struct value_function : public graph_value {
+struct value_fn_def : public graph_value {
     inline RULE_TYPE graph_value::get_type() {
         return FUNCTION;
     };
@@ -593,12 +601,12 @@ struct value_function : public graph_value {
     string name;
     string args;
 
-    value_function(string& name, string& args) {
+    value_fn_def(string& name, string& args) {
         this->name = name;
         this->args = args;
     };
 
-    ~value_function() {};
+    ~value_fn_def() {};
 };
 
 template<typename ValueType, RULE_TYPE RuleType>
@@ -616,6 +624,58 @@ struct value_literal : public graph_value {
     ~value_literal() {};
 };
 
+struct value_fn_arglist : public graph_value {
+    inline RULE_TYPE graph_value::get_type() {
+        return RULE_TYPE::FN_ARG_LIST;
+    };
+
+    LITR_TYPE type;
+    string value;
+    value_fn_arglist* next_arg;
+
+    value_fn_arglist(LITR_TYPE type, string& value) {
+        this->type = type;
+        this->value = value;
+        this->next_arg = NULL;
+    };
+
+    ~value_fn_arglist() {
+        printf("~() value_fn_arglist\n");
+    };
+};
+
+struct value_fn_ref : public graph_value {
+    inline RULE_TYPE graph_value::get_type() {
+        return RULE_TYPE::FN_ARG_LIST;
+    };
+
+    string ref_name;
+    value_fn_arglist* arg_list;
+
+    value_fn_ref(string& ref_name, value_fn_arglist* args) {
+        this->ref_name = ref_name;
+        this->arg_list = args;
+    };
+
+    ~value_fn_ref() {};
+};
+
+
+struct value_vardef : public graph_value {
+    inline RULE_TYPE graph_value::get_type() {
+        return VAR_DEF;
+    };
+
+    string name;
+    string block_type;
+
+    value_vardef(string& name, string& block_type) {
+        this->name = name;
+        this->block_type = block_type;
+    };
+
+    ~value_vardef() {};
+};
 
 #pragma endregion
 

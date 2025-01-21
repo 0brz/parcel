@@ -1,9 +1,7 @@
-&def_hook:
-  word: "apple"
-  number: 123
-  
-&word_begins_from(float arg_from, float arg_to):
-  -> word: begins(arg_from)
+
+# output containers
+&var: (word) container_1
+&var: (tagval) container_2 
 
 go:
   word: &word_begins_from('beg', 'end')

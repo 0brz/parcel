@@ -5,9 +5,10 @@
 [sep to single] graph
 
 [builder]
-func
-func refs
-linking func
+FUNC_DEF
+FUNC_CALL
+CALL STACK
+CONTAINERS
 
 
 /*

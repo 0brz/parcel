@@ -1,0 +1,25 @@
+&def_hook:
+  word: "apple"
+  number: 123
+  
+# output containers
+&var: (word) container_1
+&var: (tagval) container_2 
+  
+&fn: (word) put_words_like_in_container(float arg_from, float arg_to):
+{
+  # with return
+  => begins(arg_from)
+}
+
+# &fn: [operation block type] [name]
+&fn: (word) put_words_like_in_container(float arg_from, float arg_to):
+{
+  # no return
+  if (begins('app'))
+    put_to(&container_1)
+}
+
+go:
+  word: &word_begins_from('beg', 'end')
+
