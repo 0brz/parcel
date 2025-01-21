@@ -29,7 +29,7 @@ graph_block* create_hook(string& name) {
 template<typename ValueType, RULE_TYPE RuleType>
 graph_block* create_literal(ValueType value) {
     graph_block* b = new graph_block();
-    value_literal<ValueType, RuleType>* v = new value_literal<ValueType, RuleType>(value);
+    value_basic_literal<ValueType, RuleType>* v = new value_basic_literal<ValueType, RuleType>(value);
     b->type = RuleType;
     b->value = v;
     return b;
@@ -377,33 +377,33 @@ value_fn_arglist* build_fn_args(lexer& lx, bool& out_build_status) {
         if (lx.next_float(cur) != lx.npos) {
             string _val = string(cur.c_str());
             if (args == NULL) {
-                args = new value_fn_arglist(LITR_TYPE::LITR_FLOAT, _val);
+                args = new value_fn_arglist(RULE_TYPE::LITR_FLOAT, _val);
                 head = args;
             }
             else {
-                args->next_arg = new value_fn_arglist(LITR_TYPE::LITR_FLOAT, _val);
+                args->next_arg = new value_fn_arglist(RULE_TYPE::LITR_FLOAT, _val);
                 args = args->next_arg;
             }
         }
         else if (lx.next_int(cur) != lx.npos) {
             string _val = string(cur.c_str());
             if (args == NULL) {
-                args = new value_fn_arglist(LITR_TYPE::LITR_INT, _val);
+                args = new value_fn_arglist(RULE_TYPE::LITR_INT, _val);
                 head = args;
             }
             else {
-                args->next_arg = new value_fn_arglist(LITR_TYPE::LITR_INT, _val);
+                args->next_arg = new value_fn_arglist(RULE_TYPE::LITR_INT, _val);
                 args = args->next_arg;
             }
         }
         else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos) {
             string _val = string(cur.c_str());
             if (args == NULL) {
-                args = new value_fn_arglist(LITR_TYPE::LITR_STR, _val);
+                args = new value_fn_arglist(RULE_TYPE::LITR_STR, _val);
                 head = args;
             }
             else {
-                args->next_arg = new value_fn_arglist(LITR_TYPE::LITR_STR, _val);
+                args->next_arg = new value_fn_arglist(RULE_TYPE::LITR_STR, _val);
                 args = args->next_arg;
             }
         }
@@ -411,11 +411,11 @@ value_fn_arglist* build_fn_args(lexer& lx, bool& out_build_status) {
             char _valb = cur[1]; // we can take, because size of char view=3, like 'a', 'b'
             string _val = cur.substr(1, 1);
             if (args == NULL) {
-                args = new value_fn_arglist(LITR_TYPE::LITR_CHAR, _val);
+                args = new value_fn_arglist(RULE_TYPE::LITR_CHAR, _val);
                 head = args;
             }
             else {
-                args->next_arg = new value_fn_arglist(LITR_TYPE::LITR_CHAR, _val);
+                args->next_arg = new value_fn_arglist(RULE_TYPE::LITR_CHAR, _val);
                 args = args->next_arg;
             }
         }
@@ -456,7 +456,7 @@ graph_block*  build_func_call(lexer& lx) {
         return bl;
     }
     else return NULL;
-}
+};
 
 graph_table<graph_block*> *builder::build_lex_graph(string &src) {
     graph_table<graph_block*>* gt = new graph_table<graph_block*>();
@@ -471,9 +471,10 @@ graph_table<graph_block*> *builder::build_lex_graph(string &src) {
     if (step_char_if_eq(lx, LANG_PREFIX)) {
         //printf("[build].is_def\n");
         if (is_vardef(lx)) {
+            // no linking
             auto bl = build_vardef(lx);
-            _link_last_block(gt, bl);
-            printf("~%zi [gt].vardef\n", line_offset);
+            gt->add(bl, line_offset);
+            printf("~%zi [gt(nolink))].vardef\n", line_offset);
         }
         else if (is_func_call(lx)) {
             auto bl = build_func_call(lx);
@@ -483,14 +484,14 @@ graph_table<graph_block*> *builder::build_lex_graph(string &src) {
                 break;
             }
 
-            printf("~%zi [gt].fn.call\n", line_offset);
+            printf("~%zi [gt(link.last)].fn.call\n", line_offset);
             _link_last_block(gt, bl);
         }
         else if (builder::is_hook(lx)) {
             // hook def, no linking
             auto _bl = build_hook(lx, false);
             gt->add(_bl, line_offset);
-            printf("~%zi [gt].hook\n", line_offset);
+            printf("~%zi [gt(nolink)].hook\n", line_offset);
             //lx.get_info(cout);
         }
         else if ( is_hook_ref(lx)) {
@@ -510,7 +511,7 @@ graph_table<graph_block*> *builder::build_lex_graph(string &src) {
         else _last_name = "<undf>";
 
         //printf("[build] is_lit\n");
-        /*
+        
         if (lx.next_float(cur) != lx.npos) {
             int _val = stof(cur.c_str());
             auto _bl = create_literal<float, RULE_TYPE::LITR_FLOAT>(_val);
@@ -525,7 +526,7 @@ graph_table<graph_block*> *builder::build_lex_graph(string &src) {
         }
         else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos) {
             string _val = string(cur.c_str());
-            auto _bl = create_literal<string, RULE_TYPE::LITR_STRING>(_val);
+            auto _bl = create_literal<string, RULE_TYPE::LITR_STR>(_val);
             _last->entries.push_back(_bl);
             printf("~%zi [gt(link.last)] (str) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str() );
         }
@@ -538,7 +539,7 @@ graph_table<graph_block*> *builder::build_lex_graph(string &src) {
             // _link_last_block
             printf("~%zi [gt(link.last)] (char) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str() );
         }
-        */
+        
     }
 
     //lx.get_info(cout);

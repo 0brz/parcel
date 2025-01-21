@@ -452,7 +452,10 @@ enum RULE_TYPE {
     BL_TAG,
 
     // literals...
-    LITR,
+    LITR_CHAR,
+    LITR_STR,
+    LITR_FLOAT,
+    LITR_INT,
 
     // hooks
     DATA_HOOK,
@@ -473,13 +476,6 @@ enum RULE_TYPE {
     _TYPE_ERROR,
 };
 
-enum LITR_TYPE {
-    LITR_CHAR,
-    LITR_STR,
-    LITR_FLOAT,
-    LITR_INT,
-};
-
 static map<RULE_TYPE, const char*> typenames {
     {GO, "go"},
     {BLOCK, "block"},
@@ -495,7 +491,10 @@ static map<RULE_TYPE, const char*> typenames {
     {BL_TAG, "tag"},
 
     // literals
-    {LITR, "litr"},
+    {LITR_CHAR, "litr.char"},
+    {LITR_STR, "litr.str"},
+    {LITR_INT, "litr.int"},
+    {LITR_FLOAT, "litr.float"},
 
     // hooks
     {DATA_HOOK, "datahook"}, 
@@ -510,7 +509,12 @@ static bool has_value(RULE_TYPE type) {
     case RULE_TYPE::FUNCTION:
     case RULE_TYPE::DATA_HOOK:
 
-    case RULE_TYPE::LITR:
+    case RULE_TYPE::LITR_CHAR:
+    case RULE_TYPE::LITR_STR:
+    case RULE_TYPE::LITR_FLOAT:
+    case RULE_TYPE::LITR_INT:
+
+
     case RULE_TYPE::BL_TAGVAL:
     case VAR_DEF:
         return true;
@@ -520,6 +524,7 @@ static bool has_value(RULE_TYPE type) {
         return false;
     }
 };
+
 
 static RULE_TYPE typeof(string& str) {
     //const char* st = str.c_str();
@@ -610,31 +615,36 @@ struct value_fn_def : public graph_value {
 };
 
 template<typename ValueType, RULE_TYPE RuleType>
-struct value_literal : public graph_value {
+struct value_basic_literal : public graph_value {
     inline RULE_TYPE graph_value::get_type() {
         return RuleType;
     };
 
     ValueType value;
 
-    value_literal(ValueType vl) {
+    value_basic_literal(ValueType vl) {
         this->value = vl;
     };
 
-    ~value_literal() {};
+    ~value_basic_literal() {};
 };
+
+using value_litr_char = value_basic_literal<char, LITR_CHAR> ;
+using value_litr_string = value_basic_literal<string, LITR_STR> ;
+using value_litr_int = value_basic_literal<int, LITR_INT> ;
+using value_litr_float = value_basic_literal<float, LITR_FLOAT> ;
 
 struct value_fn_arglist : public graph_value {
     inline RULE_TYPE graph_value::get_type() {
         return RULE_TYPE::FN_ARG_LIST;
     };
 
-    LITR_TYPE type;
+    RULE_TYPE litr_type;
     string value;
     value_fn_arglist* next_arg;
 
-    value_fn_arglist(LITR_TYPE type, string& value) {
-        this->type = type;
+    value_fn_arglist(RULE_TYPE type, string& value) {
+        this->litr_type = type;
         this->value = value;
         this->next_arg = NULL;
     };

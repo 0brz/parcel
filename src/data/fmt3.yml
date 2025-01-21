@@ -1,8 +1,11 @@
+&def_hook:
+  word: "apple"
+  number: 123
 
 # output containers
 &var: (word) container_1
 &var: (tagval) container_2 
 
 go:
-  word: &word_begins_from('beg', 'end')
+  word: &word_begins_from("beg", "end")
 
