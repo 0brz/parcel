@@ -16,7 +16,7 @@ using namespace lex;
 int main() {
 
   string sr = lexer::read_source_file("C:/git.local/parsing/bound_parsing/src/data/fmt3.yml");
-  build::build_lex_graph(sr);
+  builder::build_lex_graph(sr);
   // file_read_all("C:/git.local/parsing/bound_parsing/src/fmt2.yml");
   // printf("s=%s\n", sr.c_str());
   // build_lex_graph(sr);

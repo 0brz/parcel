@@ -293,7 +293,7 @@ class lexer {
             auto _s = lexer::first_begins(_src, _cursor, begins);
             if (_s == -1) {return lexer::npos;}
             auto _e = lexer::last_ends(_src, _cursor, ends);
-            printf("__E=%i\n", _e);
+            //printf("__E=%i\n", _e);
             if (_e== -1) {return lexer::npos;}
 
             auto sz(_e-_s+strlen(ends));
@@ -308,14 +308,13 @@ class lexer {
             // check( ')(', delims=':') -> false
 
             size_t cur = _cursor;
-            size_t check_end = _src.find_first_of(delimiters);
+            size_t check_end = _src.find_first_of(delimiters, _cursor);
             if (check_end == string::npos) {
                 check_end = _sz-1;
             };
 
             string check_str = string(char_sequence);
             size_t offset = 0;
-            //printf("___seq: cur=%i end=%i\n", cur, check_end);
             while(cur <= check_end) {
                 
                 if (offset == check_str.size())
@@ -323,7 +322,6 @@ class lexer {
 
                 if (check_str[offset] == _src[cur])
                 {
-                    //printf("___seq: %c\n", _src[cur]);
                     offset++;
                 }
                  
@@ -332,6 +330,32 @@ class lexer {
 
             return false;
         };
+
+        bool step_next(const char* char_sequence) {
+            string s(char_sequence);
+            int ofs = 0;
+
+            while(can_read()) {
+                
+                //printf("__STEP_NEXT: cur=%c ex='%s'\n", _src[_cursor], char_sequence);
+                if (ofs == s.size()) {
+                    //printf("__STEP_NEXT (OUT): cur=%c ex='%s'\n", _src[_cursor], char_sequence);
+                    return true;
+                }
+
+                if (_src[_cursor] == s[ofs]) {
+                    ofs++;
+                    _cursor++;
+                }
+                else {
+                    break;
+                }
+            }
+
+            cursor_move(-ofs);
+
+            return false;
+        }
 
         //bool check_closed(const char* beg, const char* end, const char* delimiters);
 
@@ -438,6 +462,7 @@ enum RULE_TYPE {
 
     // functions
     FUNCTION,
+    FUNCTION_REF,
 
     // spec
     _TYPE_ERROR,

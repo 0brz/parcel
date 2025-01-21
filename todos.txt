@@ -4,6 +4,11 @@
 [sep] cursor
 [sep to single] graph
 
+[builder]
+func
+func refs
+linking func
+
 
 /*
      val: word|number|version|ip --simple blocks sequence

@@ -42,16 +42,16 @@ graph_block* create_block(RULE_TYPE type, graph_value* val) {
 
 // -----------------------
 
-bool build::is_function(lexer& lx) {
-    //printf("______________\n");
-    //lx.get_info(cout);
+bool builder::is_function(lexer& lx) {
+    printf("______________\n");
+    lx.get_info(cout);
     size_t move_back_size = 0;
             string id;
             size_t ofs = 0;
             if ((ofs = lx.next_id(id)) != lx.npos) {
                 //printf("___is_fun: id=%s\n", id.c_str());
                 move_back_size+=ofs;
-                //lx.get_info(cout);
+                lx.get_info(cout);
 
                 if (lx.check_sequence("()", ":")) {
                     //printf("___is_fun: sec=\n");
@@ -67,7 +67,60 @@ bool build::is_function(lexer& lx) {
     return false;
 } ;
 
-bool build::is_hook(lexer& lx) {
+bool is_function_def(lexer& lx) {
+    string id;
+    size_t id_ofs;
+
+    size_t old_ofs = lx.cursor_get();
+
+    if ((id_ofs = lx.next_id(id)) != lx.npos) {
+        if (lx.check_sequence("()", ":-")) {
+            string args;
+            size_t ofs_args;
+            if ((ofs_args = lx.next_like_rounded(args, "(", ")", ":->^?{}[]")) != lx.npos) {
+                // :->
+                lx.skip(" \t");
+                if (lx.step_next(":")) {
+                    lx.skip(" \n\t");
+                    if (lx.step_next("->")) {
+                        lx.cursor_set(old_ofs);
+                        return true;
+                    }
+                } 
+            }
+        }
+    }
+
+    lx.cursor_set(old_ofs);
+    return false;
+};
+
+bool is_function_ref(lexer& lx) {
+    string id;
+    size_t id_ofs;
+
+    size_t old_ofs = lx.cursor_get();
+
+    if ((id_ofs = lx.next_id(id)) != lx.npos) {
+        if (lx.check_sequence("()", ":-")) {
+            string args;
+            size_t ofs_args;
+            if ((ofs_args = lx.next_like_rounded(args, "(", ")", ":->^?{}[]")) != lx.npos) {
+                // :->
+                lx.skip(" \t");
+                if (!lx.step_next(":")) {
+                    lx.cursor_set(old_ofs);
+                    return true;
+                } 
+            }
+        }
+    }
+
+    lx.cursor_set(old_ofs);
+    return false;
+};
+
+bool builder::is_hook(lexer& lx) {
     size_t move_back_size = 0;
     char single_pref = '_';
             string id;
@@ -100,7 +153,7 @@ bool is_hook_ref(lexer& lx) {
     return false;
 } ;
 
-bool build::is_literal(lexer& lx) {
+bool builder::is_literal(lexer& lx) {
     // 123.123.123 (ip...)
     // 123.123 (float)
     // 123 (int)
@@ -139,7 +192,7 @@ bool build::is_literal(lexer& lx) {
 
  // ----------------------
 
-graph_block* build::build_function(lexer& lx) {
+graph_block* builder::build_function(lexer& lx, bool is_ref) {
     // get prefix
     // get name
     // get args
@@ -160,11 +213,15 @@ graph_block* build::build_function(lexer& lx) {
     }
 
     graph_block* bl = create_function(_name, _args);
+    if (is_ref) {
+        bl->type = RULE_TYPE::FUNCTION_REF;
+    }
+
     printf("[build] fn: %s(%s)\n", _name.c_str(), _args.c_str());
     return bl;
 };
 
-graph_block* build::build_hook(lexer& lx, bool is_ref) {
+graph_block* builder::build_hook(lexer& lx, bool is_ref) {
     // get name
     // get args
     //lx.get_info(cout);
@@ -208,7 +265,7 @@ bool _link_last_block(graph_table<graph_block*>* gt, graph_block* bl) {
     last->entries.push_back(bl);
 }
 
-graph_table<graph_block*> *build::build_lex_graph(string &src) {
+graph_table<graph_block*> *builder::build_lex_graph(string &src) {
     graph_table<graph_block*>* gt = new graph_table<graph_block*>();
 
   lexer lx(src);
@@ -220,13 +277,29 @@ graph_table<graph_block*> *build::build_lex_graph(string &src) {
     
     if (step_char_if_eq(lx, LANG_PREFIX)) {
         //printf("[build].is_def\n");
-        if (build::is_function(lx)) {
-            // func def
-            graph_block* _bl = build::build_function(lx);
+        if (is_function_def(lx)) {
+            printf("is_func_def\n");
+        }
+        else if (is_function_ref(lx)) {
+            printf("is_func_REF\n");
+        } 
+
+        if (builder::is_function(lx)) {
+            if (is_function_def(lx)) {
+                
+                // build_func_def
+                //break;
+            }
+            else if (is_function_ref(lx)) {
+                // func ref
+                
+            }
+
+            graph_block* _bl = builder::build_function(lx, false);
             gt->add(_bl, line_offset);
             printf("~%zi [gt].func\n", line_offset);
         }
-        else if (build::is_hook(lx)) {
+        else if (builder::is_hook(lx)) {
             // hook def, no linking
             auto _bl = build_hook(lx, false);
             gt->add(_bl, line_offset);

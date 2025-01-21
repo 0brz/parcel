@@ -2,5 +2,9 @@
   word: "apple"
   number: 123
   
+&word_begins_from(float arg_from, float arg_to):
+  -> word: begins(arg_from)
+
 go:
-  list: &def_hook
+  word: &word_begins_from('beg', 'end')
+
