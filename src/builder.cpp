@@ -26,12 +26,10 @@ graph_block* create_hook(string& name) {
     return b;
 };
 
-template<typename ValueType, RULE_TYPE RuleType>
-graph_block* create_literal(ValueType value) {
+graph_block* create_literal(RULE_TYPE type, graph_value* val) {
     graph_block* b = new graph_block();
-    value_basic_literal<ValueType, RuleType>* v = new value_basic_literal<ValueType, RuleType>(value);
-    b->type = RuleType;
-    b->value = v;
+    b->type = type;
+    b->value = val;
     return b;
 };
 
@@ -464,6 +462,7 @@ graph_table<graph_block*> *builder::build_lex_graph(string &src) {
   lexer lx(src);
   string cur;
   size_t line_offset = 0;
+  size_t literals_offset = -1;
   char single_prefix = '_';
 
   while (lx.can_read()) {
@@ -514,28 +513,32 @@ graph_table<graph_block*> *builder::build_lex_graph(string &src) {
         
         if (lx.next_float(cur) != lx.npos) {
             int _val = stof(cur.c_str());
-            auto _bl = create_literal<float, RULE_TYPE::LITR_FLOAT>(_val);
+            auto _bl = create_literal(RULE_TYPE::LITR_FLOAT, new value_litr_float(_val));
             _last->entries.push_back(_bl);
+            gt->add(_bl, literals_offset);
             printf("~%zi [gt(link.last)] (float) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str() );
         }
         else if (lx.next_int(cur) != lx.npos) {
             int _val = stoi(cur.c_str());
-            auto _bl = create_literal<int, RULE_TYPE::LITR_INT>(_val);
+            auto _bl = create_literal(RULE_TYPE::LITR_INT, new value_litr_int(_val));
             _last->entries.push_back(_bl);
+            gt->add(_bl, literals_offset);
             printf("~%zi [gt(link.last)] (int) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str() );
         }
         else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos) {
             string _val = string(cur.c_str());
-            auto _bl = create_literal<string, RULE_TYPE::LITR_STR>(_val);
+            auto _bl = create_literal(RULE_TYPE::LITR_STR, new value_litr_string(_val));
             _last->entries.push_back(_bl);
+            gt->add(_bl, literals_offset);
             printf("~%zi [gt(link.last)] (str) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str() );
         }
         else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos) {
             //printf("~%zi [build] lit.char=%s\n", line_offset, cur.c_str());
             // create_char
             char _val = cur[1]; // we can take, because size of char view=3, like 'a', 'b'
-            auto _bl = create_literal<char, RULE_TYPE::LITR_CHAR>(_val);
+            auto _bl = create_literal(RULE_TYPE::LITR_CHAR, new value_litr_char(_val));
             _last->entries.push_back(_bl);
+            gt->add(_bl, literals_offset);
             // _link_last_block
             printf("~%zi [gt(link.last)] (char) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str() );
         }

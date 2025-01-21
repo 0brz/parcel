@@ -4,12 +4,9 @@
 [sep] cursor
 [sep to single] graph
 
-[builder]
-FUNC_DEF
-FUNC_CALL
-CALL STACK
-CONTAINERS
-
+[mm]
+gt
+values
 
 /*
      val: word|number|version|ip --simple blocks sequence

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <type_traits>
 
 using namespace std;
 
@@ -88,9 +89,18 @@ class graph_table {
         };
 
         graph_table(): _last_level(0), _min_level(6) {};
+
+       
         ~graph_table() {
-            printf("[graph_table].~()\n");
-            _entries.clear();
+            DEBUG_DCTOR
+            for (auto& entry : _entries) {
+                for (auto &ge : entry.second) {
+                    //cout << ge;
+                    if constexpr (is_pointer<GraphElement>::value) {
+                        delete ge;
+                    }
+                }
+            }
         };
 };
 

@@ -14,6 +14,9 @@
 
 using namespace std;
 
+#define DEBUG_LEVEL 1
+#define DEBUG_DCTOR if (DEBUG_LEVEL == 1) printf("~() [%s]\n", __func__);
+
 #define LANG_PREFIX '&'
 #define LANG_TAG_PREFIX ':'
 #define LANG_VAR "var"
@@ -573,11 +576,16 @@ static bool is_tagword(string& str) {
 struct graph_value {
     inline virtual RULE_TYPE get_type() = 0;
     inline  const char* get_name() {typenames[this->get_type()];};
+    //virtual ~graph_value() = 0;
 };
 
 struct value_tagval : public graph_value {
     inline RULE_TYPE graph_value::get_type() {
         return BL_TAGVAL;
+    };
+
+    ~value_tagval() {
+        DEBUG_DCTOR
     };
 };
 
@@ -595,7 +603,9 @@ struct value_datahook : public graph_value {
         this->name = name;
     }
 
-    ~value_datahook() {};
+    ~value_datahook() {
+        DEBUG_DCTOR
+    };
 };
 
 struct value_fn_def : public graph_value {
@@ -611,7 +621,9 @@ struct value_fn_def : public graph_value {
         this->args = args;
     };
 
-    ~value_fn_def() {};
+    ~value_fn_def() {
+        DEBUG_DCTOR;
+    };
 };
 
 template<typename ValueType, RULE_TYPE RuleType>
@@ -626,7 +638,9 @@ struct value_basic_literal : public graph_value {
         this->value = vl;
     };
 
-    ~value_basic_literal() {};
+    ~value_basic_literal() {
+        DEBUG_DCTOR;
+    };
 };
 
 using value_litr_char = value_basic_literal<char, LITR_CHAR> ;
@@ -650,7 +664,7 @@ struct value_fn_arglist : public graph_value {
     };
 
     ~value_fn_arglist() {
-        printf("~() value_fn_arglist\n");
+        DEBUG_DCTOR;
     };
 };
 
@@ -667,7 +681,9 @@ struct value_fn_ref : public graph_value {
         this->arg_list = args;
     };
 
-    ~value_fn_ref() {};
+    ~value_fn_ref() {
+        DEBUG_DCTOR;
+    };
 };
 
 
@@ -684,7 +700,9 @@ struct value_vardef : public graph_value {
         this->block_type = block_type;
     };
 
-    ~value_vardef() {};
+    ~value_vardef() {
+        DEBUG_DCTOR;
+    };
 };
 
 #pragma endregion
@@ -695,6 +713,16 @@ struct graph_block {
     graph_value* value;
 
     // ~()
+    ~graph_block() {
+        DEBUG_DCTOR
+
+        if (lex::has_value(type)) {
+            if (type == RULE_TYPE::LITR_STR) {
+                value_litr_string* p = dynamic_cast<value_litr_string*>(value);
+                if (p) delete p;
+            }
+        }
+    }
 };
 
 };
