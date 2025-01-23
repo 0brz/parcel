@@ -503,7 +503,11 @@ static map<RULE_TYPE, const char*> typenames {
     {DATA_HOOK, "datahook"}, 
 
     // vars
-    {VAR_DEF, "vardef"}
+    {VAR_DEF, "vardef"},
+
+    // fns
+    {FN_ARG_LIST, "fn.arg_list"},
+    {FN_REF, "fn.ref"},
 };
 
 static bool has_value(RULE_TYPE type) {
@@ -665,12 +669,18 @@ struct value_fn_arglist : public graph_value {
 
     ~value_fn_arglist() {
         DEBUG_DCTOR;
+        value_fn_arglist* head = next_arg;
+        while(head != NULL) {
+            delete head;
+            head = head->next_arg;
+        }
+
     };
 };
 
 struct value_fn_ref : public graph_value {
     inline RULE_TYPE graph_value::get_type() {
-        return RULE_TYPE::FN_ARG_LIST;
+        return RULE_TYPE::FN_REF;
     };
 
     string ref_name;
@@ -683,6 +693,8 @@ struct value_fn_ref : public graph_value {
 
     ~value_fn_ref() {
         DEBUG_DCTOR;
+        if (arg_list != NULL)
+            delete arg_list;
     };
 };
 
@@ -715,12 +727,38 @@ struct graph_block {
     // ~()
     ~graph_block() {
         DEBUG_DCTOR
-
+        //printf("__type=%s\n", lex::nameof(type));
         if (lex::has_value(type)) {
             if (type == RULE_TYPE::LITR_STR) {
                 value_litr_string* p = dynamic_cast<value_litr_string*>(value);
                 if (p) delete p;
             }
+            else if (type == RULE_TYPE::FN_ARG_LIST) {
+                value_fn_arglist* p = dynamic_cast<value_fn_arglist*>(value);
+                if (p) delete p;
+            }
+            else if (type == RULE_TYPE::FN_REF) {
+                printf("__FN_REF\n");
+                value_fn_ref* p = dynamic_cast<value_fn_ref*>(value);
+                if (p) delete p;
+            }
+            else if (type == RULE_TYPE::LITR_CHAR) {
+                value_litr_char* p = dynamic_cast<value_litr_char*>(value);
+                if (p) delete p;
+            }
+            else if (type == RULE_TYPE::LITR_FLOAT) {
+                value_litr_float* p = dynamic_cast<value_litr_float*>(value);
+                if (p) delete p;
+            }
+            else if (type == RULE_TYPE::LITR_INT) {
+                value_litr_int* p = dynamic_cast<value_litr_int*>(value);
+                if (p) delete p;
+            }
+        }
+
+        for(auto &e : entries) {
+            printf("___del.entry\n");
+            delete e;
         }
     }
 };
