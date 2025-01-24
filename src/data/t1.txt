@@ -1,0 +1,67 @@
+
+------------------ FUNCTIONS
+- begins("begins_from_str")
+- ends("ends_from_str")
+- between("start", "end") -> value between two string
+- skip("str") -> skip str in output value 
+
+# numbers
+gt, less, egt, eless
+begins(number_str), ends(number_str)
+
+
+------------------ TAGS
+- number
+    gt, less, egt, eless
+    begins(number_str), ends(number_str)
+
+- string
+    begins,ends,skip
+
+- line
+    begins,ends,skip
+'this is a simple line'
+
+- text
+    begins,ends,skip
+'this parse as simple text:
+some text who has include tag: val (tagval values)
+and keep containning.'
+
+- tagval
+    tag: word | number | line | id
+    val: word | number | line | id
+    sep: char
+
+- list
+    # list: line
+    'this is a simple line 1
+    this is a simple line 2
+    this is a simple line 3'
+    # list: tagval
+    tag: val 1
+    tag: val  2
+    tag: val 3
+    this is some text and copy just for fun
+
+- sequence:
+    sep: char
+# sequence: word,number,word,tagval...
+'result is 123, is good'
+'result is 150, is bad'
+# sequence: "<", word, ">"
+'<word>'
+
+#sequence of hook:
+sequence: id_begins('&'), tagval: tag: word  val: int 
+
+(strict seqeunce, get if all vector elements accessed)
+# vector
+    word,
+    ':',
+    id
+
+(get access, if collect elements and any elements exists between them)
+# sequence
+    word,
+
