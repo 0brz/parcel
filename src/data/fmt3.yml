@@ -1,0 +1,4 @@
+&def_hook:
+  word: "apple"
+  number: 123
+

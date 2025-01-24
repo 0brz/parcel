@@ -1,0 +1,14 @@
+&mytag:
+  tagval:
+    tag: word
+    val: number
+
+&mufunc():
+  tagval
+
+go:
+  &mytag: word
+
+tag: "apple"
+val: myfunc('a')
+
