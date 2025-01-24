@@ -1,0 +1,52 @@
+'good vibe ? yes no? '
+
+@id_begins:
+    id: begins("tag")
+
+vector:
+    word, 
+    number,
+    '?',
+    @id_begins
+
+build_vector:
+    cursor: 1
+    activates: [1,0,0] 
+    vector: word_t, number_t, char_t, id_begins(var)
+
+id_begins -> (id) -> fn_list: fn_begins(val="tag")
+
+    val.try_build()
+    try building and execute instructions at the cursor.
+    if the all insructions builded. -> got access this block.
+
+    
+---------------
+
+build_block:
+    type
+    build_instr* instr;
+
+tagval_v:
+    tag: build_block
+    val: build_block
+
+build_vec:
+    vector<graph_block>
+    cursor
+    try_build(type, str_val)
+
+tagval_1:
+    tag: word
+    val: number
+
+word_t
+-type
+-fn_list*: 
+
+number_t:
+
+
+as_vec() -> (word_bl, number_bl)
+
+

@@ -1,0 +1,16 @@
+# NUMBER FUNCTIONS
+
+gt: float val
+egt: float val
+less: float val
+eless: float val
+between: float from, float to
+eq: float val
+diff: float val
+
+# CALLING FNS TREE
+
+number: (gt(500) & less(1000)) | between(-2000, -1000)
+-> number:
+    fn_tree:
+        or(and(gt: 500, less: 1000), between(-2000, -1000))
