@@ -1,0 +1,42 @@
+&get_struct_public_fns
+&get_class_public_fns
+
+# NON SEQUENCES (ALL)
+go:
+    set: (this is a context block)
+        &get_struct_public_fns,
+        &get_class_public_fns
+
+# or describe new singe hook
+&my_fns_set:
+    set: get_struct_public_fns, get_class_public_fns
+
+go:
+  &my_fns_set
+
+
+---
+context - is blocks describing over text sturcture.
+hook get access only with context has access
+---
+
+
+# SEQUENCED CONTEXT
+&simple_define (first)
+&class_fns (second)
+
+go:
+    list:
+        seqeunce:
+            &simple_define (1)
+            &class_fns (2)
+
+# or define new tag upper hooks
+&my_data:
+    list:
+        sequence:
+            &simple_define,
+            &class_fns
+
+go:
+    &my_data
