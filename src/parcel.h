@@ -738,7 +738,6 @@ struct graph_block {
                 if (p) delete p;
             }
             else if (type == RULE_TYPE::FN_REF) {
-                printf("__FN_REF\n");
                 value_fn_ref* p = dynamic_cast<value_fn_ref*>(value);
                 if (p) delete p;
             }
