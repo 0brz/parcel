@@ -213,6 +213,7 @@ bool builder::is_literal(lexer& lx) {
     return false;
 };
 
+
  // ----------------------
 
 /*
@@ -378,6 +379,12 @@ bool is_func_call(lexer& lx) {
     return false;
 }
 
+bool is_fn_expr(lexer& lx) {
+    // (gt(500))
+    // 'gt(500)'
+    
+} 
+
 value_fn_arglist* build_fn_args(lexer& lx, bool& out_build_status) {
     // 
     char pref = ' ';
@@ -477,6 +484,8 @@ graph_block*  build_func_call(lexer& lx) {
     }
     else return NULL;
 };
+
+
 
 graph_table<graph_block*> *builder::build_lex_graph(string &src) {
     graph_table<graph_block*>* gt = new graph_table<graph_block*>();
@@ -583,9 +592,18 @@ graph_table<graph_block*> *builder::build_lex_graph(string &src) {
             // is_literal
             // else -> default value
             if (step_char_if_eq(lx, LANG_TAG_PREFIX)) {
-                printf("~%zi [gt(basetag, tag)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
-
+                //printf("~%zi [gt(basetag, tag)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
                 
+                if (is_literal(lx)) {
+                    printf("~%zi [gt(basetag, tag, litr)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+                }
+                else if (is) {
+
+                }
+
+                // is_fn_expr
+                // is_litr
+
             }
 
             continue;

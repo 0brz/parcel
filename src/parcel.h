@@ -122,6 +122,18 @@ class lexer {
             return sz;
         }
 
+        short next_until(const char* untils, string& out) {
+            size_t _end = _src.find_first_of(untils);
+            if (_end != string::npos) {
+                _end = _sz;
+            }
+            
+            auto sz(_end-_cursor);
+            out = _src.substr(_cursor, sz);
+            cursor_move(sz);
+            return sz;
+        }
+
         short next_float(string& out) {
             // 123.123
             // 123.3
