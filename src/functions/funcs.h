@@ -31,12 +31,9 @@ struct fn_list {
     fn_list* next;
 
     fn_list(fn_value_basic* val, fn_type type) : fn(val, type), next(nullptr){};
+    fn_list(fn_t fn, fn_list* next): fn(fn), next(next) {};
 };
 
-int main() {
-    fn_list  ls (new fn_gt(500), gt);
-    ls.next = new fn_list(new fn_less(300), less);
-}
 
 
 // ---------------------

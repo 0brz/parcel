@@ -7,6 +7,27 @@ using namespace std;
 using namespace lex;
 
 
+#pragma region expressions
+
+#include "expr/expr_tree.h"
+
+
+
+// bit_expr_list 
+
+
+#pragma endregion
+
+
+
+
+
+
+
+
+
+
+
 // -------------------------
 /*
 graph_block* create_function(string& name, string& args) {
@@ -273,7 +294,6 @@ bool _link_last_block(graph_table<graph_block*>* gt, graph_block* bl) {
         return false;
     }
 
-    printf("__add_entry\n");
     last->entries.push_back(bl);
 }
 
@@ -550,7 +570,27 @@ graph_table<graph_block*> *builder::build_lex_graph(string &src) {
 
     //lx.get_info(cout);
     if (lx.next_word(cur) != lx.npos) {
-        if (step_char_if_eq(lx, LANG_TAG_PREFIX)) {
+        // tag
+        RULE_TYPE _type = lex::typeof(cur);
+        graph_block* _last;
+        string _last_name;
+        if (gt->last(_last)) _last_name = lex::nameof(_last->type);
+        else _last_name = "<undf>";
+
+        if (lex::is_valuetag(_type)) {
+            //printf("~%zi [gt(basetag)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+            // is_expr()
+            // is_literal
+            // else -> default value
+            if (step_char_if_eq(lx, LANG_TAG_PREFIX)) {
+                printf("~%zi [gt(basetag, tag)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+
+                
+            }
+
+            continue;
+        }       
+        else if (step_char_if_eq(lx, LANG_TAG_PREFIX)) {
 
             if (!lex::is_tagword(cur)) {
                 printf("~%zi [ERR] build: (type error) tag='%s'\n", line_offset, cur.c_str());
@@ -567,12 +607,8 @@ graph_table<graph_block*> *builder::build_lex_graph(string &src) {
             else {
                 // gt.link_prev(bl)
 
-                // add to parent
-                graph_block* _last;
-                string _last_name;
-                if (gt->last(_last)) _last_name = lex::nameof(_last->type);
-                else _last_name = "<undf>";
-
+                // has_value
+                
                 graph_block* _bl = create_block(_type, NULL);
                 gt->add(_bl, line_offset); 
                 printf("~%zi [gt(link.last)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
@@ -580,6 +616,8 @@ graph_table<graph_block*> *builder::build_lex_graph(string &src) {
 
             continue;
         }
+
+        printf("__CUR=%s\n", cur.c_str());
     }
     
     if (step_char_if_eq(lx, '\n')) {

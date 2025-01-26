@@ -1,4 +1,2 @@
-&def_hook:
-  word: "apple"
-  number: 123
-
+go:
+  word: gt(500)

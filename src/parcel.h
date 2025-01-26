@@ -14,7 +14,7 @@
 
 using namespace std;
 
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 0
 #define DEBUG_DCTOR if (DEBUG_LEVEL == 1) printf("~() [%s]\n", __func__);
 
 #define LANG_PREFIX '&'
@@ -510,6 +510,18 @@ static map<RULE_TYPE, const char*> typenames {
     {FN_REF, "fn.ref"},
 };
 
+static bool is_valuetag(RULE_TYPE type) {
+    switch (type)
+    {
+    case BL_WORD:
+    case BL_NUMBER:
+        return true;
+    
+    default:
+        return false;
+    }
+}
+
 static bool has_value(RULE_TYPE type) {
     switch (type)
     {
@@ -756,7 +768,7 @@ struct graph_block {
         }
 
         for(auto &e : entries) {
-            printf("___del.entry\n");
+            //printf("___del.entry\n");
             delete e;
         }
     }

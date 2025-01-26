@@ -14,3 +14,8 @@ number: (gt(500) & less(1000)) | between(-2000, -1000)
 -> number:
     fn_tree:
         or(and(gt: 500, less: 1000), between(-2000, -1000))
+
+
+@w1: word
+@w2: word: starts("apple")
+@w3: word: ends('?')
