@@ -1,2 +1,2 @@
 go:
-  word: gt(500)
+  word: gt(500) & less(300)

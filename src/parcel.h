@@ -128,7 +128,7 @@ class lexer {
                 _end = _sz;
             }
             
-            auto sz(_end-_cursor);
+            auto sz(_end-_cursor-1);
             out = _src.substr(_cursor, sz);
             cursor_move(sz);
             return sz;

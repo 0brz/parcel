@@ -379,12 +379,6 @@ bool is_func_call(lexer& lx) {
     return false;
 }
 
-bool is_fn_expr(lexer& lx) {
-    // (gt(500))
-    // 'gt(500)'
-    
-} 
-
 value_fn_arglist* build_fn_args(lexer& lx, bool& out_build_status) {
     // 
     char pref = ' ';
@@ -485,6 +479,53 @@ graph_block*  build_func_call(lexer& lx) {
     else return NULL;
 };
 
+
+
+
+
+
+// -------------- EXPR
+bool build_fn_expr(lexer& lx) {
+    // (gt(500))
+    // 'gt(500)'
+    string expr_s;
+    auto c = lx.cursor_get();
+    lx.next_until("\n\r", expr_s);
+    lx.cursor_set(c);
+
+    expr_s.insert(0, "(");
+    expr_s.append(")");
+
+    //stringstream ss;
+    //ss << '(' << expr_s << ')';
+    //string expr_sb = ss.str();
+
+    printf("__UNTIL=%s\n", expr_s.c_str());
+
+    vector<graph_block*> fns ;
+
+    return true;
+
+    // (((a&b)|t)|d)
+
+    /*
+        
+    */
+
+    while(lx.can_read()) {
+        if (is_func_call(lx)) {
+            auto fn = build_func_call(lx);
+            if (fn == NULL) {
+                // clear old builded fns
+                return false;
+            }
+            fns.push_back(fn);
+        }
+
+    }
+
+    return true;
+} 
 
 
 graph_table<graph_block*> *builder::build_lex_graph(string &src) {
@@ -597,8 +638,9 @@ graph_table<graph_block*> *builder::build_lex_graph(string &src) {
                 if (is_literal(lx)) {
                     printf("~%zi [gt(basetag, tag, litr)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
                 }
-                else if (is) {
-
+                else if (build_fn_expr(lx)) {
+                    printf("~%zi [gt(basetag, tag, fn_expr)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+                    break;
                 }
 
                 // is_fn_expr
