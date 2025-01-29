@@ -1,0 +1,31 @@
+
+# COLLECTIONS
+list
+set
+vector
+sequence
+
+# BASE TYPES
+tagval
+char
+string
+number
+
+# INCLUDED
+text
+line
+
+# DOCS
+'@' - block allias
+'@allias_name: '
+block alliasses used to describe blocks, such a tagvalue, word, number
+to reuse them in hooks/other alliasses. 
+-> define alliasses to describe blocks and text structure.
+
+'&' - block hook
+'&hook_name: '
+all accessed hooks returning in parser_graph
+-> define hook to receive values from source text.
+
+# FUNCS
+needs to describe base tags

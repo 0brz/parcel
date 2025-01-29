@@ -14,7 +14,7 @@
 
 using namespace std;
 
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 0
 #define DEBUG_DCTOR if (DEBUG_LEVEL == 1) printf("~() [%s]\n", __func__);
 
 #define LANG_PREFIX '&'
@@ -54,7 +54,27 @@ class lexer {
         int cursor_get() {return _cursor;};
         void cursor_move(int delta) {this->_cursor += delta;};
         void cursor_set(int pos) {this->_cursor = pos;}; 
-    
+
+        char at(size_t offset) {
+            return _src[offset];
+        };
+
+        void set_buff(string& src) {
+            _src = src;
+            _sz = src.size();
+        }
+
+        void str(string& out) {
+            out = string(_src);
+        }
+
+        void str_left(size_t offset, size_t left_pad, string& out) {
+            out = _src.substr(left_pad, offset-1);
+        };
+
+        void str_right(size_t offset, size_t right_pad, string& out) {
+            out = _src.substr(offset+1, _sz-offset-1-right_pad);
+        };
 
         size_t skip(const char* s) {
             int ofs = _src.find_first_not_of(s, _cursor);
@@ -118,6 +138,18 @@ class lexer {
 
             
             out = _src.substr(this->_cursor, sz);
+            cursor_move(sz);
+            return sz;
+        }
+
+        short next_until(const char* untils, string& out) {
+            size_t _end = _src.find_first_of(untils);
+            if (_end != string::npos) {
+                _end = _sz;
+            }
+            
+            auto sz(_end-_cursor-1);
+            out = _src.substr(_cursor, sz);
             cursor_move(sz);
             return sz;
         }
@@ -468,6 +500,9 @@ enum RULE_TYPE {
     FUNCTION,
     FUNCTION_REF,
     FUNCTION_RET,
+    // ..new
+    FN_PROTO,
+    FN_REF_EXPR,
 
     FN_ARG_LIST, // (value)
     FN_REF, // (block)
@@ -509,6 +544,18 @@ static map<RULE_TYPE, const char*> typenames {
     {FN_ARG_LIST, "fn.arg_list"},
     {FN_REF, "fn.ref"},
 };
+
+static bool is_valuetag(RULE_TYPE type) {
+    switch (type)
+    {
+    case BL_WORD:
+    case BL_NUMBER:
+        return true;
+    
+    default:
+        return false;
+    }
+}
 
 static bool has_value(RULE_TYPE type) {
     switch (type)
@@ -717,6 +764,7 @@ struct value_vardef : public graph_value {
     };
 };
 
+
 #pragma endregion
 
 struct graph_block {
@@ -756,7 +804,7 @@ struct graph_block {
         }
 
         for(auto &e : entries) {
-            printf("___del.entry\n");
+            //printf("___del.entry\n");
             delete e;
         }
     }

@@ -1,0 +1,45 @@
+#get value after some context (get public cpp methods)
+
+## bool head(vector<lex_graph_path> &out)
+
+@func_args:
+    string: begins('(') & ends(')')
+
+@func_name:
+    vector:
+        sep: ' '
+        format: id, id, @func_args
+
+&get_singe_fn:
+    @func_name
+
+&get_all_fns:
+    list:
+        @func_name
+
+&get_all_fns_in_class:
+    sequence:
+        sequence:
+            sep: " "
+            "class"
+            "public",
+            
+        &get_all_fns
+        
+&get_all_fns_in_file:
+    list:
+        &get_all_fns_in_class
+
+(parsing parallel)
+go:
+    &get_all_fns_in_file, &get_all_class_names
+
+(parsing sequence)
+go:
+    - &get_defines
+    - &get_class_names
+
+go:
+    sequence:
+        &get_defines,
+        &get_class_names
