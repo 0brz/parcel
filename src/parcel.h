@@ -54,7 +54,6 @@ class lexer {
         int cursor_get() {return _cursor;};
         void cursor_move(int delta) {this->_cursor += delta;};
         void cursor_set(int pos) {this->_cursor = pos;}; 
-    
 
         char at(size_t offset) {
             return _src[offset];

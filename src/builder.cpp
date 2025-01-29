@@ -601,12 +601,6 @@ graph_block *build_func_call(lexer &lx, string& fn_name)
 
 */
 
-struct bit_logic_entry {
-    string left;
-    string right;
-    char op;
-};
-
 size_t get_expr_logic_entry(lexer& lx) {
     stack<char> brack_seq;
     short deep = 0;
@@ -675,7 +669,7 @@ void get_expr_deep(lexer& lx, stack<string>& call_stack) {
     if (entry > 0) {
         lx.str_left(entry, 1, left);
         lx.str_right(entry, 1, right);
-        printf("____LEFT='%s' RIGHT='%s'\n", left.c_str(), right.c_str());
+        //printf("____LEFT='%s' RIGHT='%s'\n", left.c_str(), right.c_str());
     }
 
     if (entry > 0) {
@@ -697,10 +691,21 @@ void get_expr_deep(lexer& lx, stack<string>& call_stack) {
     }
     else {
         char op = lx.at(entry);
-        printf("_op=%c\n", op);
+        //printf("_op=%c\n", op);
         string s(1, op);
         call_stack.push(s);
     }
+}
+
+
+string _simple_remove(string& src) {
+    stringstream ss;
+    for (char t : src) {
+        if (t == ' ') continue;
+        else ss << t;
+    }
+
+    return ss.str();
 }
 
 
@@ -715,15 +720,18 @@ bool try_build_fn_expr(lexer &lx)
     expr_s.insert(0, "(");
     expr_s.append(")");
 
-    printf("__UNTIL=%s\n", expr_s.c_str());
+    string ps = _simple_remove(expr_s);
+
+    printf("__UNTIL=%s\n", ps.c_str());
     vector<graph_block *> fns;
 
-    lexer lx2(expr_s);
+    lexer lx2(ps);
     value_fn_expr_refs expr;
     
     stack<string> cs;
     get_expr_deep(lx2, cs);
     
+
     printf("CALL STACK BUILDED\n");
 
     while(!cs.empty()) {
