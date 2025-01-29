@@ -56,6 +56,11 @@ class lexer {
         void cursor_set(int pos) {this->_cursor = pos;}; 
     
 
+        void set_buff(string& src) {
+            _src = src;
+            _sz = src.size();
+        }
+
         size_t skip(const char* s) {
             int ofs = _src.find_first_not_of(s, _cursor);
             size_t old_c = _cursor;
@@ -480,6 +485,9 @@ enum RULE_TYPE {
     FUNCTION,
     FUNCTION_REF,
     FUNCTION_RET,
+    // ..new
+    FN_PROTO,
+    FN_EXPR,
 
     FN_ARG_LIST, // (value)
     FN_REF, // (block)
@@ -740,6 +748,7 @@ struct value_vardef : public graph_value {
         DEBUG_DCTOR;
     };
 };
+
 
 #pragma endregion
 

@@ -1,32 +1,23 @@
 #include <string>
 #include "parcel.h"
 #include "builder.h"
-
+#include <stack>
 
 using namespace std;
 using namespace lex;
 
+#define LANG_EXPR_BR_OPEN '('
+#define LANG_EXPR_BR_CLOSE ')'
+#define LANG_LOGIC_AND '&'
+#define LANG_LOGIC_OR '|'
 
 #pragma region expressions
 
 #include "expr/expr_tree.h"
 
-
-
-// bit_expr_list 
-
+// bit_expr_list
 
 #pragma endregion
-
-
-
-
-
-
-
-
-
-
 
 // -------------------------
 /*
@@ -39,23 +30,26 @@ graph_block* create_function(string& name, string& args) {
 };
 */
 
-graph_block* create_hook(string& name) {
-    graph_block* b = new graph_block();
-    value_datahook* v = new value_datahook(name);
+graph_block *create_hook(string &name)
+{
+    graph_block *b = new graph_block();
+    value_datahook *v = new value_datahook(name);
     b->type = RULE_TYPE::DATA_HOOK;
     b->value = v;
     return b;
 };
 
-graph_block* create_literal(RULE_TYPE type, graph_value* val) {
-    graph_block* b = new graph_block();
+graph_block *create_literal(RULE_TYPE type, graph_value *val)
+{
+    graph_block *b = new graph_block();
     b->type = type;
     b->value = val;
     return b;
 };
 
-graph_block* create_block(RULE_TYPE type, graph_value* val) {
-    graph_block* bl = new graph_block();
+graph_block *create_block(RULE_TYPE type, graph_value *val)
+{
+    graph_block *bl = new graph_block();
     bl->type = type;
     bl->value = val;
     return bl;
@@ -90,93 +84,111 @@ bool builder::is_function(lexer& lx) {
 } ;
 */
 
-bool is_function_def(lexer& lx) {
+bool is_function_def(lexer &lx)
+{
     string id;
     size_t id_ofs;
 
     size_t old_ofs = lx.cursor_get();
 
-    if ((id_ofs = lx.next_id(id)) != lx.npos) {
-        if (lx.check_sequence("()", ":-")) {
+    if ((id_ofs = lx.next_id(id)) != lx.npos)
+    {
+        if (lx.check_sequence("()", ":-"))
+        {
             string args;
             size_t ofs_args;
-            if ((ofs_args = lx.next_like_rounded(args, "(", ")", ":->^?{}[]")) != lx.npos) {
+            if ((ofs_args = lx.next_like_rounded(args, "(", ")", ":->^?{}[]")) != lx.npos)
+            {
                 // :->
                 lx.skip(" \t");
-                if (lx.step_next(":")) {
+                if (lx.step_next(":"))
+                {
                     lx.skip(" \n\t");
-                    if (lx.step_next("->")) {
+                    if (lx.step_next("->"))
+                    {
                         lx.cursor_set(old_ofs);
-                        return true;
-                    }
-                } 
-            }
-        }
-    }
-
-    lx.cursor_set(old_ofs);
-    return false;
-};
-
-bool is_function_ref(lexer& lx) {
-    string id;
-    size_t id_ofs;
-
-    size_t old_ofs = lx.cursor_get();
-
-    if ((id_ofs = lx.next_id(id)) != lx.npos) {
-        if (lx.check_sequence("()", ":-")) {
-            string args;
-            size_t ofs_args;
-            if ((ofs_args = lx.next_like_rounded(args, "(", ")", ":->^?{}[]")) != lx.npos) {
-                // :->
-                lx.skip(" \t");
-                if (!lx.step_next(":")) {
-                    lx.cursor_set(old_ofs);
-                    return true;
-                } 
-            }
-        }
-    }
-
-    lx.cursor_set(old_ofs);
-    return false;
-};
-
-bool builder::is_hook(lexer& lx) {
-    size_t move_back_size = 0;
-    char single_pref = '_';
-            string id;
-            if (lx.next_id(id) != lx.npos) {
-                move_back_size+=id.size();
-                if (lx.next_symbol(single_pref)) {
-                    move_back_size++;
-                    if (single_pref == LANG_TAG_PREFIX) {
-                        lx.cursor_move(-move_back_size);
                         return true;
                     }
                 }
             }
+        }
+    }
 
-    lx.cursor_move(-move_back_size);
+    lx.cursor_set(old_ofs);
     return false;
-} ;
+};
 
-bool is_hook_ref(lexer& lx) {
+bool is_function_ref(lexer &lx)
+{
+    string id;
+    size_t id_ofs;
+
+    size_t old_ofs = lx.cursor_get();
+
+    if ((id_ofs = lx.next_id(id)) != lx.npos)
+    {
+        if (lx.check_sequence("()", ":-"))
+        {
+            string args;
+            size_t ofs_args;
+            if ((ofs_args = lx.next_like_rounded(args, "(", ")", ":->^?{}[]")) != lx.npos)
+            {
+                // :->
+                lx.skip(" \t");
+                if (!lx.step_next(":"))
+                {
+                    lx.cursor_set(old_ofs);
+                    return true;
+                }
+            }
+        }
+    }
+
+    lx.cursor_set(old_ofs);
+    return false;
+};
+
+bool builder::is_hook(lexer &lx)
+{
     size_t move_back_size = 0;
     char single_pref = '_';
-            string id;
-            if (lx.next_id(id) != lx.npos) {
-                move_back_size+=id.size();
+    string id;
+    if (lx.next_id(id) != lx.npos)
+    {
+        move_back_size += id.size();
+        if (lx.next_symbol(single_pref))
+        {
+            move_back_size++;
+            if (single_pref == LANG_TAG_PREFIX)
+            {
                 lx.cursor_move(-move_back_size);
                 return true;
             }
+        }
+    }
 
     lx.cursor_move(-move_back_size);
     return false;
-} ;
+};
 
-bool builder::is_literal(lexer& lx) {
+bool is_hook_ref(lexer &lx)
+{
+    size_t move_back_size = 0;
+    char single_pref = '_';
+    string id;
+    if (lx.next_id(id) != lx.npos)
+    {
+        move_back_size += id.size();
+        lx.cursor_move(-move_back_size);
+        return true;
+    }
+
+    lx.cursor_move(-move_back_size);
+    return false;
+};
+
+bool builder::is_literal(lexer &lx)
+{
     // 123.123.123 (ip...)
     // 123.123 (float)
     // 123 (int)
@@ -184,37 +196,41 @@ bool builder::is_literal(lexer& lx) {
     // 'a' -> litr_symbol
     // "a" -> litr_word
 
-    //printf("______________\n");
-    //lx.get_info(cout);
+    // printf("______________\n");
+    // lx.get_info(cout);
 
     char single_pref = '_';
     string cur;
-    if (lx.next_float(cur) != lx.npos) { // 123.123
+    if (lx.next_float(cur) != lx.npos)
+    { // 123.123
         lx.cursor_move(-cur.size());
         return true;
     }
-    else if (lx.next_int(cur) != lx.npos) { // 123
+    else if (lx.next_int(cur) != lx.npos)
+    { // 123
         lx.cursor_move(-cur.size());
         return true;
     }
-    else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos) { // "app"
+    else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos)
+    { // "app"
         lx.cursor_move(-cur.size());
         return true;
-    } 
-    else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos) { // 'g'
+    }
+    else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos)
+    { // 'g'
         lx.cursor_move(-cur.size());
-        if (cur.size() == 3) {
+        if (cur.size() == 3)
+        {
             return true;
         }
     }
 
-    //lx.get_info(cout);
-    //printf("______________\n");
+    // lx.get_info(cout);
+    // printf("______________\n");
     return false;
 };
 
-
- // ----------------------
+// ----------------------
 
 /*
 graph_block* builder::build_function(lexer& lx, bool is_ref) {
@@ -247,39 +263,47 @@ graph_block* builder::build_function(lexer& lx, bool is_ref) {
 };
 */
 
-graph_block* build_function_def(lexer& lx) {
+graph_block *build_function_def(lexer &lx)
+{
     // name, args, ret value
     // read until the next tag
     return NULL;
 }
 
-graph_block* builder::build_hook(lexer& lx, bool is_ref) {
+graph_block *builder::build_hook(lexer &lx, bool is_ref)
+{
     // get name
     // get args
-    //lx.get_info(cout);
+    // lx.get_info(cout);
     string _name;
-    if (lx.next_id(_name) == lx.npos) {
+    if (lx.next_id(_name) == lx.npos)
+    {
         printf("[ERR] build.hook: name\n");
-        //lx.get_info(cout);
+        // lx.get_info(cout);
         return NULL;
     }
 
     graph_block *b = create_hook(_name);
-    if (is_ref) {
+    if (is_ref)
+    {
         b->type == RULE_TYPE::DATA_HOOK_REF;
     }
     return b;
 }
 
-bool step_char_if_eq(lexer& lx, char check_symbol) {
+bool step_char_if_eq(lexer &lx, char check_symbol)
+{
     lx.skip(" ");
-    if (lx.can_read()) {
+    if (lx.can_read())
+    {
         char t;
         lx.next_symbol(t);
-        if (t == check_symbol) {
+        if (t == check_symbol)
+        {
             return true;
         }
-        else {
+        else
+        {
             lx.cursor_move(-1);
         }
     }
@@ -288,9 +312,11 @@ bool step_char_if_eq(lexer& lx, char check_symbol) {
 };
 
 // ----------------------
-bool _link_last_block(graph_table<graph_block*>* gt, graph_block* bl) {
-    graph_block* last;
-    if (!gt->last(last)) {
+bool _link_last_block(graph_table<graph_block *> *gt, graph_block *bl)
+{
+    graph_block *last;
+    if (!gt->last(last))
+    {
         printf("[_link_last_block] ret null\n");
         return false;
     }
@@ -309,42 +335,51 @@ bool _link_last_block(graph_table<graph_block*>* gt, graph_block* bl) {
     build_func_call
 */
 
-bool is_vardef(lexer& lx) {
+bool is_vardef(lexer &lx)
+{
     string w;
     auto old_ofs(lx.cursor_get());
-    if (lx.next_word(w) != lx.npos) {
-        if (w == LANG_VAR) {
+    if (lx.next_word(w) != lx.npos)
+    {
+        if (w == LANG_VAR)
+        {
             lx.cursor_set(old_ofs);
             return true;
         }
-    } 
+    }
 
     lx.cursor_set(old_ofs);
     return false;
 };
 
-graph_block* build_vardef(lexer& lx) {
-    // var: (<base_type>) <varname> 
+graph_block *build_vardef(lexer &lx)
+{
+    // var: (<base_type>) <varname>
     string cur;
-    auto old_ofs (lx.cursor_get());
-    if (lx.next_word(cur)) {
-        if (cur == LANG_VAR) {
+    auto old_ofs(lx.cursor_get());
+    if (lx.next_word(cur))
+    {
+        if (cur == LANG_VAR)
+        {
             lx.skip(" \r\t");
-            if (lx.step_next(":")) {
+            if (lx.step_next(":"))
+            {
                 // get base type
                 lx.skip(" \t");
-                if (lx.next_like_rounded(cur, "(", ")", lx.symbols_no_id_nospace) == lx.npos) {
+                if (lx.next_like_rounded(cur, "(", ")", lx.symbols_no_id_nospace) == lx.npos)
+                {
                     return false;
                 }
 
                 // get name
                 string var_id;
-                if (lx.next_id(var_id) == lx.npos) {
+                if (lx.next_id(var_id) == lx.npos)
+                {
                     return false;
                 }
 
-                graph_value* val = new value_vardef(var_id, cur);
-                graph_block* bl = create_block(RULE_TYPE::VAR_DEF, val);
+                graph_value *val = new value_vardef(var_id, cur);
+                graph_block *bl = create_block(RULE_TYPE::VAR_DEF, val);
                 return bl;
             }
         }
@@ -355,21 +390,25 @@ graph_block* build_vardef(lexer& lx) {
 }
 
 // ---------
-bool is_func_def(lexer& lx) {
+bool is_func_def(lexer &lx)
+{
     // fn: (<base_block_type>) <fn_name> (<args>)
     // arg: <base_type> <arg_name>
     return false;
 }
 
-bool is_func_call(lexer& lx) {
+bool is_func_call(lexer &lx)
+{
     // <func_name>(<args>)
     // value_fn_arglist
     string fn_id;
     auto old_ofs(lx.cursor_get());
 
     // get name
-    if (lx.next_id(fn_id) != lx.npos) {
-        if (lx.check_sequence("()", ":^[]{}")) {
+    if (lx.next_id(fn_id) != lx.npos)
+    {
+        if (lx.check_sequence("()", ":^[]{}"))
+        {
             lx.cursor_set(old_ofs);
             return true;
         }
@@ -379,73 +418,95 @@ bool is_func_call(lexer& lx) {
     return false;
 }
 
-value_fn_arglist* build_fn_args(lexer& lx, bool& out_build_status) {
-    // 
+value_fn_arglist *build_fn_args(lexer &lx, bool &out_build_status)
+{
+    //
     char pref = ' ';
-    value_fn_arglist* head = NULL;
-    value_fn_arglist* args = NULL;
-    while(lx.can_read()) {
-        //lx.get_info(cout);
-        if (lx.next_symbol(pref)) {
-            if (pref == ')') break;
-            if (pref == '(') lx.cursor_move(1);
-            if (pref == ',') lx.cursor_move(1);
-            if (pref == ' ') lx.cursor_move(1);
-            else lx.cursor_move(-1);
+    value_fn_arglist *head = NULL;
+    value_fn_arglist *args = NULL;
+    while (lx.can_read())
+    {
+        // lx.get_info(cout);
+        if (lx.next_symbol(pref))
+        {
+            if (pref == ')')
+                break;
+            if (pref == '(')
+                lx.cursor_move(1);
+            if (pref == ',')
+                lx.cursor_move(1);
+            if (pref == ' ')
+                lx.cursor_move(1);
+            else
+                lx.cursor_move(-1);
         }
 
         string cur;
-        if (lx.next_float(cur) != lx.npos) {
+        if (lx.next_float(cur) != lx.npos)
+        {
             string _val = string(cur.c_str());
-            if (args == NULL) {
+            if (args == NULL)
+            {
                 args = new value_fn_arglist(RULE_TYPE::LITR_FLOAT, _val);
                 head = args;
             }
-            else {
+            else
+            {
                 args->next_arg = new value_fn_arglist(RULE_TYPE::LITR_FLOAT, _val);
                 args = args->next_arg;
             }
         }
-        else if (lx.next_int(cur) != lx.npos) {
+        else if (lx.next_int(cur) != lx.npos)
+        {
             string _val = string(cur.c_str());
-            if (args == NULL) {
+            if (args == NULL)
+            {
                 args = new value_fn_arglist(RULE_TYPE::LITR_INT, _val);
                 head = args;
             }
-            else {
+            else
+            {
                 args->next_arg = new value_fn_arglist(RULE_TYPE::LITR_INT, _val);
                 args = args->next_arg;
             }
         }
-        else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos) {
+        else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos)
+        {
             string _val = string(cur.c_str());
-            if (args == NULL) {
+            if (args == NULL)
+            {
                 args = new value_fn_arglist(RULE_TYPE::LITR_STR, _val);
                 head = args;
             }
-            else {
+            else
+            {
                 args->next_arg = new value_fn_arglist(RULE_TYPE::LITR_STR, _val);
                 args = args->next_arg;
             }
         }
-        else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos) {
+        else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos)
+        {
             char _valb = cur[1]; // we can take, because size of char view=3, like 'a', 'b'
             string _val = cur.substr(1, 1);
-            if (args == NULL) {
+            if (args == NULL)
+            {
                 args = new value_fn_arglist(RULE_TYPE::LITR_CHAR, _val);
                 head = args;
             }
-            else {
+            else
+            {
                 args->next_arg = new value_fn_arglist(RULE_TYPE::LITR_CHAR, _val);
                 args = args->next_arg;
             }
         }
-        else {
+        else
+        {
 
             // clean
             printf("~() [build_fn_args]\n");
-            value_fn_arglist* pt = head;
-            while(pt != NULL) {
+            value_fn_arglist *pt = head;
+            while (pt != NULL)
+            {
                 delete pt;
                 pt = pt->next_arg;
             };
@@ -459,35 +520,95 @@ value_fn_arglist* build_fn_args(lexer& lx, bool& out_build_status) {
     return args;
 }
 
-graph_block*  build_func_call(lexer& lx) {
+graph_block *build_func_call(lexer &lx)
+ {
     string fn_id;
 
     // get name
-    if (lx.next_id(fn_id) != lx.npos) {
+    if (lx.next_id(fn_id) != lx.npos)
+    {
         lx.skip(" \t");
         bool args_build = false;
-        value_fn_arglist* args = build_fn_args(lx, args_build);
-        if (!args_build) {
+        value_fn_arglist *args = build_fn_args(lx, args_build);
+        if (!args_build)
+        {
             return NULL;
         }
 
-        value_fn_ref* _val = new value_fn_ref(fn_id, args);
-        graph_block* bl = create_block(RULE_TYPE::FN_REF, _val);
+        value_fn_ref *_val = new value_fn_ref(fn_id, args);
+        graph_block *bl = create_block(RULE_TYPE::FN_REF, _val);
 
         return bl;
     }
-    else return NULL;
+    else
+        return NULL;
 };
 
-
-
-
-
-
 // -------------- EXPR
-bool build_fn_expr(lexer& lx) {
-    // (gt(500))
-    // 'gt(500)'
+
+bool try_build_fn_bit_expr(lexer &lx, bit_fn_expr &out)
+{
+    stack<char> brack_seq;
+    short deep = 0;
+    char last_op = 0;
+    int op_entry = 0;
+    bool left_right_set = false;
+    // '(gt(500) & less(300))'
+
+    char cur_sm = '~';
+    while (lx.can_read())
+    {
+        lx.skip(" \t");
+        if (!lx.next_symbol(cur_sm))
+        {
+            // err
+            break;
+        }
+
+        if (cur_sm == LANG_EXPR_BR_OPEN)
+        {
+            brack_seq.push(cur_sm);
+            deep++;
+        }
+        else if (cur_sm == LANG_EXPR_BR_CLOSE)
+        {
+            if (brack_seq.size() > 0 && brack_seq.top() == LANG_EXPR_BR_OPEN)
+            {
+                brack_seq.pop();
+                deep--;
+            }
+            else
+            {
+                // err
+                break;
+            }
+        }
+        else if (cur_sm == LANG_LOGIC_AND || cur_sm == LANG_LOGIC_OR) {
+            if (deep <= 1) {
+                last_op = cur_sm;
+                op_entry = lx.cursor_get()-1;
+            }
+        }
+        else {
+            lx.get_info(cout);
+            // parsing like 'less(500)', 'btw(500, 1000)'
+            auto fn_bl = build_func_call(lx);
+            if (fn_bl == NULL) {
+                // err
+                break;
+            }
+
+            if (!left_right_set)
+                //out.left
+
+            printf("fn builded ok\n");
+        }
+    }
+}
+
+bool build_fn_expr(lexer &lx)
+{
+    // prepare string
     string expr_s;
     auto c = lx.cursor_get();
     lx.next_until("\n\r", expr_s);
@@ -496,199 +617,220 @@ bool build_fn_expr(lexer& lx) {
     expr_s.insert(0, "(");
     expr_s.append(")");
 
-    //stringstream ss;
-    //ss << '(' << expr_s << ')';
-    //string expr_sb = ss.str();
-
     printf("__UNTIL=%s\n", expr_s.c_str());
-
-    vector<graph_block*> fns ;
-
-    return true;
-
-    // (((a&b)|t)|d)
+    vector<graph_block *> fns;
 
     /*
-        
+        try_build_fn_call(str)
+        try_build_fn_bit_expr(str)
+        try_build_fn_expr_tree
+
+
+
     */
 
-    while(lx.can_read()) {
-        if (is_func_call(lx)) {
+    while (lx.can_read())
+    {
+        if (is_func_call(lx))
+        {
             auto fn = build_func_call(lx);
-            if (fn == NULL) {
+            if (fn == NULL)
+            {
                 // clear old builded fns
                 return false;
             }
             fns.push_back(fn);
         }
-
     }
 
     return true;
-} 
+}
 
+graph_table<graph_block *> *builder::build_lex_graph(string &src)
+{
+    graph_table<graph_block *> *gt = new graph_table<graph_block *>();
 
-graph_table<graph_block*> *builder::build_lex_graph(string &src) {
-    graph_table<graph_block*>* gt = new graph_table<graph_block*>();
+    lexer lx(src);
+    string cur;
+    size_t line_offset = 0;
+    size_t literals_offset = -1;
+    char single_prefix = '_';
 
-  lexer lx(src);
-  string cur;
-  size_t line_offset = 0;
-  size_t literals_offset = -1;
-  char single_prefix = '_';
+    while (lx.can_read())
+    {
 
-  while (lx.can_read()) {
-    
-    if (step_char_if_eq(lx, LANG_PREFIX)) {
-        //printf("[build].is_def\n");
-        if (is_vardef(lx)) {
-            // no linking
-            auto bl = build_vardef(lx);
-            gt->add(bl, line_offset);
-            printf("~%zi [gt(nolink))].vardef\n", line_offset);
-        }
-        else if (is_func_call(lx)) {
-            auto bl = build_func_call(lx);
-            if (bl == NULL) {
-                // exp
-                printf("[ERR] build: [build_func_call]\n");
-                break;
+        if (step_char_if_eq(lx, LANG_PREFIX))
+        {
+            // printf("[build].is_def\n");
+            if (is_vardef(lx))
+            {
+                // no linking
+                auto bl = build_vardef(lx);
+                gt->add(bl, line_offset);
+                printf("~%zi [gt(nolink))].vardef\n", line_offset);
             }
-
-            printf("~%zi [gt(link.last)].fn.call\n", line_offset);
-            _link_last_block(gt, bl);
-        }
-        else if (builder::is_hook(lx)) {
-            // hook def, no linking
-            auto _bl = build_hook(lx, false);
-            gt->add(_bl, line_offset);
-            printf("~%zi [gt(nolink)].hook\n", line_offset);
-            //lx.get_info(cout);
-        }
-        else if ( is_hook_ref(lx)) {
-            // hook ref, link
-            auto _bl = build_hook(lx, true);
-            gt->add(_bl, line_offset);
-            _link_last_block(gt, _bl);
-            printf("~%zi [gt(link.last)] hook(ref)\n", line_offset);
-        }
-    }
-
-    if (is_literal(lx)) {
-
-        graph_block* _last;
-        string _last_name;
-        if (gt->last(_last)) _last_name = lex::nameof(_last->type);
-        else _last_name = "<undf>";
-
-        //printf("[build] is_lit\n");
-        
-        if (lx.next_float(cur) != lx.npos) {
-            int _val = stof(cur.c_str());
-            auto _bl = create_literal(RULE_TYPE::LITR_FLOAT, new value_litr_float(_val));
-            _link_last_block(gt, _bl);
-            //gt->add(_bl, literals_offset);
-            printf("~%zi [gt(link.last)] (float) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str() );
-        }
-        else if (lx.next_int(cur) != lx.npos) {
-            int _val = stoi(cur.c_str());
-            auto _bl = create_literal(RULE_TYPE::LITR_INT, new value_litr_int(_val));
-            _link_last_block(gt, _bl);
-            //gt->add(_bl, literals_offset);
-            printf("~%zi [gt(link.last)] (int) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str() );
-        }
-        else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos) {
-            string _val = string(cur.c_str());
-            auto _bl = create_literal(RULE_TYPE::LITR_STR, new value_litr_string(_val));
-            _link_last_block(gt, _bl);
-            //gt->add(_bl, literals_offset);
-            printf("~%zi [gt(link.last)] (str) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str() );
-        }
-        else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos) {
-            //printf("~%zi [build] lit.char=%s\n", line_offset, cur.c_str());
-            // create_char
-            char _val = cur[1]; // we can take, because size of char view=3, like 'a', 'b'
-            auto _bl = create_literal(RULE_TYPE::LITR_CHAR, new value_litr_char(_val));
-            //_last->entries.push_back(_bl);
-            _link_last_block(gt, _bl);
-            //gt->add(_bl, literals_offset);
-            // _link_last_block
-            printf("~%zi [gt(link.last)] (char) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str() );
-        }
-        
-    }
-
-    //lx.get_info(cout);
-    if (lx.next_word(cur) != lx.npos) {
-        // tag
-        RULE_TYPE _type = lex::typeof(cur);
-        graph_block* _last;
-        string _last_name;
-        if (gt->last(_last)) _last_name = lex::nameof(_last->type);
-        else _last_name = "<undf>";
-
-        if (lex::is_valuetag(_type)) {
-            //printf("~%zi [gt(basetag)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
-            // is_expr()
-            // is_literal
-            // else -> default value
-            if (step_char_if_eq(lx, LANG_TAG_PREFIX)) {
-                //printf("~%zi [gt(basetag, tag)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
-                
-                if (is_literal(lx)) {
-                    printf("~%zi [gt(basetag, tag, litr)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
-                }
-                else if (build_fn_expr(lx)) {
-                    printf("~%zi [gt(basetag, tag, fn_expr)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+            else if (is_func_call(lx))
+            {
+                auto bl = build_func_call(lx);
+                if (bl == NULL)
+                {
+                    // exp
+                    printf("[ERR] build: [build_func_call]\n");
                     break;
                 }
 
-                // is_fn_expr
-                // is_litr
-
+                printf("~%zi [gt(link.last)].fn.call\n", line_offset);
+                _link_last_block(gt, bl);
             }
-
-            continue;
-        }       
-        else if (step_char_if_eq(lx, LANG_TAG_PREFIX)) {
-
-            if (!lex::is_tagword(cur)) {
-                printf("~%zi [ERR] build: (type error) tag='%s'\n", line_offset, cur.c_str());
-                break;
-            }
-
-            RULE_TYPE _type = lex::typeof(cur);
-            if (_type == RULE_TYPE::GO) {
-                // this is a entrypoint, no parent relates
-                graph_block* _bl = create_block(RULE_TYPE::GO, NULL);
+            else if (builder::is_hook(lx))
+            {
+                // hook def, no linking
+                auto _bl = build_hook(lx, false);
                 gt->add(_bl, line_offset);
-                printf("~%zi [gt] [tag].go\n", line_offset);
+                printf("~%zi [gt(nolink)].hook\n", line_offset);
+                // lx.get_info(cout);
             }
-            else {
-                // gt.link_prev(bl)
-
-                // has_value
-                
-                graph_block* _bl = create_block(_type, NULL);
-                gt->add(_bl, line_offset); 
-                printf("~%zi [gt(link.last)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+            else if (is_hook_ref(lx))
+            {
+                // hook ref, link
+                auto _bl = build_hook(lx, true);
+                gt->add(_bl, line_offset);
+                _link_last_block(gt, _bl);
+                printf("~%zi [gt(link.last)] hook(ref)\n", line_offset);
             }
-
-            continue;
         }
 
-        printf("__CUR=%s\n", cur.c_str());
-    }
-    
-    if (step_char_if_eq(lx, '\n')) {
-        line_offset = lx.skip(" \t");
-    }
-    else  {
-        lx.cursor_move(1);
-    }
-  }
+        if (is_literal(lx))
+        {
 
-  return gt;
+            graph_block *_last;
+            string _last_name;
+            if (gt->last(_last))
+                _last_name = lex::nameof(_last->type);
+            else
+                _last_name = "<undf>";
+
+            // printf("[build] is_lit\n");
+
+            if (lx.next_float(cur) != lx.npos)
+            {
+                int _val = stof(cur.c_str());
+                auto _bl = create_literal(RULE_TYPE::LITR_FLOAT, new value_litr_float(_val));
+                _link_last_block(gt, _bl);
+                // gt->add(_bl, literals_offset);
+                printf("~%zi [gt(link.last)] (float) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+            }
+            else if (lx.next_int(cur) != lx.npos)
+            {
+                int _val = stoi(cur.c_str());
+                auto _bl = create_literal(RULE_TYPE::LITR_INT, new value_litr_int(_val));
+                _link_last_block(gt, _bl);
+                // gt->add(_bl, literals_offset);
+                printf("~%zi [gt(link.last)] (int) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+            }
+            else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos)
+            {
+                string _val = string(cur.c_str());
+                auto _bl = create_literal(RULE_TYPE::LITR_STR, new value_litr_string(_val));
+                _link_last_block(gt, _bl);
+                // gt->add(_bl, literals_offset);
+                printf("~%zi [gt(link.last)] (str) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+            }
+            else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos)
+            {
+                // printf("~%zi [build] lit.char=%s\n", line_offset, cur.c_str());
+                //  create_char
+                char _val = cur[1]; // we can take, because size of char view=3, like 'a', 'b'
+                auto _bl = create_literal(RULE_TYPE::LITR_CHAR, new value_litr_char(_val));
+                //_last->entries.push_back(_bl);
+                _link_last_block(gt, _bl);
+                // gt->add(_bl, literals_offset);
+                //  _link_last_block
+                printf("~%zi [gt(link.last)] (char) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+            }
+        }
+
+        // lx.get_info(cout);
+        if (lx.next_word(cur) != lx.npos)
+        {
+            // tag
+            RULE_TYPE _type = lex::typeof(cur);
+            graph_block *_last;
+            string _last_name;
+            if (gt->last(_last))
+                _last_name = lex::nameof(_last->type);
+            else
+                _last_name = "<undf>";
+
+            if (lex::is_valuetag(_type))
+            {
+                // printf("~%zi [gt(basetag)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+                //  is_expr()
+                //  is_literal
+                //  else -> default value
+                if (step_char_if_eq(lx, LANG_TAG_PREFIX))
+                {
+                    // printf("~%zi [gt(basetag, tag)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+
+                    if (is_literal(lx))
+                    {
+                        printf("~%zi [gt(basetag, tag, litr)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+                    }
+                    else if (build_fn_expr(lx))
+                    {
+                        printf("~%zi [gt(basetag, tag, fn_expr)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+                        break;
+                    }
+
+                    // is_fn_expr
+                    // is_litr
+                }
+
+                continue;
+            }
+            else if (step_char_if_eq(lx, LANG_TAG_PREFIX))
+            {
+
+                if (!lex::is_tagword(cur))
+                {
+                    printf("~%zi [ERR] build: (type error) tag='%s'\n", line_offset, cur.c_str());
+                    break;
+                }
+
+                RULE_TYPE _type = lex::typeof(cur);
+                if (_type == RULE_TYPE::GO)
+                {
+                    // this is a entrypoint, no parent relates
+                    graph_block *_bl = create_block(RULE_TYPE::GO, NULL);
+                    gt->add(_bl, line_offset);
+                    printf("~%zi [gt] [tag].go\n", line_offset);
+                }
+                else
+                {
+                    // gt.link_prev(bl)
+
+                    // has_value
+
+                    graph_block *_bl = create_block(_type, NULL);
+                    gt->add(_bl, line_offset);
+                    printf("~%zi [gt(link.last)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+                }
+
+                continue;
+            }
+
+            printf("__CUR=%s\n", cur.c_str());
+        }
+
+        if (step_char_if_eq(lx, '\n'))
+        {
+            line_offset = lx.skip(" \t");
+        }
+        else
+        {
+            lx.cursor_move(1);
+        }
+    }
+
+    return gt;
 };
-
-

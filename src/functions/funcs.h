@@ -1,6 +1,8 @@
 #ifndef _FUNCS_
 #define _FUNCS_
 
+#include <parcel.h>
+
 enum fn_type {
     gt,
     egt,
@@ -9,6 +11,28 @@ enum fn_type {
 };
 
 struct fn_value_basic {};
+
+struct fn_proto {
+    fn_value_basic* value;
+    fn_type type;
+
+    fn_proto(fn_type type, fn_value_basic* val): type(type), value(val) {};
+};
+
+struct fn_value : public graph_value {
+    inline RULE_TYPE graph_value::get_type() {
+        return RULE_TYPE::FN_PROTO;
+    };
+
+    fn_proto fn;
+
+    fn_value(fn_type type, fn_value_basic* val): fn(type, val) {};
+    ~fn_value(){};  
+};
+
+
+// ---------------------
+//      NUMBERS
 
 struct fn_gt : public fn_value_basic {
     float val;
@@ -20,23 +44,7 @@ struct fn_less : public fn_value_basic {
     fn_less(float val): val(val){};
 };
 
-struct fn_t {
-    fn_type type;
-    fn_value_basic* val;
-    fn_t(fn_value_basic* val, fn_type type) : val(val), type(type){};
-};
-
-struct fn_list {
-    fn_t fn;
-    fn_list* next;
-
-    fn_list(fn_value_basic* val, fn_type type) : fn(val, type), next(nullptr){};
-    fn_list(fn_t fn, fn_list* next): fn(fn), next(next) {};
-};
 
 
-
-// ---------------------
-//      NUMBERS
 
 #endif
