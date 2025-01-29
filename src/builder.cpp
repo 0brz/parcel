@@ -613,7 +613,7 @@ size_t get_expr_logic_entry(lexer& lx) {
     string _right;
 
     char cur_sm = '~';
-    printf("[get_expr_logic_entry]\n");
+    //printf("[get_expr_logic_entry]\n");
 
     while (lx.can_read())
     {
@@ -773,16 +773,17 @@ bool try_build_fn_expr(lexer &lx)
     vector<graph_block *> fns;
 
     lexer lx2(ps);
-    value_fn_expr_refs expr;
-    
+
     stack<string> cs;
     get_expr_deep(lx2, cs);
     
-
     printf("CALL STACK BUILDED\n");
 
     fn_btree_refs* tr = new fn_btree_refs();
     try_build_fn_tree(cs, tr);
+
+    value_fn_expr_refs* expr_val = new value_fn_expr_refs(tr);
+    graph_block* fn_expr = create_block(RULE_TYPE::FN_REF_EXPR, expr_val);
 
     return true;
 }

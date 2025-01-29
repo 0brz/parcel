@@ -29,6 +29,7 @@ struct value_fn_expr_refs : public graph_value {
     };
 
     fn_btree_refs* fn_tree;
+    value_fn_expr_refs(fn_btree_refs* btree_refs): fn_tree(btree_refs){};
 };
 
 
