@@ -709,6 +709,53 @@ string _simple_remove(string& src) {
 }
 
 
+void try_build_fn_tree(stack<string>& postfix, fn_btree_refs* tree) {
+    auto entry = postfix.top();
+    postfix.pop();
+
+    if (entry == "|" || entry == "&") {
+        if (entry == "|") tree->and_or0 = 0;
+        else tree->and_or0 = 1;
+        
+        // left
+        auto _left = postfix.top();
+        postfix.pop();
+
+        if (_left == "|" || _left == "&") {
+            tree->left = new fn_btree_refs(); 
+
+            //tree->left = new expr_tree();
+            postfix.push(_left);
+            try_build_fn_tree(postfix, tree->left);
+        }
+        else {
+            // this is a value
+            tree->left = new fn_btree_refs();
+            //tree->left->value = build_func_call()
+            printf("build(left)=%s\n", _left.c_str());
+            // old
+            //tree->left = new expr_tree();
+            //tree->left->val = _left;
+        }
+
+        // right
+        auto _right = postfix.top();
+        postfix.pop();
+
+        if (_right == "|" || _right == "&") {
+            tree->right = new fn_btree_refs();
+            postfix.push(_right);
+            try_build_fn_tree(postfix, tree->right);
+        }
+        else {
+            tree->right = new fn_btree_refs();
+            printf("build(right)=%s\n", _right.c_str());
+            //tree->right->val = _right;
+        }
+    }
+
+}
+
 bool try_build_fn_expr(lexer &lx)
 {
     // prepare string
@@ -734,10 +781,8 @@ bool try_build_fn_expr(lexer &lx)
 
     printf("CALL STACK BUILDED\n");
 
-    while(!cs.empty()) {
-        printf("[cs] %s\n", cs.top().c_str());
-        cs.pop();
-    }
+    fn_btree_refs* tr = new fn_btree_refs();
+    try_build_fn_tree(cs, tr);
 
     return true;
 }

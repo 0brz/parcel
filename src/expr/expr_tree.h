@@ -17,6 +17,7 @@ struct fn_btree {
 
     fn_btree(bool and_or0, fn_btree* left, fn_btree* right) : and_or0(and_or0), left(left), right(right), value(NULL) {};
     fn_btree(FnPrototype* single_fn): value(single_fn),  left(NULL), right(NULL), and_or0(0) {}; 
+    fn_btree():left(NULL), right(NULL), value(NULL){};
 };
 
 using fn_btree_refs = fn_btree<value_fn_ref>;
