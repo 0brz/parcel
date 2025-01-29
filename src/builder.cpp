@@ -527,6 +527,34 @@ graph_block *build_func_call(lexer &lx)
     // get name
     if (lx.next_id(fn_id) != lx.npos)
     {
+        printf("[build_func_call] id=%s\n", fn_id.c_str());
+
+        lx.skip(" \t");
+        bool args_build = false;
+        value_fn_arglist *args = build_fn_args(lx, args_build);
+        if (!args_build)
+        {
+            return NULL;
+        }
+
+        value_fn_ref *_val = new value_fn_ref(fn_id, args);
+        graph_block *bl = create_block(RULE_TYPE::FN_REF, _val);
+
+        return bl;
+    }
+    else
+        return NULL;
+};
+
+graph_block *build_func_call(lexer &lx, string& fn_name)
+ {
+    string fn_id;
+
+    // get name
+    if (lx.next_id(fn_id) != lx.npos)
+    {
+        printf("[build_func_call] id=%s\n", fn_id.c_str());
+        fn_name = fn_id;
         lx.skip(" \t");
         bool args_build = false;
         value_fn_arglist *args = build_fn_args(lx, args_build);
@@ -546,8 +574,40 @@ graph_block *build_func_call(lexer &lx)
 
 // -------------- EXPR
 
-bool try_build_fn_bit_expr(lexer &lx, bit_fn_expr &out)
-{
+// acess_fn_args
+// acess_fn_call
+// access_fn_expr
+
+// get_logic_entry
+
+/*
+
+    build_fn_expr_stack(){
+    
+        logic_entry  = get_logic_entry(src);
+        left = src.substr()
+        right = src.substr()
+        
+        // check left
+        if (is_fn_expr(left))
+            build_fn_expr(left, call_stack)
+        else (is_fn_call(left))
+            call_stack += build_fn_call(left)
+        
+        // check right
+
+
+    }
+
+*/
+
+struct bit_logic_entry {
+    string left;
+    string right;
+    char op;
+};
+
+size_t get_expr_logic_entry(lexer& lx) {
     stack<char> brack_seq;
     short deep = 0;
     char last_op = 0;
@@ -555,13 +615,20 @@ bool try_build_fn_bit_expr(lexer &lx, bit_fn_expr &out)
     bool left_right_set = false;
     // '(gt(500) & less(300))'
 
+    string _left;
+    string _right;
+
     char cur_sm = '~';
+    printf("[get_expr_logic_entry]\n");
+
     while (lx.can_read())
     {
         lx.skip(" \t");
+        //lx.get_info(cout);
         if (!lx.next_symbol(cur_sm))
         {
             // err
+            return 0;
             break;
         }
 
@@ -580,6 +647,7 @@ bool try_build_fn_bit_expr(lexer &lx, bit_fn_expr &out)
             else
             {
                 // err
+                return 0;
                 break;
             }
         }
@@ -590,23 +658,53 @@ bool try_build_fn_bit_expr(lexer &lx, bit_fn_expr &out)
             }
         }
         else {
-            lx.get_info(cout);
+            //lx.get_info(cout);
             // parsing like 'less(500)', 'btw(500, 1000)'
-            auto fn_bl = build_func_call(lx);
-            if (fn_bl == NULL) {
-                // err
-                break;
-            }
-
-            if (!left_right_set)
-                //out.left
-
-            printf("fn builded ok\n");
+            //lx.cursor_move(-1);
         }
+    }
+
+    return op_entry;
+}
+
+void get_expr_deep(lexer& lx, stack<string>& call_stack) {
+    size_t entry = get_expr_logic_entry(lx);
+    string left;
+    string right;
+
+    if (entry > 0) {
+        lx.str_left(entry, 1, left);
+        lx.str_right(entry, 1, right);
+        printf("____LEFT='%s' RIGHT='%s'\n", left.c_str(), right.c_str());
+    }
+
+    if (entry > 0) {
+        // parse left
+        lexer lx_left(left);
+        get_expr_deep(lx_left, call_stack);
+
+    //((gt(500) & less(300)) | diff(300))
+        // parse right
+        lexer lx_right(right);
+        get_expr_deep(lx_right, call_stack);
+    }
+
+    if (entry == 0) {
+        lx.get_info(cout);
+        string v;
+        lx.str(v);
+        call_stack.push(v);
+    }
+    else {
+        char op = lx.at(entry);
+        printf("_op=%c\n", op);
+        string s(1, op);
+        call_stack.push(s);
     }
 }
 
-bool build_fn_expr(lexer &lx)
+
+bool try_build_fn_expr(lexer &lx)
 {
     // prepare string
     string expr_s;
@@ -620,27 +718,17 @@ bool build_fn_expr(lexer &lx)
     printf("__UNTIL=%s\n", expr_s.c_str());
     vector<graph_block *> fns;
 
-    /*
-        try_build_fn_call(str)
-        try_build_fn_bit_expr(str)
-        try_build_fn_expr_tree
+    lexer lx2(expr_s);
+    value_fn_expr_refs expr;
+    
+    stack<string> cs;
+    get_expr_deep(lx2, cs);
+    
+    printf("CALL STACK BUILDED\n");
 
-
-
-    */
-
-    while (lx.can_read())
-    {
-        if (is_func_call(lx))
-        {
-            auto fn = build_func_call(lx);
-            if (fn == NULL)
-            {
-                // clear old builded fns
-                return false;
-            }
-            fns.push_back(fn);
-        }
+    while(!cs.empty()) {
+        printf("[cs] %s\n", cs.top().c_str());
+        cs.pop();
     }
 
     return true;
@@ -776,7 +864,7 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
                     {
                         printf("~%zi [gt(basetag, tag, litr)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
                     }
-                    else if (build_fn_expr(lx))
+                    else if (try_build_fn_expr(lx))
                     {
                         printf("~%zi [gt(basetag, tag, fn_expr)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
                         break;

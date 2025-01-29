@@ -56,10 +56,26 @@ class lexer {
         void cursor_set(int pos) {this->_cursor = pos;}; 
     
 
+        char at(size_t offset) {
+            return _src[offset];
+        };
+
         void set_buff(string& src) {
             _src = src;
             _sz = src.size();
         }
+
+        void str(string& out) {
+            out = string(_src);
+        }
+
+        void str_left(size_t offset, size_t left_pad, string& out) {
+            out = _src.substr(left_pad, offset-1);
+        };
+
+        void str_right(size_t offset, size_t right_pad, string& out) {
+            out = _src.substr(offset+1, _sz-offset-1-right_pad);
+        };
 
         size_t skip(const char* s) {
             int ofs = _src.find_first_not_of(s, _cursor);
@@ -487,7 +503,7 @@ enum RULE_TYPE {
     FUNCTION_RET,
     // ..new
     FN_PROTO,
-    FN_EXPR,
+    FN_REF_EXPR,
 
     FN_ARG_LIST, // (value)
     FN_REF, // (block)

@@ -1,2 +1,2 @@
 go:
-  word: gt(500) & less(300)
+  word: (bar(5)&(one(1)&zero(2)))|tree(3)
