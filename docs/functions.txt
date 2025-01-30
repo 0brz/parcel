@@ -1,0 +1,9 @@
+------------------ FUNCTIONS
+- begins("begins_from_str")
+- ends("ends_from_str")
+- between("start", "end") -> value between two string
+- skip("str") -> skip str in output value 
+
+# numbers
+gt, less, egt, eless
+begins(number_str), ends(number_str)
