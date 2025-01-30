@@ -11,7 +11,7 @@ using namespace lex;
 #define LANG_LOGIC_AND '&'
 #define LANG_LOGIC_OR '|'
 
-#define LEX_SYMBOLS_NO_EXPR ":@!*^%$<>\r\n{}:\"'~;"
+#define LEX_SYMBOLS_NO_EXPR ":@!*^%$<>{}:\"'~;"
 
 #pragma region expressions
 
@@ -20,6 +20,12 @@ using namespace lex;
 // bit_expr_list
 
 #pragma endregion
+
+bool _is_space(char t)
+{
+    string trash = "\r\t \n";
+    return trash.find(t) != string::npos;
+};
 
 // -------------------------
 /*
@@ -409,7 +415,7 @@ value_fn_ref *try_build_fn_ref(lexer &lx)
     // get name
     if (lx.next_id(fn_id) != lx.npos)
     {
-        printf("[try_build_fn_call] id=%s\n", fn_id.c_str());
+        // printf("[try_build_fn_call] id=%s\n", fn_id.c_str());
 
         lx.skip(" \t");
         bool args_build = false;
@@ -579,12 +585,12 @@ bool deep_expr_postfix(lexer &lx, stack<string> &call_stack)
     }
 }
 
-string _simple_remove_spaces(string &src)
+string _clear_expr_string(string &src)
 {
     stringstream ss;
     for (char t : src)
     {
-        if (t == ' ')
+        if (_is_space(t) || t == '\n')
             continue;
         else
             ss << t;
@@ -643,8 +649,6 @@ bool try_build_fn_tree(stack<string> &postfix, fn_btree_refs *tree)
 
             tree->left = new fn_btree_refs();
             tree->left->value = fn_ref;
-            printf("build(left)=%s\n", _left.c_str());
-            return true;
         }
 
         // right
@@ -662,13 +666,13 @@ bool try_build_fn_tree(stack<string> &postfix, fn_btree_refs *tree)
         {
             value_fn_ref *fn_ref = NULL;
             lexer fn_lx(_right);
+            printf("____\n");
+            fn_lx.get_info(cout);
             if ((fn_ref = try_build_fn_ref(fn_lx)) == NULL)
                 return false;
 
             tree->right = new fn_btree_refs();
             tree->right->value = fn_ref;
-            printf("build(right)=%s\n", _right.c_str());
-            return true;
             // tree->right->val = _right;
         }
     }
@@ -685,18 +689,14 @@ value_fn_expr_refs *try_build_fn_expr(lexer &lx)
     lx.cursor_set(old);
     auto next_cursor = old += expr_s.size();
 
-    DEBUG_MSG("[try_build_fn_expr] next_until ok");
-
     if (check_s(expr_s, LEX_SYMBOLS_NO_EXPR))
         return NULL;
 
     expr_s.insert(0, "(");
     expr_s.append(")");
 
-    string normalized_expr_buff = _simple_remove_spaces(expr_s);
+    string normalized_expr_buff = _clear_expr_string(expr_s);
     lexer lx2(normalized_expr_buff);
-
-    DEBUG_MSG("[try_build_fn_expr] normalized_expr_buff ok");
 
     stack<string> expr_postfix;
     if (!deep_expr_postfix(lx2, expr_postfix))
@@ -751,12 +751,6 @@ graph_block *try_build_tagword(lexer &lx)
 // is_fn_call
 // try_build()
 //
-
-bool _is_space(char t)
-{
-    string trash = "\r\t ";
-    return trash.find(t) != string::npos;
-}
 
 graph_table<graph_block *> *builder::build_lex_graph(string &src)
 {

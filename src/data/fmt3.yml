@@ -1,2 +1,3 @@
 go:
-  word: space(123) & 
+  word: space(123) & les(3)  
+  

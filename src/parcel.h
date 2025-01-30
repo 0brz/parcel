@@ -11,10 +11,11 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include "./expr/expr_tree.h"
 
 using namespace std;
 
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 1
 #define DEBUG_DCTOR       \
     if (DEBUG_LEVEL == 1) \
         printf("~() [%s]\n", __func__);
@@ -682,8 +683,9 @@ namespace lex
         case RULE_TYPE::BL_TAGVAL:
         case VAR_DEF:
 
-        case FN_REF:
-        case FN_REF_EXPR:
+        case RULE_TYPE::FN_REF:
+        case RULE_TYPE::FN_REF_EXPR:
+        case RULE_TYPE::FN_ARG_LIST:
             return true;
             break;
 
@@ -906,6 +908,45 @@ namespace lex
         };
     };
 
+    struct value_fn : public graph_value
+    {
+        inline RULE_TYPE graph_value::get_type()
+        {
+            return RULE_TYPE::FN_PROTO;
+        };
+
+        fn_proto fn;
+
+        value_fn(fn_type type, fn_value_basic *val) : fn(type, val) {};
+        ~value_fn() {};
+    };
+
+    using fn_btree_refs = fn_btree<value_fn_ref>;
+    using fn_btree_calls = fn_btree<fn_proto>;
+
+    struct value_fn_expr_refs : public graph_value
+    {
+        inline RULE_TYPE graph_value::get_type()
+        {
+            return RULE_TYPE::FN_REF_EXPR;
+        };
+
+        fn_btree_refs *fn_tree;
+        value_fn_expr_refs(fn_btree_refs *btree_refs) : fn_tree(btree_refs) {};
+        ~value_fn_expr_refs()
+        {
+            DEBUG_DCTOR;
+            if (fn_tree == NULL)
+            {
+                DEBUG_MSG("ERR: value_fn_expr_refs fn_tree is null");
+            }
+            else
+            {
+                delete fn_tree;
+            }
+        }
+    };
+
 #pragma endregion
 
     struct graph_block
@@ -933,6 +974,7 @@ namespace lex
                     if (p)
                         delete p;
                 }
+                // fns
                 else if (type == RULE_TYPE::FN_REF)
                 {
                     value_fn_ref *p = dynamic_cast<value_fn_ref *>(value);
@@ -942,6 +984,17 @@ namespace lex
                     }
                     else
                         DEBUG_MSG("~[value_fn_ref] (value) ref is null");
+                }
+                else if (type == RULE_TYPE::FN_REF_EXPR)
+                {
+                    DEBUG_MSG("~[value_fn_expr_refs] (value) OK");
+                    value_fn_expr_refs *p = dynamic_cast<value_fn_expr_refs *>(value);
+                    if (p)
+                    {
+                        delete p;
+                    }
+                    else
+                        DEBUG_MSG("~[value_fn_expr_refs] (value) ref is null");
                 }
                 else if (type == RULE_TYPE::LITR_CHAR)
                 {
