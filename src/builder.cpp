@@ -59,67 +59,6 @@ graph_block *create_block(RULE_TYPE type, graph_value *val)
 
 // -----------------------
 
-/*
-bool builder::is_function(lexer& lx) {
-    printf("______________\n");
-    lx.get_info(cout);
-    size_t move_back_size = 0;
-            string id;
-            size_t ofs = 0;
-            if ((ofs = lx.next_id(id)) != lx.npos) {
-                //printf("___is_fun: id=%s\n", id.c_str());
-                move_back_size+=ofs;
-                lx.get_info(cout);
-
-                if (lx.check_sequence("()", ":")) {
-                    //printf("___is_fun: sec=\n");
-                    lx.cursor_move(-move_back_size);
-
-                    //lx.get_info(cout);
-                    //printf("______________\n");
-                    return true;
-                }
-            }
-
-    lx.cursor_move(-move_back_size);
-    return false;
-} ;
-*/
-
-bool is_function_def(lexer &lx)
-{
-    string id;
-    size_t id_ofs;
-
-    size_t old_ofs = lx.cursor_get();
-
-    if ((id_ofs = lx.next_id(id)) != lx.npos)
-    {
-        if (lx.check_sequence("()", ":-"))
-        {
-            string args;
-            size_t ofs_args;
-            if ((ofs_args = lx.next_like_rounded(args, "(", ")", ":->^?{}[]")) != lx.npos)
-            {
-                // :->
-                lx.skip(" \t");
-                if (lx.step_next(":"))
-                {
-                    lx.skip(" \n\t");
-                    if (lx.step_next("->"))
-                    {
-                        lx.cursor_set(old_ofs);
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-
-    lx.cursor_set(old_ofs);
-    return false;
-};
-
 bool is_function_ref(lexer &lx)
 {
     string id;
@@ -234,37 +173,6 @@ bool builder::is_literal(lexer &lx)
 
 // ----------------------
 
-/*
-graph_block* builder::build_function(lexer& lx, bool is_ref) {
-    // get prefix
-    // get name
-    // get args
-    lx.get_info(cout);
-    string _name;
-    if (lx.next_id(_name) == lx.npos) {
-        printf("[ERR] build.function: name\n");
-        lx.get_info(cout);
-        return NULL;
-    }
-
-    string _args;
-    if (lx.next_like_rounded(_args, "(", ")", lx.symbols_no_id_nospace) ==
-        lx.npos) {
-        printf("[ERR] build.function: args\n");
-        lx.get_info(cout);
-        return NULL;
-    }
-
-    graph_block* bl = create_function(_name, _args);
-    if (is_ref) {
-        bl->type = RULE_TYPE::FUNCTION_REF;
-    }
-
-    printf("[build] fn: %s(%s)\n", _name.c_str(), _args.c_str());
-    return bl;
-};
-*/
-
 graph_block *build_function_def(lexer &lx)
 {
     // name, args, ret value
@@ -307,15 +215,6 @@ bool _link_last_block(graph_table<graph_block *> *gt, graph_block *bl)
 }
 
 // ---------------------
-/*
-    is_vardef()
-    is_func_def
-    is_fn_call
-
-    build_vardef
-    build_func_def
-    build_func_call
-*/
 
 bool is_vardef(lexer &lx)
 {
@@ -502,20 +401,22 @@ value_fn_arglist *build_fn_args(lexer &lx, bool &out_build_status)
     return args;
 }
 
-graph_block *build_func_call(lexer &lx)
+graph_block *try_build_fn_call(lexer &lx)
 {
     string fn_id;
+    auto old = lx.cursor_get();
 
     // get name
     if (lx.next_id(fn_id) != lx.npos)
     {
-        printf("[build_func_call] id=%s\n", fn_id.c_str());
+        printf("[try_build_fn_call] id=%s\n", fn_id.c_str());
 
         lx.skip(" \t");
         bool args_build = false;
         value_fn_arglist *args = build_fn_args(lx, args_build);
         if (!args_build)
         {
+            lx.cursor_set(old);
             return NULL;
         }
 
@@ -524,24 +425,28 @@ graph_block *build_func_call(lexer &lx)
 
         return bl;
     }
-    else
-        return NULL;
+
+    lx.cursor_set(old);
+    return NULL;
 };
 
-graph_block *build_func_call(lexer &lx, string &fn_name)
+/*
+graph_block *try_build_fn_call(lexer &lx, string &fn_name)
 {
     string fn_id;
+    auto old = lx.cursor_get();
 
     // get name
     if (lx.next_id(fn_id) != lx.npos)
     {
-        printf("[build_func_call] id=%s\n", fn_id.c_str());
+        printf("[try_build_fn_call] id=%s\n", fn_id.c_str());
         fn_name = fn_id;
         lx.skip(" \t");
         bool args_build = false;
         value_fn_arglist *args = build_fn_args(lx, args_build);
         if (!args_build)
         {
+            lx.cursor_set(old);
             return NULL;
         }
 
@@ -550,9 +455,11 @@ graph_block *build_func_call(lexer &lx, string &fn_name)
 
         return bl;
     }
-    else
-        return NULL;
+
+    lx.cursor_set(old);
+    return NULL;
 };
+*/
 
 // -------------- EXPR
 
@@ -561,27 +468,6 @@ graph_block *build_func_call(lexer &lx, string &fn_name)
 // access_fn_expr
 
 // get_logic_entry
-
-/*
-
-    build_fn_expr_stack(){
-
-        logic_entry  = get_logic_entry(src);
-        left = src.substr()
-        right = src.substr()
-
-        // check left
-        if (is_fn_expr(left))
-            build_fn_expr(left, call_stack)
-        else (is_fn_call(left))
-            call_stack += build_fn_call(left)
-
-        // check right
-
-
-    }
-
-*/
 
 size_t get_expr_logic_entry(lexer &lx)
 {
@@ -740,7 +626,7 @@ void try_build_fn_tree(stack<string> &postfix, fn_btree_refs *tree)
         {
             // this is a value
             tree->left = new fn_btree_refs();
-            // tree->left->value = build_func_call()
+            // tree->left->value = try_build_fn_call()
             printf("build(left)=%s\n", _left.c_str());
             // old
             // tree->left = new expr_tree();
@@ -807,25 +693,31 @@ bool try_build_fn_expr(lexer &lx)
     return true;
 }
 
-bool get_tagword(lexer &lx, string &tagname)
+graph_block *try_build_tagword(lexer &lx)
 {
-    string t;
+    string tagname;
     auto c = lx.cursor_get();
 
-    if (lx.next_word(t) != lx.npos)
+    if (lx.next_word(tagname) != lx.npos)
     {
         lx.skip(" \t");
         if (lx.at(lx.cursor_get()) == LANG_TAG_PREFIX)
         {
             lx.cursor_move(1);
-            tagname = t;
-            return true;
+
+            RULE_TYPE type = lex::typeof(tagname);
+            graph_block *_bl = create_block(type, NULL); // tagword doesnt have a value
+            return _bl;
         }
     }
 
     lx.cursor_set(c);
-    return false;
-}
+    return NULL;
+};
+
+// is_fn_call
+// try_build()
+//
 
 graph_table<graph_block *> *builder::build_lex_graph(string &src)
 {
@@ -909,24 +801,23 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
         }
 
         // FN, EXPRS
+        graph_block *fn = NULL;
         if (try_build_fn_expr(lx))
         {
             printf("~%zi [gt(link.last)] (fn_call_expr) \n", line_offset);
-            break;
             continue;
         }
-        else if (is_fn_call(lx))
+        else if ((fn = try_build_fn_call(lx)) != NULL)
         {
             printf("~%zi [gt(link.last)] (fn_call)\n", line_offset);
-            break;
+            _link_last_block(gt, fn);
             continue;
         }
 
         // TAGWORDS
-        string tag_name;
-        if (get_tagword(lx, tag_name))
+        graph_block *tag = NULL;
+        if ((tag = try_build_tagword(lx)) != NULL)
         {
-            RULE_TYPE _type = lex::typeof(tag_name);
             graph_block *_last;
             string _last_name;
             if (gt->last(_last))
@@ -935,21 +826,18 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
                 _last_name = "<undf>";
 
             // specials
-            if (_type == RULE_TYPE::GO)
+            if (tag->type == RULE_TYPE::GO)
             {
                 // this is a entrypoint, no parent relates
-                graph_block *_bl = create_block(RULE_TYPE::GO, NULL);
-                gt->add(_bl, line_offset);
+                gt->add(tag, line_offset);
                 printf("~%zi [gt] [tag].go\n", line_offset);
             }
             else
             {
-                graph_block *_bl = create_block(_type, NULL);
-                gt->add(_bl, line_offset);
-                printf("~%zi [gt(link.last)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+                gt->add(tag, line_offset);
+                printf("~%zi [gt(link.last)] %s -> %s\n", line_offset, _last_name.c_str(), lex::nameof(tag->type));
             }
 
-            printf("__TAGNAME=%s\n", tag_name.c_str());
             continue;
         }
 
