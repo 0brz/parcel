@@ -27,6 +27,12 @@ bool _is_space(char t)
     return trash.find(t) != string::npos;
 };
 
+bool _is_special_delim(char t)
+{
+    string trash = ":&";
+    return trash.find(t) != string::npos;
+};
+
 // -------------------------
 /*
 graph_block* create_function(string& name, string& args) {
@@ -733,6 +739,28 @@ graph_block *try_build_tagword(lexer &lx)
     return NULL;
 };
 
+graph_block *try_build_basetype(lexer &lx)
+{
+    string type;
+    auto old = lx.cursor_get();
+    if (lx.next_id(type) != lx.npos)
+    {
+        lx.skip(" \r\t\n");
+        if (isalpha(lx.at(lx.cursor_get())))
+        {
+            auto tp = lex::typeof(type);
+            if (lex::is_basevalue(tp))
+            {
+                graph_block *bl = create_block(tp, NULL);
+                return bl;
+            }
+        }
+    }
+
+    lx.cursor_set(old);
+    return NULL;
+}
+
 // is_fn_call
 // try_build()
 //
@@ -776,9 +804,7 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
             }
         }
 
-        // DEBUG_MSG("LITERAL");
-
-        // LITERALS
+        // LITERALS, VALUES
         if (is_literal(lx))
         {
             graph_block *_last;
@@ -820,7 +846,15 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
             continue;
         }
 
-        // DEBUG_MSG("EXPRS");
+        // VALUED TAGS
+        graph_block *basev = NULL;
+        if ((basev = try_build_basetype(lx)) != NULL)
+        {
+            _link_last_block(gt, basev);
+            printf("~%zi [gt(link.last)] (basetype) \n", line_offset);
+            continue;
+        }
+
         //  FN, EXPRS
         value_fn_ref *fn_ref = NULL;
         value_fn_expr_refs *fn_expr = NULL;
@@ -839,7 +873,6 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
             continue;
         }
 
-        // DEBUG_MSG("TAGWORDS");
         //  TAGWORDS
         graph_block *tag = NULL;
         if ((tag = try_build_tagword(lx)) != NULL)
@@ -874,13 +907,12 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
         }
         else
         {
-            char t;
-            lx.next_symbol(t);
-            if (!_is_space(t))
+            char t = lx.at(lx.cursor_get());
+            if (!_is_space(t) && !_is_special_delim(t))
             {
                 stringstream at;
                 lx.get_cursor_dest(at);
-                printf("[build] lex_graph: unrecognized symbol sequence at '%s'\n", at.str().c_str());
+                printf("[build] lex_graph: unrecognized symbol sequence at (%c) '%s'\n", t, at.str().c_str());
                 delete gt;
                 return NULL;
             }

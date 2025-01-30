@@ -175,13 +175,13 @@ public:
 
     short next_until(const char *untils, string &out)
     {
-        size_t _end = _src.find_first_of(untils);
-        if (_end != string::npos)
+        size_t _end = _src.find_first_of(untils, _cursor);
+        if (_end == string::npos)
         {
             _end = _sz;
         }
 
-        auto sz(_end - _cursor - 1);
+        auto sz(_end - _cursor);
         out = _src.substr(_cursor, sz);
         cursor_move(sz);
         return sz;
@@ -655,7 +655,7 @@ namespace lex
         {FN_REF, "fn.ref"},
     };
 
-    static bool is_valuetag(RULE_TYPE type)
+    static bool is_basevalue(RULE_TYPE type)
     {
         switch (type)
         {
@@ -666,7 +666,7 @@ namespace lex
         default:
             return false;
         }
-    }
+    };
 
     static bool has_value(RULE_TYPE type)
     {
