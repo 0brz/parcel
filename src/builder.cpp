@@ -761,9 +761,70 @@ graph_block *try_build_basetype(lexer &lx)
     return NULL;
 }
 
-// is_fn_call
-// try_build()
-//
+graph_block *try_build_hook(lexer &lx)
+{
+    auto old = lx.cursor_get();
+    if (lx.at(old) == LANG_PREFIX)
+    {
+        lx.cursor_move(1);
+        string v;
+        if (lx.next_id(v) != lx.npos)
+        {
+            lx.skip(" \r\t");
+            if (lx.at(lx.cursor_get()) == LANG_TAG_PREFIX)
+            {
+                lx.get_info(cout);
+                graph_block *bl = create_block(RULE_TYPE::DATA_HOOK, NULL);
+                return bl;
+            }
+        }
+    }
+
+    lx.cursor_set(old);
+    return NULL;
+};
+
+graph_block *try_build_vardef(lexer &lx)
+{
+    auto old = lx.cursor_get();
+    if (lx.at(old) == LANG_VARDEF)
+    {
+        lx.cursor_move(1);
+        string v;
+        if (lx.next_id(v) != lx.npos)
+        {
+            lx.skip(" \r\t");
+            if (lx.at(lx.cursor_get()) == LANG_TAG_PREFIX)
+            {
+                lx.get_info(cout);
+                graph_block *bl = create_block(RULE_TYPE::VAR_DEF, NULL);
+                return bl;
+            }
+        }
+    }
+
+    lx.cursor_set(old);
+    return NULL;
+};
+
+graph_block *try_build_vardef_ref(lexer &lx)
+{
+    auto old = lx.cursor_get();
+    if (lx.at(old) == LANG_VARDEF)
+    {
+        lx.cursor_move(1);
+        string v;
+        if (lx.next_id(v) != lx.npos)
+        {
+            value_vardef_ref *ref = new value_vardef_ref(v);
+            graph_block *bl = create_block(RULE_TYPE::VAR_DEF_REF, ref);
+            return bl;
+        }
+    }
+
+    lx.cursor_set(old);
+    return NULL;
+}
 
 graph_table<graph_block *> *builder::build_lex_graph(string &src)
 {
@@ -778,30 +839,20 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
     while (lx.can_read())
     {
         // DEFINES
-        if (lx.at(lx.cursor_get()) == LANG_PREFIX)
+        // vardef
+        // hook
+        graph_block *bl = NULL;
+        if ((bl = try_build_hook(lx)) != NULL)
         {
-            if (is_vardef(lx))
-            {
-                // no linking
-                auto bl = build_vardef(lx);
-                gt->add(bl, line_offset);
-                printf("~%zi [gt(nolink))].vardef\n", line_offset);
-            }
-            else if (builder::is_hook(lx))
-            {
-                // hook def, no linking
-                auto _bl = build_hook(lx, false);
-                gt->add(_bl, line_offset);
-                printf("~%zi [gt(nolink)].hook\n", line_offset);
-            }
-            else if (is_hook_ref(lx))
-            {
-                // hook ref, link
-                auto _bl = build_hook(lx, true);
-                gt->add(_bl, line_offset);
-                _link_last_block(gt, _bl);
-                printf("~%zi [gt(link.last)] hook(ref)\n", line_offset);
-            }
+            gt->add(bl, line_offset);
+            printf("~%zi [gt(nolink))].hook\n", line_offset);
+            continue;
+        }
+        else if ((bl = try_build_vardef(lx)) != NULL)
+        {
+            gt->add(bl, line_offset);
+            printf("~%zi [gt(nolink))].vardef\n", line_offset);
+            continue;
         }
 
         // LITERALS, VALUES
@@ -852,6 +903,12 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
         {
             _link_last_block(gt, basev);
             printf("~%zi [gt(link.last)] (basetype) \n", line_offset);
+            continue;
+        }
+        else if ((basev = try_build_vardef_ref(lx)) != NULL)
+        {
+            _link_last_block(gt, basev);
+            printf("~%zi [gt(link.last)] (vardef_ref) \n", line_offset);
             continue;
         }
 

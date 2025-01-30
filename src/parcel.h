@@ -15,7 +15,7 @@
 
 using namespace std;
 
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 1
 #define DEBUG_DCTOR       \
     if (DEBUG_LEVEL == 1) \
         printf("~() [%s]\n", __func__);
@@ -26,6 +26,7 @@ using namespace std;
 
 #define LANG_PREFIX '&'
 #define LANG_TAG_PREFIX ':'
+#define LANG_VARDEF '@'
 #define LANG_VAR "var"
 #define LANG_FUNC "fn"
 
@@ -615,6 +616,7 @@ namespace lex
 
         // vars
         VAR_DEF,
+        VAR_DEF_REF,
 
         // spec
         _TYPE_ERROR,
@@ -686,6 +688,8 @@ namespace lex
         case RULE_TYPE::FN_REF:
         case RULE_TYPE::FN_REF_EXPR:
         case RULE_TYPE::FN_ARG_LIST:
+
+        case RULE_TYPE::VAR_DEF_REF:
             return true;
             break;
 
@@ -947,6 +951,26 @@ namespace lex
         }
     };
 
+    struct value_vardef_ref : public graph_value
+    {
+        inline RULE_TYPE graph_value::get_type()
+        {
+            return RULE_TYPE::VAR_DEF_REF;
+        };
+
+        string ref_name;
+
+        value_vardef_ref(string &ref_name)
+        {
+            this->ref_name = ref_name;
+        };
+
+        ~value_vardef_ref()
+        {
+            DEBUG_MSG("~[value_vardef_ref]");
+        };
+    };
+
 #pragma endregion
 
     struct graph_block
@@ -995,6 +1019,13 @@ namespace lex
                     }
                     else
                         DEBUG_MSG("~[value_fn_expr_refs] (value) ref is null");
+                }
+                // defs
+                else if (type == RULE_TYPE::VAR_DEF_REF)
+                {
+                    value_vardef_ref *p = dynamic_cast<value_vardef_ref *>(value);
+                    if (p)
+                        delete p;
                 }
                 // litrs
                 else if (type == RULE_TYPE::LITR_CHAR)

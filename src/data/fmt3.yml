@@ -4,3 +4,13 @@ go:
 tagval:
   tag: word
   val: "apple"
+
+&get_all_fns_in_file:
+    list: word
+
+@f:
+  word: word
+
+
+@vd :
+  word: @f
