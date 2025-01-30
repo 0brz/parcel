@@ -293,26 +293,6 @@ graph_block *builder::build_hook(lexer &lx, bool is_ref)
     return b;
 }
 
-bool step_char_if_eq(lexer &lx, char check_symbol)
-{
-    lx.skip(" ");
-    if (lx.can_read())
-    {
-        char t;
-        lx.next_symbol(t);
-        if (t == check_symbol)
-        {
-            return true;
-        }
-        else
-        {
-            lx.cursor_move(-1);
-        }
-    }
-
-    return false;
-};
-
 // ----------------------
 bool _link_last_block(graph_table<graph_block *> *gt, graph_block *bl)
 {
@@ -722,8 +702,10 @@ string _simple_remove_spaces(string &src)
     return ss.str();
 };
 
-bool check_s(string& s, const char* contains) {
-    if (s.find_first_of(contains) != string::npos) {
+bool check_s(string &s, const char *contains)
+{
+    if (s.find_first_of(contains) != string::npos)
+    {
         return true;
     }
 
@@ -833,7 +815,6 @@ bool get_tagword(lexer &lx, string &tagname)
     if (lx.next_word(t) != lx.npos)
     {
         lx.skip(" \t");
-        lx.get_info(cout);
         if (lx.at(lx.cursor_get()) == LANG_TAG_PREFIX)
         {
             lx.cursor_move(1);
@@ -941,7 +922,7 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
             continue;
         }
 
-        // TAGWORD
+        // TAGWORDS
         string tag_name;
         if (get_tagword(lx, tag_name))
         {
@@ -953,52 +934,32 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
             else
                 _last_name = "<undf>";
 
-            /*
-            if (step_char_if_eq(lx, LANG_TAG_PREFIX))
+            // specials
+            if (_type == RULE_TYPE::GO)
             {
-
-                if (!lex::is_tagword(cur))
-                {
-                    printf("~%zi [ERR] build: (type error) tag='%s'\n", line_offset, cur.c_str());
-                    break;
-                }
-
-                RULE_TYPE _type = lex::typeof(cur);
-                if (_type == RULE_TYPE::GO)
-                {
-                    // this is a entrypoint, no parent relates
-                    graph_block *_bl = create_block(RULE_TYPE::GO, NULL);
-                    gt->add(_bl, line_offset);
-                    printf("~%zi [gt] [tag].go\n", line_offset);
-                }
-                else
-                {
-                    // gt.link_prev(bl)
-
-                    // has_value
-
-                    graph_block *_bl = create_block(_type, NULL);
-                    gt->add(_bl, line_offset);
-                    printf("~%zi [gt(link.last)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
-                }
-
-                continue;
+                // this is a entrypoint, no parent relates
+                graph_block *_bl = create_block(RULE_TYPE::GO, NULL);
+                gt->add(_bl, line_offset);
+                printf("~%zi [gt] [tag].go\n", line_offset);
             }
-            */
+            else
+            {
+                graph_block *_bl = create_block(_type, NULL);
+                gt->add(_bl, line_offset);
+                printf("~%zi [gt(link.last)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+            }
 
-            lx.get_info(cout);
             printf("__TAGNAME=%s\n", tag_name.c_str());
             continue;
         }
 
-        if (step_char_if_eq(lx, '\n'))
+        if (lx.at(lx.cursor_get()) == '\n')
         {
+            lx.cursor_move(1);
             line_offset = lx.skip(" \t");
         }
         else
-        {
             lx.cursor_move(1);
-        }
     }
 
     return gt;
