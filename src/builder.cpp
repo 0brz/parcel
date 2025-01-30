@@ -698,7 +698,7 @@ void get_expr_deep(lexer& lx, stack<string>& call_stack) {
 }
 
 
-string _simple_remove(string& src) {
+string _simple_remove_spaces(string& src) {
     stringstream ss;
     for (char t : src) {
         if (t == ' ') continue;
@@ -767,17 +767,19 @@ bool try_build_fn_expr(lexer &lx)
     expr_s.insert(0, "(");
     expr_s.append(")");
 
-    string ps = _simple_remove(expr_s);
+    string ps = _simple_remove_spaces(expr_s);
 
-    printf("__UNTIL=%s\n", ps.c_str());
     vector<graph_block *> fns;
 
     lexer lx2(ps);
 
     stack<string> cs;
     get_expr_deep(lx2, cs);
-    
-    printf("CALL STACK BUILDED\n");
+
+    if (cs.size() <= 1) {
+        lx.cursor_set(c);
+        return false;
+    }
 
     fn_btree_refs* tr = new fn_btree_refs();
     try_build_fn_tree(cs, tr);
@@ -921,6 +923,17 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
                     else if (try_build_fn_expr(lx))
                     {
                         printf("~%zi [gt(basetag, tag, fn_expr)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+                        break;
+                    }
+                    else if (is_func_call(lx)) {
+                        auto fn_single = build_func_call(lx);
+                        if (fn_single == NULL) {
+                            // ERR
+                            continue;
+                        }
+
+                        printf("~%zi [gt(basetag, tag, fn_single)] %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
+                        
                         break;
                     }
 
