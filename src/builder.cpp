@@ -12,6 +12,7 @@ using namespace lex;
 #define LANG_LOGIC_OR '|'
 
 #define LEX_SYMBOLS_NO_EXPR ":@!*^%$<>{}:\"'~;"
+#define LEX_SYMBOLS_SPACES " \r\t\n"
 
 #pragma region expressions
 
@@ -745,8 +746,8 @@ graph_block *try_build_basetype(lexer &lx)
     auto old = lx.cursor_get();
     if (lx.next_id(type) != lx.npos)
     {
-        lx.skip(" \r\t\n");
-        if (isalpha(lx.at(lx.cursor_get())))
+        auto s = lx.skip(" \r\t\n");
+        if (isalpha(lx.at(lx.cursor_get())) || !lx.has_next_not_of(lx.cursor_get(), LEX_SYMBOLS_SPACES))
         {
             auto tp = lex::typeof(type);
             if (lex::is_basevalue(tp))
@@ -973,8 +974,15 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
             }
             else
             {
+                // parent
+                graph_block *par;
+                if (gt->parent(line_offset - 2, par))
+                {
+                    par->entries.push_back(tag);
+                    printf("~%zi [gt, link=parent] %s -> %s\n", line_offset, lex::nameof(par->type), lex::nameof(tag->type));
+                }
+
                 gt->add(tag, line_offset);
-                printf("~%zi [gt(link.last)] %s -> %s\n", line_offset, _last_name.c_str(), lex::nameof(tag->type));
             }
 
             continue;
@@ -985,7 +993,7 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
             lx.cursor_move(1);
             line_offset = lx.skip(" \t");
         }
-        else
+        else if (lx.can_read())
         {
             char t = lx.at(lx.cursor_get());
             if (!_is_space(t) && !_is_special_delim(t))

@@ -93,6 +93,11 @@ public:
         out = _src.substr(offset + 1, _sz - offset - 1 - right_pad);
     };
 
+    bool has_next_not_of(size_t ofs, const char *of)
+    {
+        return _src.find_first_not_of(of, ofs) != string::npos;
+    }
+
     size_t skip(const char *s)
     {
         int ofs = _src.find_first_not_of(s, _cursor);
