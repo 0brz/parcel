@@ -541,7 +541,7 @@ bool deep_expr_postfix(lexer &lx, stack<string> &call_stack)
 
     if (entry > 0)
     {
-        DEBUG_MSG("[deep_expr_postfix] entry got ok");
+        // DEBUG_MSG("[deep_expr_postfix] entry got ok");
         lx.str_left(entry, 1, left);
         if (left == "")
             return false;
@@ -695,7 +695,7 @@ value_fn_expr_refs *try_build_fn_expr(lexer &lx)
         return NULL;
     }
 
-    DEBUG_MSG("[try_build_fn_expr] deep_expr_postfix ok");
+    // DEBUG_MSG("[try_build_fn_expr] deep_expr_postfix ok");
 
     if (expr_postfix.size() <= 1)
     {
@@ -773,7 +773,6 @@ graph_block *try_build_hook(lexer &lx)
             lx.skip(" \r\t");
             if (lx.at(lx.cursor_get()) == LANG_TAG_PREFIX)
             {
-                lx.get_info(cout);
                 graph_block *bl = create_block(RULE_TYPE::DATA_HOOK, NULL);
                 return bl;
             }
@@ -796,7 +795,6 @@ graph_block *try_build_vardef(lexer &lx)
             lx.skip(" \r\t");
             if (lx.at(lx.cursor_get()) == LANG_TAG_PREFIX)
             {
-                lx.get_info(cout);
                 graph_block *bl = create_block(RULE_TYPE::VAR_DEF, NULL);
                 return bl;
             }
@@ -824,7 +822,26 @@ graph_block *try_build_vardef_ref(lexer &lx)
 
     lx.cursor_set(old);
     return NULL;
-}
+};
+
+graph_block *try_build_hook_ref(lexer &lx)
+{
+    auto old = lx.cursor_get();
+    if (lx.at(old) == LANG_PREFIX)
+    {
+        lx.cursor_move(1);
+        string v;
+        if (lx.next_id(v) != lx.npos)
+        {
+            value_vardef_ref *ref = new value_vardef_ref(v);
+            graph_block *bl = create_block(RULE_TYPE::DATA_HOOK_REF, ref);
+            return bl;
+        }
+    }
+
+    lx.cursor_set(old);
+    return NULL;
+};
 
 graph_table<graph_block *> *builder::build_lex_graph(string &src)
 {
@@ -909,6 +926,12 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
         {
             _link_last_block(gt, basev);
             printf("~%zi [gt(link.last)] (vardef_ref) \n", line_offset);
+            continue;
+        }
+        else if ((basev = try_build_hook_ref(lx)) != NULL)
+        {
+            _link_last_block(gt, basev);
+            printf("~%zi [gt(link.last)] (hook_ref) \n", line_offset);
             continue;
         }
 

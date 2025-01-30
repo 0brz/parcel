@@ -15,7 +15,7 @@
 
 using namespace std;
 
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 0
 #define DEBUG_DCTOR       \
     if (DEBUG_LEVEL == 1) \
         printf("~() [%s]\n", __func__);
@@ -968,6 +968,26 @@ namespace lex
         ~value_vardef_ref()
         {
             DEBUG_MSG("~[value_vardef_ref]");
+        };
+    };
+
+    struct value_hook_ref : public graph_value
+    {
+        inline RULE_TYPE graph_value::get_type()
+        {
+            return RULE_TYPE::DATA_HOOK_REF;
+        };
+
+        string ref_name;
+
+        value_hook_ref(string &ref_name)
+        {
+            this->ref_name = ref_name;
+        };
+
+        ~value_hook_ref()
+        {
+            DEBUG_MSG("~[value_hook_ref]");
         };
     };
 

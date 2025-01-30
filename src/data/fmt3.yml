@@ -2,15 +2,13 @@ go:
   word: space(123) & les(3)
 
 tagval:
-  tag: word
-  val: "apple"
+  tag:  word
+  val:  "apple"
 
 &get_all_fns_in_file:
-    list: word
+    list: word    
 
 @f:
   word: word
-
-
 @vd :
-  word: @f
+  word: &r
