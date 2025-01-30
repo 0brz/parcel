@@ -401,7 +401,7 @@ value_fn_arglist *build_fn_args(lexer &lx, bool &out_build_status)
     return args;
 }
 
-graph_block *try_build_fn_call(lexer &lx)
+value_fn_ref *try_build_fn_ref(lexer &lx)
 {
     string fn_id;
     auto old = lx.cursor_get();
@@ -421,9 +421,7 @@ graph_block *try_build_fn_call(lexer &lx)
         }
 
         value_fn_ref *_val = new value_fn_ref(fn_id, args);
-        graph_block *bl = create_block(RULE_TYPE::FN_REF, _val);
-
-        return bl;
+        return _val;
     }
 
     lx.cursor_set(old);
@@ -598,8 +596,14 @@ bool check_s(string &s, const char *contains)
     return false;
 }
 
-void try_build_fn_tree(stack<string> &postfix, fn_btree_refs *tree)
+bool try_build_fn_tree(stack<string> &postfix, fn_btree_refs *tree)
 {
+    if (postfix.empty())
+    {
+        DEBUG_MSG("[try_build_fn_tree] postfix is empty, try mm");
+        return false;
+    }
+
     auto entry = postfix.top();
     postfix.pop();
 
@@ -620,17 +624,20 @@ void try_build_fn_tree(stack<string> &postfix, fn_btree_refs *tree)
 
             // tree->left = new expr_tree();
             postfix.push(_left);
-            try_build_fn_tree(postfix, tree->left);
+            if (!try_build_fn_tree(postfix, tree->left))
+                return false;
         }
         else
         {
-            // this is a value
+            value_fn_ref *fn_ref = NULL;
+            lexer fn_lx(_left);
+            if ((fn_ref = try_build_fn_ref(fn_lx)) == NULL)
+                return false;
+
             tree->left = new fn_btree_refs();
-            // tree->left->value = try_build_fn_call()
+            tree->left->value = fn_ref;
             printf("build(left)=%s\n", _left.c_str());
-            // old
-            // tree->left = new expr_tree();
-            // tree->left->val = _left;
+            return true;
         }
 
         // right
@@ -641,56 +648,67 @@ void try_build_fn_tree(stack<string> &postfix, fn_btree_refs *tree)
         {
             tree->right = new fn_btree_refs();
             postfix.push(_right);
-            try_build_fn_tree(postfix, tree->right);
+            if (!try_build_fn_tree(postfix, tree->right))
+                return false;
         }
         else
         {
+            value_fn_ref *fn_ref = NULL;
+            lexer fn_lx(_right);
+            if ((fn_ref = try_build_fn_ref(fn_lx)) == NULL)
+                return false;
+
             tree->right = new fn_btree_refs();
+            tree->right->value = fn_ref;
             printf("build(right)=%s\n", _right.c_str());
+            return true;
             // tree->right->val = _right;
         }
     }
+
+    return true;
 }
 
-bool try_build_fn_expr(lexer &lx)
+graph_block *try_build_fn_expr(lexer &lx)
 {
     // prepare string
-    printf("[try_build_fn_expr]\n");
-    lx.get_info(cout);
-
     string expr_s;
-    auto c = lx.cursor_get();
+    auto old = lx.cursor_get();
     lx.next_until("\n\r", expr_s);
-    lx.cursor_set(c);
+    lx.cursor_set(old);
+    auto next_cursor = old += expr_s.size();
 
     if (check_s(expr_s, LEX_SYMBOLS_NO_EXPR))
-        return false;
+        return NULL;
 
     expr_s.insert(0, "(");
     expr_s.append(")");
 
-    string ps = _simple_remove_spaces(expr_s);
+    string normalized_expr_buff = _simple_remove_spaces(expr_s);
+    lexer lx2(normalized_expr_buff);
 
-    vector<graph_block *> fns;
+    stack<string> expr_postfix;
+    get_expr_deep(lx2, expr_postfix);
 
-    lexer lx2(ps);
-
-    stack<string> cs;
-    get_expr_deep(lx2, cs);
-
-    if (cs.size() <= 1)
+    if (expr_postfix.size() <= 1)
     {
-        lx.cursor_set(c);
-        return false;
+        lx.cursor_set(old);
+        return NULL;
     }
 
     fn_btree_refs *tr = new fn_btree_refs();
-    try_build_fn_tree(cs, tr);
+    if (!try_build_fn_tree(expr_postfix, tr))
+    {
+        DEBUG_MSG("[try_build_fn_expr] Cant build fn expr tree");
+        return NULL;
+    }
+
+    lx.cursor_set(next_cursor);
 
     value_fn_expr_refs *expr_val = new value_fn_expr_refs(tr);
     graph_block *fn_expr = create_block(RULE_TYPE::FN_REF_EXPR, expr_val);
 
-    return true;
+    return fn_expr;
 }
 
 graph_block *try_build_tagword(lexer &lx)
@@ -801,16 +819,17 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
         }
 
         // FN, EXPRS
-        graph_block *fn = NULL;
+        value_fn_ref *fn_ref = NULL;
         if (try_build_fn_expr(lx))
         {
             printf("~%zi [gt(link.last)] (fn_call_expr) \n", line_offset);
             continue;
         }
-        else if ((fn = try_build_fn_call(lx)) != NULL)
+        else if ((fn_ref = try_build_fn_ref(lx)) != NULL)
         {
             printf("~%zi [gt(link.last)] (fn_call)\n", line_offset);
-            _link_last_block(gt, fn);
+            graph_block *bl = create_block(RULE_TYPE::FN_REF, fn_ref);
+            _link_last_block(gt, bl);
             continue;
         }
 
