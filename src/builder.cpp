@@ -531,7 +531,7 @@ size_t get_expr_logic_entry(lexer &lx)
     return op_entry;
 }
 
-void get_expr_deep(lexer &lx, stack<string> &call_stack)
+bool deep_expr_postfix(lexer &lx, stack<string> &call_stack)
 {
     size_t entry = get_expr_logic_entry(lx);
     string left;
@@ -539,21 +539,26 @@ void get_expr_deep(lexer &lx, stack<string> &call_stack)
 
     if (entry > 0)
     {
+        DEBUG_MSG("[deep_expr_postfix] entry got ok");
         lx.str_left(entry, 1, left);
+        if (left == "")
+            return false;
         lx.str_right(entry, 1, right);
-        // printf("____LEFT='%s' RIGHT='%s'\n", left.c_str(), right.c_str());
+        if (right == "")
+            return false;
+        printf("____LEFT='%s' RIGHT='%s'\n", left.c_str(), right.c_str());
     }
 
     if (entry > 0)
     {
         // parse left
         lexer lx_left(left);
-        get_expr_deep(lx_left, call_stack);
+        deep_expr_postfix(lx_left, call_stack);
 
         //((gt(500) & less(300)) | diff(300))
         // parse right
         lexer lx_right(right);
-        get_expr_deep(lx_right, call_stack);
+        deep_expr_postfix(lx_right, call_stack);
     }
 
     if (entry == 0)
@@ -562,6 +567,7 @@ void get_expr_deep(lexer &lx, stack<string> &call_stack)
         string v;
         lx.str(v);
         call_stack.push(v);
+        return true;
     }
     else
     {
@@ -569,6 +575,7 @@ void get_expr_deep(lexer &lx, stack<string> &call_stack)
         // printf("_op=%c\n", op);
         string s(1, op);
         call_stack.push(s);
+        return true;
     }
 }
 
@@ -669,7 +676,7 @@ bool try_build_fn_tree(stack<string> &postfix, fn_btree_refs *tree)
     return true;
 }
 
-graph_block *try_build_fn_expr(lexer &lx)
+value_fn_expr_refs *try_build_fn_expr(lexer &lx)
 {
     // prepare string
     string expr_s;
@@ -677,6 +684,8 @@ graph_block *try_build_fn_expr(lexer &lx)
     lx.next_until("\n\r", expr_s);
     lx.cursor_set(old);
     auto next_cursor = old += expr_s.size();
+
+    DEBUG_MSG("[try_build_fn_expr] next_until ok");
 
     if (check_s(expr_s, LEX_SYMBOLS_NO_EXPR))
         return NULL;
@@ -687,8 +696,15 @@ graph_block *try_build_fn_expr(lexer &lx)
     string normalized_expr_buff = _simple_remove_spaces(expr_s);
     lexer lx2(normalized_expr_buff);
 
+    DEBUG_MSG("[try_build_fn_expr] normalized_expr_buff ok");
+
     stack<string> expr_postfix;
-    get_expr_deep(lx2, expr_postfix);
+    if (!deep_expr_postfix(lx2, expr_postfix))
+    {
+        return NULL;
+    }
+
+    DEBUG_MSG("[try_build_fn_expr] deep_expr_postfix ok");
 
     if (expr_postfix.size() <= 1)
     {
@@ -706,9 +722,8 @@ graph_block *try_build_fn_expr(lexer &lx)
     lx.cursor_set(next_cursor);
 
     value_fn_expr_refs *expr_val = new value_fn_expr_refs(tr);
-    graph_block *fn_expr = create_block(RULE_TYPE::FN_REF_EXPR, expr_val);
 
-    return fn_expr;
+    return expr_val;
 }
 
 graph_block *try_build_tagword(lexer &lx)
@@ -737,6 +752,12 @@ graph_block *try_build_tagword(lexer &lx)
 // try_build()
 //
 
+bool _is_space(char t)
+{
+    string trash = "\r\t ";
+    return trash.find(t) != string::npos;
+}
+
 graph_table<graph_block *> *builder::build_lex_graph(string &src)
 {
     graph_table<graph_block *> *gt = new graph_table<graph_block *>();
@@ -750,6 +771,9 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
     while (lx.can_read())
     {
         // DEFINES
+        lx.get_info(cout);
+
+        // DEBUG_MSG("DEFINES");
         if (lx.at(lx.cursor_get()) == LANG_PREFIX)
         {
             if (is_vardef(lx))
@@ -775,6 +799,8 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
                 printf("~%zi [gt(link.last)] hook(ref)\n", line_offset);
             }
         }
+
+        // DEBUG_MSG("LITERAL");
 
         // LITERALS
         if (is_literal(lx))
@@ -818,11 +844,15 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
             continue;
         }
 
-        // FN, EXPRS
+        // DEBUG_MSG("EXPRS");
+        //  FN, EXPRS
         value_fn_ref *fn_ref = NULL;
-        if (try_build_fn_expr(lx))
+        value_fn_expr_refs *fn_expr = NULL;
+        if ((fn_expr = try_build_fn_expr(lx)) != NULL)
         {
             printf("~%zi [gt(link.last)] (fn_call_expr) \n", line_offset);
+            graph_block *fn_expr_block = create_block(RULE_TYPE::FN_REF_EXPR, fn_expr);
+            _link_last_block(gt, fn_expr_block);
             continue;
         }
         else if ((fn_ref = try_build_fn_ref(lx)) != NULL)
@@ -833,7 +863,8 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
             continue;
         }
 
-        // TAGWORDS
+        // DEBUG_MSG("TAGWORDS");
+        //  TAGWORDS
         graph_block *tag = NULL;
         if ((tag = try_build_tagword(lx)) != NULL)
         {
@@ -866,7 +897,20 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
             line_offset = lx.skip(" \t");
         }
         else
-            lx.cursor_move(1);
+        {
+            char t;
+            lx.next_symbol(t);
+            if (!_is_space(t))
+            {
+                stringstream at;
+                lx.get_cursor_dest(at);
+                printf("[build] lex_graph: unrecognized symbol sequence at '%s'\n", at.str().c_str());
+                delete gt;
+                return NULL;
+            }
+            else
+                lx.cursor_move(1);
+        }
     }
 
     return gt;

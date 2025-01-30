@@ -14,14 +14,14 @@
 
 using namespace std;
 
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 0
 #define DEBUG_DCTOR       \
     if (DEBUG_LEVEL == 1) \
         printf("~() [%s]\n", __func__);
 
 #define DEBUG_MSG(s)      \
     if (DEBUG_LEVEL == 1) \
-        printf("~() [%s]\n", s);
+        printf("[%s]\n", s);
 
 #define LANG_PREFIX '&'
 #define LANG_TAG_PREFIX ':'
@@ -485,6 +485,17 @@ public:
             os << "lexer: cs=" << this->_cursor << "..|...\n";
     }
 
+    void get_cursor_dest(ostream &os)
+    {
+        if (this->_cursor > 2)
+        {
+            string around = this->_src.substr(this->_cursor - 3, 3);
+            os << around.c_str() << "|";
+        }
+        else
+            os << this->_cursor << "..|...";
+    }
+
     static size_t last_ends(string &src, size_t cursor, const char *ends)
     {
 
@@ -907,7 +918,7 @@ namespace lex
         ~graph_block()
         {
             DEBUG_DCTOR
-            printf("__type=%s\n", lex::nameof(type));
+            // printf("__type=%s\n", lex::nameof(type));
             if (lex::has_value(type))
             {
                 if (type == RULE_TYPE::LITR_STR)
