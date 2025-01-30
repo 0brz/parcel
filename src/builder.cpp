@@ -143,9 +143,6 @@ bool builder::is_literal(lexer &lx)
     // 'a' -> litr_symbol
     // "a" -> litr_word
 
-    // printf("______________\n");
-    // lx.get_info(cout);
-
     char single_pref = '_';
     string cur;
     if (lx.next_float(cur) != lx.npos)
@@ -172,8 +169,6 @@ bool builder::is_literal(lexer &lx)
         }
     }
 
-    // lx.get_info(cout);
-    // printf("______________\n");
     return false;
 };
 
@@ -190,12 +185,10 @@ graph_block *builder::build_hook(lexer &lx, bool is_ref)
 {
     // get name
     // get args
-    // lx.get_info(cout);
     string _name;
     if (lx.next_id(_name) == lx.npos)
     {
         printf("[ERR] build.hook: name\n");
-        // lx.get_info(cout);
         return NULL;
     }
 
@@ -388,9 +381,6 @@ value_fn_arglist *build_fn_args(lexer &lx, bool &out_build_status)
         }
         else
         {
-
-            // clean
-            printf("~() [build_fn_args]\n");
             value_fn_arglist *pt = head;
             while (pt != NULL)
             {
@@ -552,7 +542,7 @@ bool deep_expr_postfix(lexer &lx, stack<string> &call_stack)
         lx.str_right(entry, 1, right);
         if (right == "")
             return false;
-        printf("____LEFT='%s' RIGHT='%s'\n", left.c_str(), right.c_str());
+        // printf("____LEFT='%s' RIGHT='%s'\n", left.c_str(), right.c_str());
     }
 
     if (entry > 0)
@@ -569,7 +559,6 @@ bool deep_expr_postfix(lexer &lx, stack<string> &call_stack)
 
     if (entry == 0)
     {
-        lx.get_info(cout);
         string v;
         lx.str(v);
         call_stack.push(v);
@@ -635,7 +624,6 @@ bool try_build_fn_tree(stack<string> &postfix, fn_btree_refs *tree)
         {
             tree->left = new fn_btree_refs();
 
-            // tree->left = new expr_tree();
             postfix.push(_left);
             if (!try_build_fn_tree(postfix, tree->left))
                 return false;
@@ -666,14 +654,11 @@ bool try_build_fn_tree(stack<string> &postfix, fn_btree_refs *tree)
         {
             value_fn_ref *fn_ref = NULL;
             lexer fn_lx(_right);
-            printf("____\n");
-            fn_lx.get_info(cout);
             if ((fn_ref = try_build_fn_ref(fn_lx)) == NULL)
                 return false;
 
             tree->right = new fn_btree_refs();
             tree->right->value = fn_ref;
-            // tree->right->val = _right;
         }
     }
 
@@ -765,9 +750,6 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
     while (lx.can_read())
     {
         // DEFINES
-        lx.get_info(cout);
-
-        // DEBUG_MSG("DEFINES");
         if (lx.at(lx.cursor_get()) == LANG_PREFIX)
         {
             if (is_vardef(lx))

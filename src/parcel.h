@@ -15,7 +15,7 @@
 
 using namespace std;
 
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 0
 #define DEBUG_DCTOR       \
     if (DEBUG_LEVEL == 1) \
         printf("~() [%s]\n", __func__);
@@ -996,6 +996,7 @@ namespace lex
                     else
                         DEBUG_MSG("~[value_fn_expr_refs] (value) ref is null");
                 }
+                // litrs
                 else if (type == RULE_TYPE::LITR_CHAR)
                 {
                     value_litr_char *p = dynamic_cast<value_litr_char *>(value);
@@ -1018,7 +1019,6 @@ namespace lex
 
             for (auto &e : entries)
             {
-                printf("___del.entry\n");
                 delete e;
             }
         }
