@@ -26,6 +26,7 @@ using namespace std;
 
 #define LANG_PREFIX '&'
 #define LANG_TAG_PREFIX ':'
+#define LANG_VARDEF '@'
 #define LANG_VAR "var"
 #define LANG_FUNC "fn"
 
@@ -91,6 +92,11 @@ public:
     {
         out = _src.substr(offset + 1, _sz - offset - 1 - right_pad);
     };
+
+    bool has_next_not_of(size_t ofs, const char *of)
+    {
+        return _src.find_first_not_of(of, ofs) != string::npos;
+    }
 
     size_t skip(const char *s)
     {
@@ -175,13 +181,13 @@ public:
 
     short next_until(const char *untils, string &out)
     {
-        size_t _end = _src.find_first_of(untils);
-        if (_end != string::npos)
+        size_t _end = _src.find_first_of(untils, _cursor);
+        if (_end == string::npos)
         {
             _end = _sz;
         }
 
-        auto sz(_end - _cursor - 1);
+        auto sz(_end - _cursor);
         out = _src.substr(_cursor, sz);
         cursor_move(sz);
         return sz;
@@ -615,6 +621,7 @@ namespace lex
 
         // vars
         VAR_DEF,
+        VAR_DEF_REF,
 
         // spec
         _TYPE_ERROR,
@@ -655,7 +662,7 @@ namespace lex
         {FN_REF, "fn.ref"},
     };
 
-    static bool is_valuetag(RULE_TYPE type)
+    static bool is_basevalue(RULE_TYPE type)
     {
         switch (type)
         {
@@ -666,7 +673,7 @@ namespace lex
         default:
             return false;
         }
-    }
+    };
 
     static bool has_value(RULE_TYPE type)
     {
@@ -686,6 +693,8 @@ namespace lex
         case RULE_TYPE::FN_REF:
         case RULE_TYPE::FN_REF_EXPR:
         case RULE_TYPE::FN_ARG_LIST:
+
+        case RULE_TYPE::VAR_DEF_REF:
             return true;
             break;
 
@@ -947,6 +956,46 @@ namespace lex
         }
     };
 
+    struct value_vardef_ref : public graph_value
+    {
+        inline RULE_TYPE graph_value::get_type()
+        {
+            return RULE_TYPE::VAR_DEF_REF;
+        };
+
+        string ref_name;
+
+        value_vardef_ref(string &ref_name)
+        {
+            this->ref_name = ref_name;
+        };
+
+        ~value_vardef_ref()
+        {
+            DEBUG_MSG("~[value_vardef_ref]");
+        };
+    };
+
+    struct value_hook_ref : public graph_value
+    {
+        inline RULE_TYPE graph_value::get_type()
+        {
+            return RULE_TYPE::DATA_HOOK_REF;
+        };
+
+        string ref_name;
+
+        value_hook_ref(string &ref_name)
+        {
+            this->ref_name = ref_name;
+        };
+
+        ~value_hook_ref()
+        {
+            DEBUG_MSG("~[value_hook_ref]");
+        };
+    };
+
 #pragma endregion
 
     struct graph_block
@@ -995,6 +1044,13 @@ namespace lex
                     }
                     else
                         DEBUG_MSG("~[value_fn_expr_refs] (value) ref is null");
+                }
+                // defs
+                else if (type == RULE_TYPE::VAR_DEF_REF)
+                {
+                    value_vardef_ref *p = dynamic_cast<value_vardef_ref *>(value);
+                    if (p)
+                        delete p;
                 }
                 // litrs
                 else if (type == RULE_TYPE::LITR_CHAR)

@@ -12,6 +12,7 @@ using namespace lex;
 #define LANG_LOGIC_OR '|'
 
 #define LEX_SYMBOLS_NO_EXPR ":@!*^%$<>{}:\"'~;"
+#define LEX_SYMBOLS_SPACES " \r\t\n"
 
 #pragma region expressions
 
@@ -24,6 +25,12 @@ using namespace lex;
 bool _is_space(char t)
 {
     string trash = "\r\t \n";
+    return trash.find(t) != string::npos;
+};
+
+bool _is_special_delim(char t)
+{
+    string trash = ":&";
     return trash.find(t) != string::npos;
 };
 
@@ -535,7 +542,7 @@ bool deep_expr_postfix(lexer &lx, stack<string> &call_stack)
 
     if (entry > 0)
     {
-        DEBUG_MSG("[deep_expr_postfix] entry got ok");
+        // DEBUG_MSG("[deep_expr_postfix] entry got ok");
         lx.str_left(entry, 1, left);
         if (left == "")
             return false;
@@ -689,7 +696,7 @@ value_fn_expr_refs *try_build_fn_expr(lexer &lx)
         return NULL;
     }
 
-    DEBUG_MSG("[try_build_fn_expr] deep_expr_postfix ok");
+    // DEBUG_MSG("[try_build_fn_expr] deep_expr_postfix ok");
 
     if (expr_postfix.size() <= 1)
     {
@@ -733,9 +740,109 @@ graph_block *try_build_tagword(lexer &lx)
     return NULL;
 };
 
-// is_fn_call
-// try_build()
-//
+graph_block *try_build_basetype(lexer &lx)
+{
+    string type;
+    auto old = lx.cursor_get();
+    if (lx.next_id(type) != lx.npos)
+    {
+        auto s = lx.skip(" \r\t\n");
+        if (isalpha(lx.at(lx.cursor_get())) || !lx.has_next_not_of(lx.cursor_get(), LEX_SYMBOLS_SPACES))
+        {
+            auto tp = lex::typeof(type);
+            if (lex::is_basevalue(tp))
+            {
+                graph_block *bl = create_block(tp, NULL);
+                return bl;
+            }
+        }
+    }
+
+    lx.cursor_set(old);
+    return NULL;
+}
+
+graph_block *try_build_hook(lexer &lx)
+{
+    auto old = lx.cursor_get();
+    if (lx.at(old) == LANG_PREFIX)
+    {
+        lx.cursor_move(1);
+        string v;
+        if (lx.next_id(v) != lx.npos)
+        {
+            lx.skip(" \r\t");
+            if (lx.at(lx.cursor_get()) == LANG_TAG_PREFIX)
+            {
+                graph_block *bl = create_block(RULE_TYPE::DATA_HOOK, NULL);
+                return bl;
+            }
+        }
+    }
+
+    lx.cursor_set(old);
+    return NULL;
+};
+
+graph_block *try_build_vardef(lexer &lx)
+{
+    auto old = lx.cursor_get();
+    if (lx.at(old) == LANG_VARDEF)
+    {
+        lx.cursor_move(1);
+        string v;
+        if (lx.next_id(v) != lx.npos)
+        {
+            lx.skip(" \r\t");
+            if (lx.at(lx.cursor_get()) == LANG_TAG_PREFIX)
+            {
+                graph_block *bl = create_block(RULE_TYPE::VAR_DEF, NULL);
+                return bl;
+            }
+        }
+    }
+
+    lx.cursor_set(old);
+    return NULL;
+};
+
+graph_block *try_build_vardef_ref(lexer &lx)
+{
+    auto old = lx.cursor_get();
+    if (lx.at(old) == LANG_VARDEF)
+    {
+        lx.cursor_move(1);
+        string v;
+        if (lx.next_id(v) != lx.npos)
+        {
+            value_vardef_ref *ref = new value_vardef_ref(v);
+            graph_block *bl = create_block(RULE_TYPE::VAR_DEF_REF, ref);
+            return bl;
+        }
+    }
+
+    lx.cursor_set(old);
+    return NULL;
+};
+
+graph_block *try_build_hook_ref(lexer &lx)
+{
+    auto old = lx.cursor_get();
+    if (lx.at(old) == LANG_PREFIX)
+    {
+        lx.cursor_move(1);
+        string v;
+        if (lx.next_id(v) != lx.npos)
+        {
+            value_vardef_ref *ref = new value_vardef_ref(v);
+            graph_block *bl = create_block(RULE_TYPE::DATA_HOOK_REF, ref);
+            return bl;
+        }
+    }
+
+    lx.cursor_set(old);
+    return NULL;
+};
 
 graph_table<graph_block *> *builder::build_lex_graph(string &src)
 {
@@ -750,35 +857,23 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
     while (lx.can_read())
     {
         // DEFINES
-        if (lx.at(lx.cursor_get()) == LANG_PREFIX)
+        // vardef
+        // hook
+        graph_block *bl = NULL;
+        if ((bl = try_build_hook(lx)) != NULL)
         {
-            if (is_vardef(lx))
-            {
-                // no linking
-                auto bl = build_vardef(lx);
-                gt->add(bl, line_offset);
-                printf("~%zi [gt(nolink))].vardef\n", line_offset);
-            }
-            else if (builder::is_hook(lx))
-            {
-                // hook def, no linking
-                auto _bl = build_hook(lx, false);
-                gt->add(_bl, line_offset);
-                printf("~%zi [gt(nolink)].hook\n", line_offset);
-            }
-            else if (is_hook_ref(lx))
-            {
-                // hook ref, link
-                auto _bl = build_hook(lx, true);
-                gt->add(_bl, line_offset);
-                _link_last_block(gt, _bl);
-                printf("~%zi [gt(link.last)] hook(ref)\n", line_offset);
-            }
+            gt->add(bl, line_offset);
+            printf("~%zi [gt(nolink))].hook\n", line_offset);
+            continue;
+        }
+        else if ((bl = try_build_vardef(lx)) != NULL)
+        {
+            gt->add(bl, line_offset);
+            printf("~%zi [gt(nolink))].vardef\n", line_offset);
+            continue;
         }
 
-        // DEBUG_MSG("LITERAL");
-
-        // LITERALS
+        // LITERALS, VALUES
         if (is_literal(lx))
         {
             graph_block *_last;
@@ -820,7 +915,27 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
             continue;
         }
 
-        // DEBUG_MSG("EXPRS");
+        // VALUED TAGS
+        graph_block *basev = NULL;
+        if ((basev = try_build_basetype(lx)) != NULL)
+        {
+            _link_last_block(gt, basev);
+            printf("~%zi [gt(link.last)] (basetype) \n", line_offset);
+            continue;
+        }
+        else if ((basev = try_build_vardef_ref(lx)) != NULL)
+        {
+            _link_last_block(gt, basev);
+            printf("~%zi [gt(link.last)] (vardef_ref) \n", line_offset);
+            continue;
+        }
+        else if ((basev = try_build_hook_ref(lx)) != NULL)
+        {
+            _link_last_block(gt, basev);
+            printf("~%zi [gt(link.last)] (hook_ref) \n", line_offset);
+            continue;
+        }
+
         //  FN, EXPRS
         value_fn_ref *fn_ref = NULL;
         value_fn_expr_refs *fn_expr = NULL;
@@ -839,7 +954,6 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
             continue;
         }
 
-        // DEBUG_MSG("TAGWORDS");
         //  TAGWORDS
         graph_block *tag = NULL;
         if ((tag = try_build_tagword(lx)) != NULL)
@@ -860,8 +974,15 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
             }
             else
             {
+                // parent
+                graph_block *par;
+                if (gt->parent(line_offset - 2, par))
+                {
+                    par->entries.push_back(tag);
+                    printf("~%zi [gt, link=parent] %s -> %s\n", line_offset, lex::nameof(par->type), lex::nameof(tag->type));
+                }
+
                 gt->add(tag, line_offset);
-                printf("~%zi [gt(link.last)] %s -> %s\n", line_offset, _last_name.c_str(), lex::nameof(tag->type));
             }
 
             continue;
@@ -872,15 +993,14 @@ graph_table<graph_block *> *builder::build_lex_graph(string &src)
             lx.cursor_move(1);
             line_offset = lx.skip(" \t");
         }
-        else
+        else if (lx.can_read())
         {
-            char t;
-            lx.next_symbol(t);
-            if (!_is_space(t))
+            char t = lx.at(lx.cursor_get());
+            if (!_is_space(t) && !_is_special_delim(t))
             {
                 stringstream at;
                 lx.get_cursor_dest(at);
-                printf("[build] lex_graph: unrecognized symbol sequence at '%s'\n", at.str().c_str());
+                printf("[build] lex_graph: unrecognized symbol sequence at (%c) '%s'\n", t, at.str().c_str());
                 delete gt;
                 return NULL;
             }

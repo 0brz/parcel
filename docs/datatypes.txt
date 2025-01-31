@@ -1,0 +1,20 @@
+data structs:
+go
+text
+tagval
+    .val
+    .tag
+seqeunce
+list
+vector
+line
+
+basetypes:
+word
+number
+id
+string
+
+utils:
+@vardef_name
+&hook_name
