@@ -1,6 +1,6 @@
 #ifdef PARCEL_DEV
 
-#include "src/tools/lex.h"
+#include "src/tools/lexer/lex.h"
 #include "src/tools/logger.h"
 
 #endif

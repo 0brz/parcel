@@ -1,4 +1,1 @@
 
-void logger_info()
-{
-}

@@ -5,5 +5,6 @@ project(bound_parsing)
 add_executable(tt
     src/tests/client.cpp
     src/tools/lex.h
-    src/tools/logger.h
+    src/types/types.cpp
+    src/types/types.h
 )
