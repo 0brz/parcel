@@ -39,6 +39,6 @@ namespace parcel::type
         _TYPE_ERR
     };
 
-    extern const char *nameof();
+    extern const char *nameof(lex_type type);
     extern lex_type typeof(string & type_name);
 }
