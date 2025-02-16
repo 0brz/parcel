@@ -1,4 +1,7 @@
 
+#ifndef _TYPES_
+#define _TYPES_
+
 #include <iostream>
 #include <string>
 #include <map>
@@ -42,3 +45,5 @@ namespace parcel::type
     extern const char *nameof(lex_type type);
     extern lex_type typeof(string & type_name);
 }
+
+#endif

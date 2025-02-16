@@ -1,3 +1,5 @@
+#ifndef _LEX_
+#define _LEX_
 #include <iostream>
 #include <string>
 #include <map>
@@ -551,3 +553,5 @@ public:
         return -1;
     }
 };
+
+#endif

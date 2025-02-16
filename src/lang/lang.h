@@ -1,3 +1,6 @@
+#ifndef _LANG_
+#define _LANG_
+
 #include "types/types.h"
 
 using namespace parcel::type;
@@ -26,3 +29,5 @@ namespace parcel::lang
         }
     }
 }
+
+#endif

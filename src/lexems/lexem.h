@@ -1,3 +1,5 @@
+#ifndef _LEXEMS_
+#define _LEXEMS_
 #include "types/types.h"
 #include <vector>
 
@@ -100,3 +102,5 @@ namespace parcel::lexems
     };
 
 }
+
+#endif
