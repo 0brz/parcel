@@ -85,7 +85,6 @@ public:
 
     void add(GraphElement el, int offset)
     {
-
         auto fn = _entries.find(offset);
         if (fn != end(_entries))
         {

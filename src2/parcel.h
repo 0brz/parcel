@@ -15,7 +15,7 @@
 
 using namespace std;
 
-#define DEBUG_LEVEL 0
+#define DEBUG_LEVEL 1
 #define DEBUG_DCTOR       \
     if (DEBUG_LEVEL == 1) \
         printf("~() [%s]\n", __func__);
@@ -1008,9 +1008,10 @@ namespace lex
         ~graph_block()
         {
             DEBUG_DCTOR
-            // printf("__type=%s\n", lex::nameof(type));
-            if (lex::has_value(type))
+            printf("__type=%s\n", lex::nameof(type));
+            if (lex::has_value(type) && value != NULL)
             {
+                printf("__HAS_VALUES=%s\n", lex::nameof(type));
                 if (type == RULE_TYPE::LITR_STR)
                 {
                     value_litr_string *p = dynamic_cast<value_litr_string *>(value);
@@ -1075,6 +1076,7 @@ namespace lex
 
             for (auto &e : entries)
             {
+                printf("__ENTRIES=%s\n", lex::nameof(e->type));
                 delete e;
             }
         }
