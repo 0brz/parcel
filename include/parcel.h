@@ -1,8 +1,6 @@
 
 namespace parcel
 {
-    int foo()
-    {
-        return 5;
-    }
+    void build();
+    void analyze();
 }

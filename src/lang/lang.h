@@ -3,6 +3,14 @@
 
 #include "types/types.h"
 
+#define LANG_EXPR_BR_OPEN '('
+#define LANG_EXPR_BR_CLOSE ')'
+#define LANG_LOGIC_AND '&'
+#define LANG_LOGIC_OR '|'
+
+#define LEX_SYMBOLS_NO_EXPR ":@!*^%$<>{}:\"'~;"
+#define LEX_SYMBOLS_SPACES " \r\t\n"
+
 using namespace parcel::type;
 
 /*

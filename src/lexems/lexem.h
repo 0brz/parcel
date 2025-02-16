@@ -1,5 +1,6 @@
 #ifndef _LEXEMS_
 #define _LEXEMS_
+
 #include "types/types.h"
 #include <vector>
 
