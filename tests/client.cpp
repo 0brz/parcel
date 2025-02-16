@@ -1,8 +1,8 @@
 #include <iostream>
 
 #define PARCEL_DEV
-#include <include/parcel.h>
-#include <include/tools.h>
+#include <../include/parcel.h>
+#include <../include/tools.h>
 
 int main()
 {
