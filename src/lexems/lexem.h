@@ -26,16 +26,11 @@ namespace parcel::lexems
     };
 
     template <typename ValueType, lex_type LexType>
-    struct literal_basic_value : public lex_value
+    struct literal_basic_value : public lvalue
     {
         ValueType value;
 
-        inline RULE_TYPE lex_value::type()
-        {
-            return LexType;
-        };
-
-        literal_basic_value(ValueType vl)
+        literal_basic_value(ValueType &vl)
         {
             this->value = vl;
         };
