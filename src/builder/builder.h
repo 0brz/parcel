@@ -7,6 +7,7 @@
 #include "tools/offset_table.h"
 #include "types/types.h"
 #include "expr/expr.h"
+#include "funcs/fn.h"
 
 using namespace std;
 using namespace parcel::type;

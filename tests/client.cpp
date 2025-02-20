@@ -6,6 +6,5 @@
 
 int main()
 {
-
     printf("Client code...\n");
 }

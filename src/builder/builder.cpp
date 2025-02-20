@@ -5,6 +5,7 @@ using namespace parcel::lang;
 using namespace parcel::type;
 using namespace parcel::lexems;
 using namespace parcel::expr;
+using namespace parcel::funcs;
 
 namespace parcel::builder
 {
@@ -98,6 +99,203 @@ namespace parcel::builder
 
         return false;
     };
+
+    /*
+    ============================
+    */
+
+    bool try_build_fn_expr(stack<string> &postfix, btree<fn_ref *> *tree)
+    {
+        if (postfix.empty())
+        {
+            // DEBUG_MSG("[try_build_fn_tree] postfix is empty, try mm");
+            return false;
+        }
+
+        auto entry = postfix.top();
+        postfix.pop();
+
+        if (entry == "|" || entry == "&")
+        {
+            if (entry == "|")
+                tree->and_or0 = 0;
+            else
+                tree->and_or0 = 1;
+
+            // left
+            auto _left = postfix.top();
+            postfix.pop();
+
+            if (_left == "|" || _left == "&")
+            {
+                tree->left = new fn_expr();
+
+                postfix.push(_left);
+                if (!try_build_fn_expr(postfix, tree->left))
+                    return false;
+            }
+            else
+            {
+                fn_ref *fn_ref = NULL;
+                lexer fn_lx(_left);
+                if ((fn_ref = try_build_fn_ref(fn_lx)) == NULL)
+                    return false;
+
+                tree->left = new fn_expr();
+                tree->left->value = fn_ref;
+            }
+
+            // right
+            auto _right = postfix.top();
+            postfix.pop();
+
+            if (_right == "|" || _right == "&")
+            {
+                tree->right = new fn_expr();
+                postfix.push(_right);
+                if (!try_build_fn_expr(postfix, tree->right))
+                    return false;
+            }
+            else
+            {
+                fn_ref *fn_ref = NULL;
+                lexer fn_lx(_right);
+                if ((fn_ref = try_build_fn_ref(fn_lx)) == NULL)
+                    return false;
+
+                tree->right = new fn_expr();
+                tree->right->value = fn_ref;
+            }
+        }
+
+        return true;
+    };
+
+    fn_arglist *try_build_fn_arglist(lexer &lx, bool &out_build_status)
+    {
+        //
+        char pref = ' ';
+        fn_arglist *head = NULL;
+        fn_arglist *args = NULL;
+        while (lx.can_read())
+        {
+            // lx.get_info(cout);
+            if (lx.next_symbol(pref))
+            {
+                if (pref == ')')
+                    break;
+                if (pref == '(')
+                    lx.cursor_move(1);
+                if (pref == ',')
+                    lx.cursor_move(1);
+                if (pref == ' ')
+                    lx.cursor_move(1);
+                else
+                    lx.cursor_move(-1);
+            }
+
+            string cur;
+            if (lx.next_float(cur) != lx.npos)
+            {
+                string _val = string(cur.c_str());
+                if (args == NULL)
+                {
+                    args = new fn_arglist(lex_type::LITR_FLOAT, _val);
+                    head = args;
+                }
+                else
+                {
+                    args->next_arg = new fn_arglist(lex_type::LITR_FLOAT, _val);
+                    args = args->next_arg;
+                }
+            }
+            else if (lx.next_int(cur) != lx.npos)
+            {
+                string _val = string(cur.c_str());
+                if (args == NULL)
+                {
+                    args = new fn_arglist(lex_type::LITR_INT, _val);
+                    head = args;
+                }
+                else
+                {
+                    args->next_arg = new fn_arglist(lex_type::LITR_INT, _val);
+                    args = args->next_arg;
+                }
+            }
+            else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos)
+            {
+                string _val = string(cur.c_str());
+                if (args == NULL)
+                {
+                    args = new fn_arglist(lex_type::LITR_STR, _val);
+                    head = args;
+                }
+                else
+                {
+                    args->next_arg = new fn_arglist(lex_type::LITR_STR, _val);
+                    args = args->next_arg;
+                }
+            }
+            else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos)
+            {
+                char _valb = cur[1]; // we can take, because size of char view=3, like 'a', 'b'
+                string _val = cur.substr(1, 1);
+                if (args == NULL)
+                {
+                    args = new fn_arglist(lex_type::LITR_CHAR, _val);
+                    head = args;
+                }
+                else
+                {
+                    args->next_arg = new fn_arglist(lex_type::LITR_CHAR, _val);
+                    args = args->next_arg;
+                }
+            }
+            else
+            {
+                fn_arglist *pt = head;
+                while (pt != NULL)
+                {
+                    delete pt;
+                    pt = pt->next_arg;
+                };
+
+                out_build_status = false;
+                return NULL;
+            }
+        }
+
+        out_build_status = true;
+        return args;
+    };
+
+    fn_ref *try_build_fn_ref(lexer &lx)
+    {
+        string fn_id;
+        auto old = lx.cursor_get();
+
+        // get name
+        if (lx.next_id(fn_id) != lx.npos)
+        {
+            // printf("[try_build_fn_call] id=%s\n", fn_id.c_str());
+
+            lx.skip(" \t");
+            bool args_build = false;
+            fn_arglist *args = try_build_fn_arglist(lx, args_build);
+            if (!args_build)
+            {
+                lx.cursor_set(old);
+                return NULL;
+            }
+
+            fn_ref *_val = new fn_ref(fn_id, args);
+            return _val;
+        }
+
+        lx.cursor_set(old);
+        return NULL;
+    }
 
     /*
     ============================
@@ -216,6 +414,18 @@ namespace parcel::builder
         }
     };
 
+    lex *inplace_build_fn_ref(lexer &lx)
+    {
+        fn_ref *v = try_build_fn_ref(lx);
+        if (v != NULL)
+        {
+            lex *l = new lex(lex_type::FN_REF, v);
+            return l;
+        }
+        else
+            return NULL;
+    };
+
     lex *inplace_build_fn_expr(lexer &lx)
     {
         string expr_s;
@@ -240,28 +450,24 @@ namespace parcel::builder
             return NULL;
         }
 
-        // DEBUG_MSG("[try_build_fn_expr] deep_expr_postfix ok");
-
         if (expr_postfix.size() <= 1)
         {
             lx.cursor_set(old);
             return NULL;
         }
 
-        fn_btree_refs *tr = new fn_btree_refs();
-        if (!try_build_fn_tree(expr_postfix, tr))
+        fn_expr *tr = new fn_expr();
+        if (!try_build_fn_expr(expr_postfix, tr))
         {
-            DEBUG_MSG("[try_build_fn_expr] Cant build fn expr tree");
+            delete tr;
+            // DEBUG_MSG("[try_build_fn_expr] Cant build fn expr tree");
             return NULL;
         }
 
         lx.cursor_set(next_cursor);
 
-        value_fn_expr_refs *expr_val = new value_fn_expr_refs(tr);
-
-        return expr_val;
-    }
-
-    // fn_ref
+        lex *l = new lex(lex_type::FN_REF_EXPR, tr);
+        return l;
+    };
 
 }
