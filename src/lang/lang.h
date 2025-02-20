@@ -1,7 +1,7 @@
 #ifndef _LANG_
 #define _LANG_
 
-#include "types/types.h"
+#include "../types/types.h"
 
 #define LANG_EXPR_BR_OPEN '('
 #define LANG_EXPR_BR_CLOSE ')'
@@ -22,24 +22,11 @@ using namespace parcel::type;
     lang based logic.
 */
 
-namespace parcel::lang
+namespace parcel
 {
-    bool basic_tag(string &str)
+    namespace lang
     {
-        lex_type tp = typeof(str);
-        switch (tp)
-        {
-        case BL_NUMBER:
-        case BL_WORD:
-        case BL_TAGVAL:
-        case BL_TAGVAL_TAG:
-        case BL_TAGVAL_VAL:
-        case GO:
-            return true;
-
-        default:
-            return false;
-        }
+        bool is_basic_tag(string &str);
     }
 }
 

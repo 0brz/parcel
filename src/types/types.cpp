@@ -29,7 +29,7 @@ static map<lex_type, const char *> names{
     {FN_REF, "fn.ref"},
     {FN_REF_EXPR, "fn.ref.expr"}};
 
-const char *nameof(lex_type type)
+const char *parcel::type::nameof(lex_type type)
 {
     auto fn = names.find(type);
     if (fn == end(names))
@@ -40,7 +40,7 @@ const char *nameof(lex_type type)
     return (*fn).second;
 };
 
-lex_type typeof(string & type_name)
+lex_type parcel::type::typeof(string & type_name)
 {
     for (auto it = begin(names); it != names.end(); it++)
     {

@@ -8,8 +8,20 @@ add_executable(tt
     tests/client.cpp
     #src/tools/lex.h
 
+    
     src/types/types.cpp
     src/types/types.h
+    src/lang/lang.cpp
     src/lang/lang.h
     src/lexems/lexem.h
+    src/expr/expr.cpp
+    src/expr/expr.h
+    src/funcs/fn.h
+    
+    src/tools/offset_table.h
+    src/tools/lexer/lex.h
+    src/tools/btree.h
+    src/tools/logger.h
+    src/builder/builder.cpp
+    src/builder/builder.h
 )
