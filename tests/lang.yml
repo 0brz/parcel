@@ -1,12 +1,2 @@
-
-@fn:
-  word: "fn" 
-
-&fn:
-  word: "fn" 
-
-foo: 
-  bar: 
-    bar: "word"
-    bar: 123
-    bar: 't'
+main:
+  fn: gt(123) & good(555)

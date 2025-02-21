@@ -107,6 +107,7 @@ bool _check_s(string &s, const char *contains)
 fn_arglist *try_build_fn_arglist(lexer &lx, bool &out_build_status)
 {
     //
+    auto old = lx.cursor_get();
     char pref = ' ';
     fn_arglist *head = NULL;
     fn_arglist *args = NULL;
@@ -123,8 +124,8 @@ fn_arglist *try_build_fn_arglist(lexer &lx, bool &out_build_status)
                 lx.cursor_move(1);
             if (pref == ' ')
                 lx.cursor_move(1);
-            else
-                lx.cursor_move(-1);
+            // else
+            //  lx.cursor_move(-1);
         }
 
         string cur;
@@ -199,6 +200,13 @@ fn_arglist *try_build_fn_arglist(lexer &lx, bool &out_build_status)
         }
     }
 
+    if (head == NULL)
+    {
+        lx.cursor_set(old);
+        out_build_status = false;
+        return NULL;
+    }
+
     out_build_status = true;
     return args;
 };
@@ -221,6 +229,8 @@ fn_ref *try_build_fn_ref(lexer &lx)
             lx.cursor_set(old);
             return NULL;
         }
+
+        // printf("[try_build_fn_call] exr args\n");
 
         fn_ref *_val = new fn_ref(fn_id, args);
         return _val;
@@ -433,7 +443,7 @@ lex *parcel::builder::inplace_build_fn_expr(lexer &lx)
 
     lx.next_until("\n\r", expr_s);
     lx.cursor_set(old);
-    auto next_cursor = old += expr_s.size();
+    auto next_cursor = old + expr_s.size();
 
     if (_check_s(expr_s, LEX_SYMBOLS_NO_EXPR))
         return NULL;
@@ -444,14 +454,18 @@ lex *parcel::builder::inplace_build_fn_expr(lexer &lx)
     string normalized_expr_buff = _clear_expr_string(expr_s);
     lexer lx2(normalized_expr_buff);
 
+    printf("FN_ARG=%s\n", normalized_expr_buff.c_str());
+
     stack<string> expr_postfix;
     if (!expr::to_postfix(lx2, expr_postfix))
     {
+        printf("!to_postfix=%i\n", expr_postfix.size());
         return NULL;
     }
 
     if (expr_postfix.size() <= 1)
     {
+        printf("EXPR+POST=%i\n", expr_postfix.size());
         lx.cursor_set(old);
         return NULL;
     }
@@ -512,10 +526,12 @@ offset_table<lex *> *parcel::builder::build_lex_table(string &src)
         if ((fn = inplace_build_fn_expr(lx)) != NULL)
         {
             printf("~%zi [gt(link-last))].fn_expr\n", line_offset);
+            continue;
         }
         else if ((fn = inplace_build_fn_ref(lx)) != NULL)
         {
             printf("~%zi [gt(link-last))].fn_ref\n", line_offset);
+            continue;
         }
 
         // TAGS
@@ -523,6 +539,7 @@ offset_table<lex *> *parcel::builder::build_lex_table(string &src)
         if ((tag = inplace_build_tag(lx)) != NULL)
         {
             printf("~%zi [gt(link-last))].tag\n", line_offset);
+            continue;
         }
 
         if (lx.at(lx.cursor_get()) == '\n')
@@ -532,8 +549,9 @@ offset_table<lex *> *parcel::builder::build_lex_table(string &src)
         }
         else if (lx.can_read())
         {
+            // if_word_ex
             char t = lx.at(lx.cursor_get());
-            if (!_is_tspace(t) && !_is_special_delim(t))
+            if ((!_is_tspace(t) && !_is_special_delim(t)))
             {
                 stringstream at;
                 lx.get_cursor_dest(at);

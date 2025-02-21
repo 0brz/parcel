@@ -13,7 +13,8 @@ bool parcel::expr::get_logic_entry(lexer &lx)
     string _right;
 
     char cur_sm = '~';
-    // printf("[get_expr_logic_entry]\n");
+    printf("[get_expr_logic_entry]\n");
+    lx.get_info(cout);
 
     while (lx.can_read())
     {
@@ -21,9 +22,8 @@ bool parcel::expr::get_logic_entry(lexer &lx)
         // lx.get_info(cout);
         if (!lx.next_symbol(cur_sm))
         {
-            // err
+            // printf("_____!lx.next_symbol(cur_sm)\n");
             return 0;
-            break;
         }
 
         if (cur_sm == LANG_EXPR_BR_OPEN)
@@ -40,9 +40,8 @@ bool parcel::expr::get_logic_entry(lexer &lx)
             }
             else
             {
-                // err
+                // printf("_____brack_seq.size() > 0 && brack_seq.top()\n");
                 return 0;
-                break;
             }
         }
         else if (cur_sm == LANG_LOGIC_AND || cur_sm == LANG_LOGIC_OR)
@@ -55,12 +54,15 @@ bool parcel::expr::get_logic_entry(lexer &lx)
         }
         else
         {
-            // lx.get_info(cout);
-            //  parsing like 'less(500)', 'btw(500, 1000)'
-            // lx.cursor_move(-1);
+
+            // printf("_____else='%c'\n", cur_sm);
+            //  lx.get_info(cout);
+            //   parsing like 'less(500)', 'btw(500, 1000)'
+            //  (gt(123)&good(555))
         }
     }
 
+    // printf("_____ENTRY='%i'\n", op_entry);
     return op_entry;
 };
 
@@ -75,11 +77,17 @@ bool parcel::expr::to_postfix(lexer &lx, stack<string> &call_stack)
         // DEBUG_MSG("[deep_expr_postfix] entry got ok");
         lx.str_left(entry, 1, left);
         if (left == "")
+        {
+            printf("____LEFT_FAIL\n");
             return false;
+        }
         lx.str_right(entry, 1, right);
         if (right == "")
+        {
+            printf("____right_FAIL\n");
             return false;
-        // printf("____LEFT='%s' RIGHT='%s'\n", left.c_str(), right.c_str());
+        }
+        printf("____LEFT='%s' RIGHT='%s'\n", left.c_str(), right.c_str());
     }
 
     if (entry > 0)
