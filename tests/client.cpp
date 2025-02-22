@@ -5,14 +5,17 @@
 #include <../include/tools.h>
 #include <../src/builder/builder.h>
 #include <../src/tools/lexer/lex.h>
+#include <../src/tools/dump.h>
 
 int main()
 {
     printf("Client code...\n");
     string sr = lexer::read_source_file("C:/git.local/parsing/bound_parsing/tests/lang.yml");
-    offset_table<lex *> *gt = parcel::builder::build_lex_table(sr);
+    offset_table<link_lex> *gt = parcel::builder::build_lex_table(sr);
     if (gt != NULL)
     {
+        dump_lex(*gt);
+
         delete gt;
     }
 }

@@ -20,6 +20,14 @@ namespace parcel
 {
     namespace builder
     {
+        struct link_lex
+        {
+            lex *val;
+            vector<lex *> entries; // maybe fix to small_vec
+            link_lex(lex *v) : val(v) {};
+            link_lex() : val(NULL) {};
+        };
+
         lex *inplace_build_tag(lexer &lx);
         // lex *inplace_build_hook_ref(lexer &lx);
         lex *inplace_build_hook_def(lexer &lx);
@@ -29,7 +37,7 @@ namespace parcel
         lex *inplace_build_fn_expr(lexer &lx);
         lex *inplace_build_fn_ref(lexer &lx);
 
-        offset_table<lex *> *build_lex_table(string &src);
+        offset_table<link_lex> *build_lex_table(string &src);
     }
 }
 

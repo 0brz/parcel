@@ -39,6 +39,11 @@ namespace parcel
             FN_REF,
             FN_ARG_LIST,
             FN_REF_EXPR,
+            // lists
+            BL_SET,
+            BL_LIST,
+            BL_SEQ,
+            BL_VEC,
 
             _TYPE_ERR
         };

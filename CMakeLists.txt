@@ -24,4 +24,6 @@ add_executable(tt
     src/tools/logger.h
     src/builder/builder.cpp
     src/builder/builder.h
+
+    src/tools/dump.h
 )

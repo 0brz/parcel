@@ -4,12 +4,18 @@ using namespace std;
 using namespace parcel::type;
 
 static map<lex_type, const char *> names{
+    // all reserved keyword blocks
     {GO, "go"},
     {BL_TAGVAL, "tagval"},
-    {BL_TAGVAL_TAG, "tagval.tag"},
-    {BL_TAGVAL_VAL, "tagval.val"},
+    {BL_TAGVAL_TAG, "tag"},
+    {BL_TAGVAL_VAL, "val"},
     {BL_WORD, "word"},
-    {BL_NUMBER, "word"},
+    {BL_NUMBER, "num"},
+    {BL_LIST, "list"},
+    {BL_SEQ, "seq"},
+    {BL_VEC, "vector"},
+    {BL_SET, "set"},
+
     // literals
     {LITR_CHAR, "litr.char"},
     {LITR_STR, "litr.str"},

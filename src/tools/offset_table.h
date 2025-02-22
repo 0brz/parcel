@@ -16,9 +16,37 @@ private:
     map<int, vector<Element>> _entries;
     int _last_level;
     int _min_level;
+    int _diff;
+    int _max_level;
 
 public:
     // return first paths in graph (entrypoints)
+    vector<pair<int, vector<Element>>> as_list()
+    {
+        vector<pair<int, vector<Element>>> v;
+
+        int offset = _min_level;
+        while (offset <= _max_level)
+        {
+            auto it = _entries.find(offset);
+            if (it != end(_entries))
+            {
+                vector<Element> level{};
+                for (const Element &child : (*it).second)
+                {
+                    level.push_back(child);
+                }
+
+                pair<int, vector<Element>> cur{(*it).first, level};
+                v.push_back(cur);
+            }
+
+            offset += _diff;
+        }
+
+        return v;
+    };
+
     bool head(vector<Element> &out)
     {
         auto fn = _entries.find(_min_level);
@@ -97,10 +125,11 @@ public:
         }
 
         _last_level = offset;
+        _max_level = max(_max_level, offset);
         _min_level = min(_min_level, offset);
     };
 
-    offset_table() : _last_level(0), _min_level(6) {};
+    offset_table() : _last_level(0), _min_level(6), _diff(2), _max_level(-1) {};
 
     ~offset_table()
     {
