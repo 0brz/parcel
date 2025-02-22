@@ -5,6 +5,7 @@
 #include <../include/tools.h>
 #include <../src/builder/builder.h>
 #include <../src/tools/lexer/lex.h>
+#include <../src/tools/dump.h>
 
 int main()
 {
@@ -13,6 +14,8 @@ int main()
     offset_table<lex *> *gt = parcel::builder::build_lex_table(sr);
     if (gt != NULL)
     {
+        dump_lex(*gt);
+
         delete gt;
     }
 }
