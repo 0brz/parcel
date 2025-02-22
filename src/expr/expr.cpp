@@ -1,6 +1,21 @@
 #include "expr.h"
 
-bool parcel::expr::get_logic_entry(lexer &lx)
+// skip values like 'gt(500, 'a', "word")'
+bool skip_fn_proto(lexer &lx)
+{
+    string w;
+    if (lx.next_id(w) != lx.npos)
+    {
+        if (lx.next_like(w, "(", ")", "") != lx.npos)
+        {
+            return true;
+        }
+    }
+
+    return false;
+};
+
+size_t parcel::expr::get_logic_entry(lexer &lx)
 {
     stack<char> brack_seq;
     short deep = 0;
@@ -13,8 +28,7 @@ bool parcel::expr::get_logic_entry(lexer &lx)
     string _right;
 
     char cur_sm = '~';
-    printf("[get_expr_logic_entry]\n");
-    lx.get_info(cout);
+    // lx.get_info(cout);
 
     while (lx.can_read())
     {
@@ -54,15 +68,13 @@ bool parcel::expr::get_logic_entry(lexer &lx)
         }
         else
         {
-
-            // printf("_____else='%c'\n", cur_sm);
-            //  lx.get_info(cout);
-            //   parsing like 'less(500)', 'btw(500, 1000)'
-            //  (gt(123)&good(555))
+            lx.cursor_move(-1);
+            if (skip_fn_proto(lx))
+            {
+            }
         }
     }
 
-    // printf("_____ENTRY='%i'\n", op_entry);
     return op_entry;
 };
 
@@ -75,19 +87,20 @@ bool parcel::expr::to_postfix(lexer &lx, stack<string> &call_stack)
     if (entry > 0)
     {
         // DEBUG_MSG("[deep_expr_postfix] entry got ok");
+        // printf("ENTRY=%i\n", entry);
         lx.str_left(entry, 1, left);
         if (left == "")
         {
-            printf("____LEFT_FAIL\n");
+            // printf("____LEFT_FAIL\n");
             return false;
         }
         lx.str_right(entry, 1, right);
         if (right == "")
         {
-            printf("____right_FAIL\n");
+            // printf("____right_FAIL\n");
             return false;
         }
-        printf("____LEFT='%s' RIGHT='%s'\n", left.c_str(), right.c_str());
+        // printf("____LEFT='%s' RIGHT='%s'\n", left.c_str(), right.c_str());
     }
 
     if (entry > 0)
