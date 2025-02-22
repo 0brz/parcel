@@ -9,7 +9,7 @@ namespace parcel
 {
     namespace expr
     {
-        bool get_logic_entry(lexer &lx);
+        size_t get_logic_entry(lexer &lx);
         bool to_postfix(lexer &lx, stack<string> &call_stack);
     }
 }

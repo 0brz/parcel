@@ -454,7 +454,7 @@ lex *parcel::builder::inplace_build_fn_expr(lexer &lx)
     string normalized_expr_buff = _clear_expr_string(expr_s);
     lexer lx2(normalized_expr_buff);
 
-    printf("FN_ARG=%s\n", normalized_expr_buff.c_str());
+    // printf("FN_ARG=%s\n", normalized_expr_buff.c_str());
 
     stack<string> expr_postfix;
     if (!expr::to_postfix(lx2, expr_postfix))
@@ -465,7 +465,7 @@ lex *parcel::builder::inplace_build_fn_expr(lexer &lx)
 
     if (expr_postfix.size() <= 1)
     {
-        printf("EXPR+POST=%i\n", expr_postfix.size());
+        // printf("EXPR+POST=%i\n", expr_postfix.size());
         lx.cursor_set(old);
         return NULL;
     }
