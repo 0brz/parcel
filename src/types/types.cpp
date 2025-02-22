@@ -48,8 +48,6 @@ const char *parcel::type::nameof(lex_type type)
 
 lex_type parcel::type::typeof(string & type_name)
 {
-    printf("TYPEOF=%s\n", type_name.c_str());
-
     for (auto it = begin(names); it != names.end(); it++)
     {
         if ((*it).second == type_name)
