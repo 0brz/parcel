@@ -4,12 +4,18 @@ using namespace std;
 using namespace parcel::type;
 
 static map<lex_type, const char *> names{
+    // all reserved keyword blocks
     {GO, "go"},
     {BL_TAGVAL, "tagval"},
-    {BL_TAGVAL_TAG, "tagval.tag"},
-    {BL_TAGVAL_VAL, "tagval.val"},
+    {BL_TAGVAL_TAG, "tag"},
+    {BL_TAGVAL_VAL, "val"},
     {BL_WORD, "word"},
-    {BL_NUMBER, "word"},
+    {BL_NUMBER, "num"},
+    {BL_LIST, "list"},
+    {BL_SEQ, "seq"},
+    {BL_VEC, "vector"},
+    {BL_SET, "set"},
+
     // literals
     {LITR_CHAR, "litr.char"},
     {LITR_STR, "litr.str"},
@@ -42,6 +48,8 @@ const char *parcel::type::nameof(lex_type type)
 
 lex_type parcel::type::typeof(string & type_name)
 {
+    printf("TYPEOF=%s\n", type_name.c_str());
+
     for (auto it = begin(names); it != names.end(); it++)
     {
         if ((*it).second == type_name)

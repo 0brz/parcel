@@ -1,2 +1,14 @@
-main:
-  fn: vaw(123)
+go:
+  word: 
+    vaw(123)
+
+go:
+  word: 
+    vaw(123)
+
+go:
+  word: 
+    vaw(123)
+      go:
+        word: 
+          vaw(123)

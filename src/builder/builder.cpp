@@ -311,6 +311,22 @@ bool try_build_fn_expr(stack<string> &postfix, btree<fn_ref *> *tree)
 ============================
 */
 
+bool _table_link_last(offset_table<link_lex> *gt, lex *linked_lex)
+{
+    link_lex v;
+    if (!gt->last(v))
+    {
+        printf("[_table_link_last] ret null\n");
+        return false;
+    }
+
+    v.entries.push_back(linked_lex);
+}
+
+/*
+============================
+*/
+
 lex *parcel::builder::inplace_build_tag(lexer &lx)
 {
     string tagname;
@@ -484,9 +500,9 @@ lex *parcel::builder::inplace_build_fn_expr(lexer &lx)
     return l;
 };
 
-offset_table<lex *> *parcel::builder::build_lex_table(string &src)
+offset_table<link_lex> *parcel::builder::build_lex_table(string &src)
 {
-    offset_table<lex *> *gt = new offset_table<lex *>();
+    offset_table<link_lex> *gt = new offset_table<link_lex>();
 
     lexer lx(src);
     string cur;
@@ -502,7 +518,7 @@ offset_table<lex *> *parcel::builder::build_lex_table(string &src)
         lex *bl = NULL;
         if ((bl = inplace_build_hook_def(lx)) != NULL)
         {
-            gt->add(bl, line_offset);
+            gt->add({bl}, line_offset);
             printf("~%zi [gt(nolink))].hook\n", line_offset);
             continue;
         }
@@ -517,6 +533,7 @@ offset_table<lex *> *parcel::builder::build_lex_table(string &src)
         lex *lit;
         if ((lit = inplace_build_literal(lx)) != NULL)
         {
+            _table_link_last(gt, lit);
             printf("~%zi [gt(link-last))].literal\n", line_offset);
             continue;
         }
@@ -525,11 +542,15 @@ offset_table<lex *> *parcel::builder::build_lex_table(string &src)
         lex *fn;
         if ((fn = inplace_build_fn_expr(lx)) != NULL)
         {
+            _table_link_last(gt, fn);
+            gt->add(fn, line_offset);
             printf("~%zi [gt(link-last))].fn_expr\n", line_offset);
             continue;
         }
         else if ((fn = inplace_build_fn_ref(lx)) != NULL)
         {
+            _table_link_last(gt, fn);
+            gt->add(fn, line_offset);
             printf("~%zi [gt(link-last))].fn_ref\n", line_offset);
             continue;
         }
@@ -538,6 +559,17 @@ offset_table<lex *> *parcel::builder::build_lex_table(string &src)
         lex *tag;
         if ((tag = inplace_build_tag(lx)) != NULL)
         {
+            // root tags
+            if (line_offset == 0)
+            {
+                gt->add(tag, line_offset);
+            }
+            else
+            {
+                _table_link_last(gt, tag);
+                gt->add(tag, line_offset);
+            }
+
             printf("~%zi [gt(link-last))].tag\n", line_offset);
             continue;
         }

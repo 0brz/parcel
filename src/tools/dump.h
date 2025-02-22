@@ -2,23 +2,25 @@
 #define _DUMP_
 
 #include "../lexems/lexem.h"
+#include "../builder/builder.h"
 #include "offset_table.h"
 #include <iomanip>
 #include <memory>
 #include <queue>
 
 using namespace parcel::lexems;
+using namespace parcel::builder;
 
-void dump_lex(offset_table<lex *> &table)
+void dump_lex(offset_table<link_lex> &table)
 {
-    vector<pair<int, vector<lex *>>> v = table.as_list();
+    vector<pair<int, vector<link_lex>>> v = table.as_list();
     printf("Dump lex table. (count=%i)\n", v.size());
 
-    for (const pair<int, vector<lex *>> &e : v)
+    for (const pair<int, vector<link_lex>> &e : v)
     {
-        for (lex *t : e.second)
+        for (const link_lex &t : e.second)
         {
-            cout << setw(e.first) << "[" << t->name() << "]\n";
+            cout << e.first << ":" << setw(e.first) << "[" << t.val->name() << "]\n";
         }
     }
 };
