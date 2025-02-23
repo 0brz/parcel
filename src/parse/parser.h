@@ -930,6 +930,32 @@ namespace parcel
             }
         };
 
+        class analyzer
+        {
+            std::vector<element *> roots{};
+            // hooks table
+        public:
+            analyzer(std::vector<element *> &roots) : roots(roots) {};
+            analyzer(element *root)
+            {
+                roots.push_back(root);
+            };
+            void add_root(element *root)
+            {
+                roots.push_back(root);
+            };
+            void propagate(string &lex)
+            {
+                for (element *e : roots)
+                {
+                    if (e->type == lex_type::HOOK_DEF)
+                    {
+                        e->act(lex, NULL);
+                    }
+                }
+            };
+        };
+
     }
 }
 
