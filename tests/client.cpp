@@ -3,7 +3,7 @@
 #define PARCEL_DEV
 #include <../include/parcel.h>
 #include <../include/tools.h>
-#include <../src/builder/builder.h>
+#include <../src/builder/lex_build.h>
 #include <../src/tools/lexer/lex.h>
 #include <../src/tools/dump.h>
 

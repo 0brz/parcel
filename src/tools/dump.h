@@ -2,7 +2,7 @@
 #define _DUMP_
 
 #include "../lexems/lexem.h"
-#include "../builder/builder.h"
+#include "../builder/lex_build.h"
 #include "offset_table.h"
 #include <iomanip>
 #include <memory>
