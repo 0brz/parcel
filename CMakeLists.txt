@@ -25,5 +25,9 @@ add_executable(tt
     src/builder/builder.cpp
     src/builder/builder.h
 
+    src/tools/ring.h
+    src/parse/parser.h
+    src/parse/token.h
+
     src/tools/dump.h
 )
