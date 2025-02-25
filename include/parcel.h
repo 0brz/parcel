@@ -1,6 +1,4 @@
 
-namespace parcel
+class parcel
 {
-    void build();
-    void analyze();
-}
+};

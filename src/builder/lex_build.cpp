@@ -1,7 +1,7 @@
 #include "lex_build.h"
 #include <stack>
 
-using namespace parcel::builder;
+using namespace parcel::build;
 
 // fix
 lex *_new_lex(lex_type type, lvalue *val)
@@ -327,7 +327,7 @@ bool _table_link_last(offset_table<link_lex> *gt, lex *linked_lex)
 ============================
 */
 
-lex *parcel::builder::inplace_build_tag(lexer &lx)
+lex *parcel::build::inplace_build_tag(lexer &lx)
 {
     string tagname;
     auto c = lx.cursor_get();
@@ -349,7 +349,7 @@ lex *parcel::builder::inplace_build_tag(lexer &lx)
     return NULL;
 };
 
-lex *parcel::builder::inplace_build_hook_def(lexer &lx)
+lex *parcel::build::inplace_build_hook_def(lexer &lx)
 {
     auto old = lx.cursor_get();
     if (lx.at(old) == LANG_PREFIX)
@@ -371,7 +371,7 @@ lex *parcel::builder::inplace_build_hook_def(lexer &lx)
     return NULL;
 };
 
-lex *parcel::builder::inplace_build_link_def(lexer &lx)
+lex *parcel::build::inplace_build_link_def(lexer &lx)
 {
     auto old = lx.cursor_get();
     if (lx.at(old) == LANG_LINK_PREFIX)
@@ -393,7 +393,7 @@ lex *parcel::builder::inplace_build_link_def(lexer &lx)
     return NULL;
 };
 
-lex *parcel::builder::inplace_build_literal(lexer &lx)
+lex *parcel::build::inplace_build_literal(lexer &lx)
 {
     if (!_is_literal(lx))
         return NULL;
@@ -440,7 +440,7 @@ lex *parcel::builder::inplace_build_literal(lexer &lx)
     }
 };
 
-lex *parcel::builder::inplace_build_fn_ref(lexer &lx)
+lex *parcel::build::inplace_build_fn_ref(lexer &lx)
 {
     fn_ref *v = try_build_fn_ref(lx);
     if (v != NULL)
@@ -452,7 +452,7 @@ lex *parcel::builder::inplace_build_fn_ref(lexer &lx)
         return NULL;
 };
 
-lex *parcel::builder::inplace_build_fn_expr(lexer &lx)
+lex *parcel::build::inplace_build_fn_expr(lexer &lx)
 {
     string expr_s;
     auto old = lx.cursor_get();
@@ -500,7 +500,7 @@ lex *parcel::builder::inplace_build_fn_expr(lexer &lx)
     return l;
 };
 
-offset_table<link_lex> *parcel::builder::build_lex_table(string &src)
+offset_table<link_lex> *parcel::build::build_lex_table(string &src)
 {
     offset_table<link_lex> *gt = new offset_table<link_lex>();
 

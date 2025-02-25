@@ -11,7 +11,7 @@ int main()
 {
     printf("Client code...\n");
     string sr = lexer::read_source_file("C:/git.local/parsing/bound_parsing/tests/lang.yml");
-    offset_table<link_lex> *gt = parcel::builder::build_lex_table(sr);
+    offset_table<parcel::build::link_lex> *gt = parcel::build::build_lex_table(sr);
     if (gt != NULL)
     {
         dump_lex(*gt);

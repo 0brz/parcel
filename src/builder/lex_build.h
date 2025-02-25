@@ -1,5 +1,5 @@
-#ifndef _BUILDER_
-#define _BUILDER_
+#ifndef _LEX_BUILD_H_
+#define _LEX_BUILD_H_
 
 #include "../lang/lang.h"
 #include "../lexems/lexem.h"
@@ -18,7 +18,7 @@ using namespace parcel::funcs;
 
 namespace parcel
 {
-    namespace builder
+    namespace build
     {
         struct link_lex
         {

@@ -58,6 +58,11 @@
         "xtr1common": "cpp",
         "stack": "cpp",
         "deque": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "algorithm": "cpp",
+        "array": "cpp",
+        "queue": "cpp",
+        "ranges": "cpp",
+        "span": "cpp"
     }
 }
