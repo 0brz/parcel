@@ -35,6 +35,7 @@ namespace parcel
 
         struct pr_val
         {
+            // fn info
             virtual act_result act(string &lex, token *par, token *t2 = NULL) = 0;
             virtual void reset() = 0;
         };
@@ -157,6 +158,32 @@ namespace parcel
             }
 
             literal_string(const char *t) : val(t) {};
+        };
+
+        struct literal_char : pr_val
+        {
+            char val;
+
+            void reset() {};
+
+            act_result act(string &lex, token *par, token *t2 = NULL)
+            {
+                if (!lex.empty() && lex.at(0) == val)
+                {
+                    if (par != NULL)
+                    {
+                        par->type = tokens::type::literal_char;
+                        par->val = new val_char(val);
+                        return ACT;
+                    }
+
+                    return ACT;
+                }
+                else
+                    return FAIL;
+            }
+
+            literal_char(char t) : val(t) {};
         };
 
         struct list : pr_val
@@ -929,6 +956,8 @@ namespace parcel
                 return res;
             }
         };
+
+        // ------------- ANALYZER.
 
         class analyzer
         {

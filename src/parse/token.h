@@ -18,7 +18,8 @@ namespace parcel
             list,
             vec,
             set,
-            literal_string
+            literal_string,
+            literal_char
         };
 
         map<type, const char *> token_names{
@@ -73,6 +74,16 @@ namespace parcel
             const char *str()
             {
                 return v.c_str();
+            }
+        };
+
+        struct val_char : tvalue
+        {
+            char v;
+            val_char(char v) : v(v) {};
+            const char *str()
+            {
+                return "<char>";
             }
         };
 
