@@ -1,4 +1,4 @@
 
-class parcel
+class parcel2
 {
 };

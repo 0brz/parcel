@@ -17,3 +17,17 @@ bool parcel::lang::is_basic_tag(string &str)
         return false;
     }
 };
+
+bool parcel::lang::is_basetype(string &str)
+{
+    lex_type tp = typeof(str);
+    switch (tp)
+    {
+    case BL_WORD:
+    case BL_NUMBER:
+        return true;
+
+    default:
+        return false;
+    }
+};

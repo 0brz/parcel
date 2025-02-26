@@ -27,6 +27,7 @@ namespace parcel
     namespace lang
     {
         bool is_basic_tag(string &str);
+        bool is_basetype(string &str);
     }
 }
 

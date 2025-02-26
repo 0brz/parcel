@@ -9,7 +9,7 @@
 #include <queue>
 
 using namespace parcel::lexems;
-using namespace parcel::builder;
+using namespace parcel::build;
 
 void dump_lex(offset_table<link_lex> &table)
 {

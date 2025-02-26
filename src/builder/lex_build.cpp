@@ -320,7 +320,7 @@ bool _table_link_last(offset_table<link_lex> *gt, lex *linked_lex)
         return false;
     }
 
-    v.entries.push_back(linked_lex);
+    v.entries.push_back(new link_lex(linked_lex));
 }
 
 /*
@@ -438,6 +438,22 @@ lex *parcel::build::inplace_build_literal(lexer &lx)
         lx.cursor_set(old);
         return NULL;
     }
+};
+
+lex *parcel::build::inplace_build_basetype(lexer &lx)
+{
+    size_t old = lx.cursor_get();
+    string id;
+    if (lx.next_id(id) != lx.npos)
+    {
+        if (lang::is_basetype(id))
+        {
+            return new lex(lex_type::BL_WORD, NULL);
+        }
+    }
+
+    lx.cursor_set(old);
+    return NULL;
 };
 
 lex *parcel::build::inplace_build_fn_ref(lexer &lx)
@@ -571,6 +587,25 @@ offset_table<link_lex> *parcel::build::build_lex_table(string &src)
             }
 
             printf("~%zi [gt(link-last))].tag\n", line_offset);
+            continue;
+        }
+
+        // BASETYPE
+        lex *basetype;
+        if ((basetype = inplace_build_basetype(lx)) != NULL)
+        {
+            // root tags
+            if (line_offset == 0)
+            {
+                gt->add(basetype, line_offset);
+            }
+            else
+            {
+                _table_link_last(gt, basetype);
+                gt->add(basetype, line_offset);
+            }
+
+            printf("~%zi [gt(link-last))].basetype\n", line_offset);
             continue;
         }
 

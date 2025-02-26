@@ -929,6 +929,23 @@ namespace parcel
             };
         };
 
+        struct prog_go : pr_val
+        {
+            element *base; // by value
+
+            void reset() {};
+
+            prog_go(element *bs)
+            {
+                base = bs;
+            }
+
+            act_result act(string &lex, token *par, token *r2)
+            {
+                return base->act(lex, par, r2);
+            }
+        };
+
         struct token_hook : pr_val
         {
             string name;

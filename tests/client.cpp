@@ -6,6 +6,7 @@
 #include <../src/builder/lex_build.h>
 #include <../src/tools/lexer/lex.h>
 #include <../src/tools/dump.h>
+#include <../src/builder/parse_build.h>
 
 int main()
 {
@@ -15,6 +16,8 @@ int main()
     if (gt != NULL)
     {
         dump_lex(*gt);
+
+        instr *ins = parcel::build::build_instr(gt);
 
         delete gt;
     }

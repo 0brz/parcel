@@ -23,12 +23,13 @@ namespace parcel
         struct link_lex
         {
             lex *val;
-            vector<lex *> entries; // maybe fix to small_vec
-            link_lex(lex *v) : val(v) {};
+            std::vector<link_lex *> entries; // maybe fix to small_vec
+            link_lex(lex *v) : val(v), entries{} {};
             link_lex() : val(NULL) {};
         };
 
         lex *inplace_build_tag(lexer &lx);
+        lex *inplace_build_basetype(lexer &lx);
         // lex *inplace_build_hook_ref(lexer &lx);
         lex *inplace_build_hook_def(lexer &lx);
         lex *inplace_build_link_def(lexer &lx);
