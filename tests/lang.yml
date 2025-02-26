@@ -1,3 +1,7 @@
-go:
+
+$ex1:
   list:
     word
+
+go:
+  $ex1

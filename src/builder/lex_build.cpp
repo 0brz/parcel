@@ -352,7 +352,7 @@ lex *parcel::build::inplace_build_tag(lexer &lx)
 lex *parcel::build::inplace_build_hook_def(lexer &lx)
 {
     auto old = lx.cursor_get();
-    if (lx.at(old) == LANG_PREFIX)
+    if (lx.at(old) == LANG_HOOK_PREFIX)
     {
         lx.cursor_move(1);
         string v;
@@ -364,6 +364,24 @@ lex *parcel::build::inplace_build_hook_def(lexer &lx)
                 lex *bl = _new_hook_def(v);
                 return bl;
             }
+        }
+    }
+
+    lx.cursor_set(old);
+    return NULL;
+};
+
+lex *parcel::build::inplace_build_hook_ref(lexer &lx)
+{
+    auto old = lx.cursor_get();
+    if (lx.at(old) == LANG_HOOK_PREFIX)
+    {
+        lx.cursor_move(1);
+        string v;
+        if (lx.next_id(v) != lx.npos)
+        {
+            lex *bl = _new_lex(lex_type::HOOK_REF, new hook_ref(v));
+            return bl;
         }
     }
 
@@ -536,7 +554,14 @@ offset_table<link_lex *> *parcel::build::build_lex_table(string &src)
         {
 
             gt->add({new link_lex(bl)}, line_offset);
-            printf("~%zi [gt(nolink))].hook\n", line_offset);
+            printf("~%zi [gt(nolink))].hook_def\n", line_offset);
+            continue;
+        }
+        else if ((bl = inplace_build_hook_ref(lx)) != NULL)
+        {
+
+            gt->add({new link_lex(bl)}, line_offset);
+            printf("~%zi [gt(nolink))].hook_ref\n", line_offset);
             continue;
         }
         else if ((bl = inplace_build_link_def(lx)) != NULL)

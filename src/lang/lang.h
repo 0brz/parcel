@@ -13,7 +13,7 @@
 
 #define LANG_PREFIX '&'
 #define LANG_TAG_PREFIX ':'
-#define LANG_HOOK_PREFIX '&'
+#define LANG_HOOK_PREFIX '$'
 #define LANG_LINK_PREFIX '@'
 
 using namespace parcel::type;

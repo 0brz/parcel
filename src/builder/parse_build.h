@@ -41,6 +41,11 @@ namespace parcel
             {
                 entries.push_back(go);
             };
+
+            void add_hook(token_hook *hook)
+            {
+                hooks.push_back(hook);
+            };
             // void add_hook(token_hook *hook);
             // void delete_hook(token_hook *hook);
             // void add_entry(element *root);
@@ -75,7 +80,7 @@ namespace parcel
             return lex->entries.size() >= need;
         };
 
-        ps_elem *deep_build(link_lex *cur_lex, std::vector<ps_elem *> &builded)
+        ps_elem *deep_build(link_lex *cur_lex, std::vector<ps_elem *> &builded, std::vector<token_hook *> &reg_hooks)
         {
             if (cur_lex == NULL)
                 return NULL;
@@ -91,7 +96,7 @@ namespace parcel
                 }
 
                 auto pick_next = cur_lex->entries.at(0);
-                ps_elem *build_next = deep_build(pick_next, builded);
+                ps_elem *build_next = deep_build(pick_next, builded, reg_hooks);
                 if (build_next == NULL)
                 {
                     printf("deep_build: [ERR] <list> build_next returned 'null'\n");
@@ -104,6 +109,9 @@ namespace parcel
 
                 printf("deep_build: [ok] <list>\n");
                 return list;
+            }
+            else if (ttype == HOOK_DEF)
+            {
             }
             else if (ttype == BL_WORD)
             {
@@ -131,8 +139,9 @@ namespace parcel
             queue<link_lex *> q;
             q.push(entry);
 
-            std::vector<ps_elem *> builded;
-            ps_elem *current = NULL;
+            // all data
+            std::vector<ps_elem *> other_builds;
+            std::vector<token_hook *> hook_builds;
 
             while (!q.empty())
             {
@@ -153,10 +162,10 @@ namespace parcel
                     }
 
                     next = cur->entries.at(0);
-                    ps_elem *build_next = deep_build(next, builded);
+                    ps_elem *build_next = deep_build(next, other_builds, hook_builds);
 
                     prog_go *g = new prog_go(build_next);
-                    printf("build::instr: [OK] instr.add_entry(go)\n");
+                    printf("build::instr: [OK] build summary: builds=%i hooks=%i\n", other_builds.size(), hook_builds.size());
                     ins->add_entry(g);
                 }
             }

@@ -30,7 +30,7 @@ namespace parcel
 
         lex *inplace_build_tag(lexer &lx);
         lex *inplace_build_basetype(lexer &lx);
-        // lex *inplace_build_hook_ref(lexer &lx);
+        lex *inplace_build_hook_ref(lexer &lx);
         lex *inplace_build_hook_def(lexer &lx);
         lex *inplace_build_link_def(lexer &lx);
         // lex *inplace_build_link_ref(lexer &lx);
