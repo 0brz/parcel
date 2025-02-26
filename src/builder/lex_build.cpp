@@ -311,16 +311,16 @@ bool try_build_fn_expr(stack<string> &postfix, btree<fn_ref *> *tree)
 ============================
 */
 
-bool _table_link_last(offset_table<link_lex> *gt, lex *linked_lex)
+bool _table_link_last(offset_table<link_lex *> *gt, link_lex *linked_lex)
 {
-    link_lex v;
+    link_lex *v;
     if (!gt->last(v))
     {
         printf("[_table_link_last] ret null\n");
         return false;
     }
 
-    v.entries.push_back(new link_lex(linked_lex));
+    v->entries.push_back(linked_lex);
 }
 
 /*
@@ -516,9 +516,9 @@ lex *parcel::build::inplace_build_fn_expr(lexer &lx)
     return l;
 };
 
-offset_table<link_lex> *parcel::build::build_lex_table(string &src)
+offset_table<link_lex *> *parcel::build::build_lex_table(string &src)
 {
-    offset_table<link_lex> *gt = new offset_table<link_lex>();
+    offset_table<link_lex *> *gt = new offset_table<link_lex *>();
 
     lexer lx(src);
     string cur;
@@ -534,13 +534,14 @@ offset_table<link_lex> *parcel::build::build_lex_table(string &src)
         lex *bl = NULL;
         if ((bl = inplace_build_hook_def(lx)) != NULL)
         {
-            gt->add({bl}, line_offset);
+
+            gt->add({new link_lex(bl)}, line_offset);
             printf("~%zi [gt(nolink))].hook\n", line_offset);
             continue;
         }
         else if ((bl = inplace_build_link_def(lx)) != NULL)
         {
-            gt->add(bl, line_offset);
+            gt->add(new link_lex(bl), line_offset);
             printf("~%zi [gt(nolink))].link\n", line_offset);
             continue;
         }
@@ -549,7 +550,9 @@ offset_table<link_lex> *parcel::build::build_lex_table(string &src)
         lex *lit;
         if ((lit = inplace_build_literal(lx)) != NULL)
         {
-            _table_link_last(gt, lit);
+            link_lex *linked = new link_lex(lit);
+            _table_link_last(gt, linked);
+
             printf("~%zi [gt(link-last))].literal\n", line_offset);
             continue;
         }
@@ -558,15 +561,19 @@ offset_table<link_lex> *parcel::build::build_lex_table(string &src)
         lex *fn;
         if ((fn = inplace_build_fn_expr(lx)) != NULL)
         {
-            _table_link_last(gt, fn);
-            gt->add(fn, line_offset);
+            link_lex *linked = new link_lex(fn);
+            _table_link_last(gt, linked);
+
+            gt->add(linked, line_offset);
             printf("~%zi [gt(link-last))].fn_expr\n", line_offset);
             continue;
         }
         else if ((fn = inplace_build_fn_ref(lx)) != NULL)
         {
-            _table_link_last(gt, fn);
-            gt->add(fn, line_offset);
+            link_lex *linked = new link_lex(fn);
+            _table_link_last(gt, linked);
+
+            gt->add(linked, line_offset);
             printf("~%zi [gt(link-last))].fn_ref\n", line_offset);
             continue;
         }
@@ -578,12 +585,17 @@ offset_table<link_lex> *parcel::build::build_lex_table(string &src)
             // root tags
             if (line_offset == 0)
             {
-                gt->add(tag, line_offset);
+                link_lex *linked = new link_lex(tag);
+                _table_link_last(gt, linked);
+
+                gt->add(linked, line_offset);
             }
             else
             {
-                _table_link_last(gt, tag);
-                gt->add(tag, line_offset);
+                link_lex *linked = new link_lex(tag);
+                _table_link_last(gt, linked);
+
+                gt->add(linked, line_offset);
             }
 
             printf("~%zi [gt(link-last))].tag\n", line_offset);
@@ -597,12 +609,17 @@ offset_table<link_lex> *parcel::build::build_lex_table(string &src)
             // root tags
             if (line_offset == 0)
             {
-                gt->add(basetype, line_offset);
+                link_lex *linked = new link_lex(basetype);
+                _table_link_last(gt, linked);
+
+                gt->add(linked, line_offset);
             }
             else
             {
-                _table_link_last(gt, basetype);
-                gt->add(basetype, line_offset);
+                link_lex *linked = new link_lex(basetype);
+                _table_link_last(gt, linked);
+
+                gt->add(linked, line_offset);
             }
 
             printf("~%zi [gt(link-last))].basetype\n", line_offset);

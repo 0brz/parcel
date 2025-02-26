@@ -23,7 +23,7 @@ public:
     // return first paths in graph (entrypoints)
     vector<pair<int, vector<Element>>> as_list()
     {
-        vector<pair<int, vector<Element>>> v;
+        std::vector<pair<int, std::vector<Element>>> v;
 
         int offset = _min_level;
         while (offset <= _max_level)
@@ -31,13 +31,13 @@ public:
             auto it = _entries.find(offset);
             if (it != end(_entries))
             {
-                vector<Element> level{};
+                std::vector<Element> level{};
                 for (const Element &child : (*it).second)
                 {
                     level.push_back(child);
                 }
 
-                pair<int, vector<Element>> cur{(*it).first, level};
+                pair<int, std::vector<Element>> cur{(*it).first, level};
                 v.push_back(cur);
             }
 

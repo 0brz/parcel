@@ -465,7 +465,7 @@ namespace parcel
 
                 for (element *e : v)
                 {
-                    pair<element *, token *> *pr = new pair{e, create_tk_for(e)};
+                    pair<element *, token *> *pr = new pair<element *, token *>{e, create_tk_for(e)};
                     el_ring.add_end(pr);
                 }
 
@@ -719,7 +719,7 @@ namespace parcel
 
                 for (element *e : v)
                 {
-                    pair<element *, token *> *pr = new pair{e, create_tk_for(e)};
+                    pair<element *, token *> *pr = new pair<element *, token *>{e, create_tk_for(e)};
                     el_ring.add_end(pr);
                 }
 

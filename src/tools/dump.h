@@ -11,16 +11,16 @@
 using namespace parcel::lexems;
 using namespace parcel::build;
 
-void dump_lex(offset_table<link_lex> &table)
+void dump_lex(offset_table<link_lex *> *table)
 {
-    vector<pair<int, vector<link_lex>>> v = table.as_list();
+    std::vector<pair<int, std::vector<link_lex *>>> v = table->as_list();
     printf("Dump lex table. (count=%i)\n", v.size());
 
-    for (const pair<int, vector<link_lex>> &e : v)
+    for (const pair<int, std::vector<link_lex *>> &e : v)
     {
-        for (const link_lex &t : e.second)
+        for (const link_lex *t : e.second)
         {
-            cout << e.first << ":" << setw(e.first) << "[" << t.val->name() << "]\n";
+            cout << e.first << ":" << setw(e.first) << "[" << t->val->name() << "]\n";
         }
     }
 };

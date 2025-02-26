@@ -86,7 +86,7 @@ namespace parcel
             {
                 if (!check_lex_size(cur_lex, 1))
                 {
-                    printf("deep_build: <list> check_lex_size\n");
+                    printf("deep_build: [ERR] <list> check_lex_size\n");
                     return NULL;
                 }
 
@@ -94,7 +94,7 @@ namespace parcel
                 ps_elem *build_next = deep_build(pick_next, builded);
                 if (build_next == NULL)
                 {
-                    printf("deep_build: <list> build_next returned 'null'\n");
+                    printf("deep_build: [ERR] <list> build_next returned 'null'\n");
                     return NULL;
                 }
 
@@ -115,20 +115,20 @@ namespace parcel
         }
 
         instr *
-        build_instr(offset_table<link_lex> *lex)
+        build_instr(offset_table<link_lex *> *lex)
         {
             printf("build::build_instr\n");
             instr *ins = new instr();
 
-            std::vector<pair<int, std::vector<link_lex>>>
+            std::vector<pair<int, std::vector<link_lex *>>>
                 levels = lex->as_list();
             if (levels.size() == 0 ||
                 levels.at(0).second.size() == 0)
                 return NULL;
 
-            link_lex entry = levels.at(0).second.at(0);
+            link_lex *entry = levels.at(0).second.at(0);
 
-            queue<link_lex> q;
+            queue<link_lex *> q;
             q.push(entry);
 
             std::vector<ps_elem *> builded;
@@ -144,8 +144,8 @@ namespace parcel
                 if (is_prog_entrypoing(ttype))
                 {
                     // build go
-                    link_lex next;
-                    if (cur.entries.size() == 0)
+                    link_lex *next;
+                    if (cur->entries.size() == 0)
                     {
                         printf("build::instr: [ERR] <go> have no entries.\n");
                         // clear builded.
