@@ -120,12 +120,27 @@ namespace parcel
                         }
                     }
                 }
-                else if (ttype == BL_WORD)
+                else if (ttype == BL_WORD ||
+                         ttype == BL_NUMBER)
                 {
-                    ps_elem *word = new ps_elem(lex_type::BL_WORD, new parser::word());
-                    builded.push_back(word);
-                    printf("deep_build: [ok] <word>\n");
-                    return word;
+                    ps_elem *cur;
+                    switch (ttype)
+                    {
+                    case BL_WORD:
+                        cur = new ps_elem(ttype, new parser::word());
+                        break;
+
+                    case BL_NUMBER:
+                        cur = new ps_elem(ttype, new parser::num());
+                        break;
+
+                    default:
+                        break;
+                    }
+
+                    builded.push_back(cur);
+                    printf("deep_build: [ok] <word/num>\n");
+                    return cur;
                 }
                 else
                 {
