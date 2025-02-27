@@ -127,6 +127,10 @@ namespace parcel
                     printf("deep_build: [ok] <word>\n");
                     return word;
                 }
+                else
+                {
+                    return NULL;
+                }
             };
 
             bool add_map_hook(token_hook *hook)

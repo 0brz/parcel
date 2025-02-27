@@ -226,9 +226,9 @@ namespace parcel
 
                     if (par->val != NULL)
                     {
-                        printf("list_add_1\n");
+                        // printf("list_add_1\n");
                         list_add(par, el_t);
-                        printf("list_add\n");
+                        // printf("list_add\n");
                         el_t = create_tk_for(el);
                     }
                 }

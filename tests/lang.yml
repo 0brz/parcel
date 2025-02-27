@@ -1,7 +1,7 @@
 
 $ex1:
   list:
-    word
+    num
 
 go:
   $ex1

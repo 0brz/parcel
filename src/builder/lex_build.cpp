@@ -462,11 +462,14 @@ lex *parcel::build::inplace_build_basetype(lexer &lx)
 {
     size_t old = lx.cursor_get();
     string id;
+
     if (lx.next_id(id) != lx.npos)
     {
-        if (lang::is_basetype(id))
+        lex_type type = typeof(id);
+        if (type == lex_type::BL_WORD ||
+            type == lex_type::BL_NUMBER)
         {
-            return new lex(lex_type::BL_WORD, NULL);
+            return new lex(type, NULL);
         }
     }
 
