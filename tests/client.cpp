@@ -17,7 +17,8 @@ int main()
     {
         dump_lex(gt);
 
-        instr *ins = parcel::build::build_instr(gt);
+        instr_builder bd;
+        instr *ins = bd.build(gt);
 
         delete gt;
     }

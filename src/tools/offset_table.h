@@ -21,6 +21,21 @@ private:
 
 public:
     // return first paths in graph (entrypoints)
+    vector<Element> get_roots()
+    {
+        std::vector<Element> v;
+        auto it = _entries.find(_min_level);
+        if (it != end(_entries))
+        {
+            for (const Element &child : (*it).second)
+            {
+                v.push_back(child);
+            }
+        }
+
+        return v;
+    };
+
     vector<pair<int, vector<Element>>> as_list()
     {
         std::vector<pair<int, std::vector<Element>>> v;

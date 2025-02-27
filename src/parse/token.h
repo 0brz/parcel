@@ -100,8 +100,8 @@ namespace parcel
 
         struct val_list : tvalue
         {
-            vector<token *> v;
-            val_list(vector<token *> &v) : v(v) {};
+            std::vector<token *> v;
+            val_list(std::vector<token *> &v) : v(v) {};
             val_list() {};
             const char *str()
             {
@@ -111,8 +111,8 @@ namespace parcel
 
         struct val_vector : tvalue
         {
-            vector<token *> v;
-            val_vector(vector<token *> &v) : v(v) {};
+            std::vector<token *> v;
+            val_vector(std::vector<token *> &v) : v(v) {};
             const char *str()
             {
                 return "<vec>";
@@ -121,8 +121,8 @@ namespace parcel
 
         struct val_set : tvalue
         {
-            vector<token *> v;
-            val_set(vector<token *> &v) : v(v) {};
+            std::vector<token *> v;
+            val_set(std::vector<token *> &v) : v(v) {};
             val_set() {};
             const char *str()
             {

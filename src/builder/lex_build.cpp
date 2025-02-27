@@ -559,8 +559,10 @@ offset_table<link_lex *> *parcel::build::build_lex_table(string &src)
         }
         else if ((bl = inplace_build_hook_ref(lx)) != NULL)
         {
+            link_lex *linked = new link_lex(bl);
+            _table_link_last(gt, linked);
 
-            gt->add({new link_lex(bl)}, line_offset);
+            gt->add(linked, line_offset);
             printf("~%zi [gt(nolink))].hook_ref\n", line_offset);
             continue;
         }

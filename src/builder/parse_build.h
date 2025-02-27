@@ -59,119 +59,225 @@ namespace parcel
             };
         };
 
+        class instr_builder
+        {
+        private:
+            std::map<string, token_hook *> map_hooks;
+            std::vector<prog_go *> reg_entries{};
+
+            bool check_lex_size(link_lex *lex, int need)
+            {
+                return lex->entries.size() >= need;
+            };
+
+            ps_elem *deep_build(link_lex *cur_lex, std::vector<ps_elem *> &builded)
+            {
+                if (cur_lex == NULL)
+                    return NULL;
+
+                auto ttype = cur_lex->val->type;
+
+                if (ttype == BL_LIST)
+                {
+                    if (!check_lex_size(cur_lex, 1))
+                    {
+                        printf("deep_build: [ERR] <list> check_lex_size\n");
+                        return NULL;
+                    }
+
+                    auto pick_next = cur_lex->entries.at(0);
+                    ps_elem *build_next = deep_build(pick_next, builded);
+                    if (build_next == NULL)
+                    {
+                        printf("deep_build: [ERR] <list> build_next returned 'null'\n");
+                        return NULL;
+                    }
+
+                    builded.push_back(build_next);
+                    ps_elem *list = new ps_elem(lex_type::BL_LIST, new parser::list(build_next));
+                    builded.push_back(list);
+
+                    printf("deep_build: [ok] <list>\n");
+                    return list;
+                }
+                else if (ttype == HOOK_DEF)
+                {
+                    hook_def *v = static_cast<hook_def *>(cur_lex->val->value);
+                    if (v != NULL)
+                    {
+                        // reg hook with deep sturcture.
+                        if (map_hooks.find(v->name) == end(map_hooks))
+                        {
+                            // build hook.
+                            if (!check_lex_size(cur_lex, 1))
+                            {
+                                printf("deep_build: [ERR] <hook_def> check_lex_size\n");
+                                return NULL;
+                            }
+
+                            auto pick_base = cur_lex->entries.at(0);
+                            ps_elem *build_base = deep_build(pick_base, builded);
+                            if (build_base == NULL)
+                            {
+                                printf("deep_build: [ERR] <hook_def> build_base is null\n");
+                                return NULL;
+                            }
+
+                            builded.push_back(build_base);
+
+                            map_hooks[v->name] = new token_hook(v->name, build_base);
+                            printf("deep_build: [ok] <hook_def> '%s' added to map.\n", v->name.c_str());
+                        }
+                        else
+                        {
+                            printf("deep_build: [ERR] <hook_def> '%s' already in map\n", v->name.c_str());
+                        }
+                    }
+                }
+                else if (ttype == HOOK_REF)
+                {
+                    hook_ref *v = static_cast<hook_ref *>(cur_lex->val->value);
+                    if (v != NULL)
+                    {
+                        // use hook with linking.
+                    }
+                }
+                else if (ttype == BL_WORD)
+                {
+                    ps_elem *word = new ps_elem(lex_type::BL_WORD, new parser::word());
+                    builded.push_back(word);
+                    printf("deep_build: [ok] <word>\n");
+                    return word;
+                }
+            };
+
+            bool add_map_hook(token_hook *hook)
+            {
+                if (map_hooks.find(hook->name) != end(map_hooks))
+                {
+                    return false;
+                }
+
+                map_hooks[hook->name] = hook;
+                return true;
+            };
+
+        public:
+            instr *build(offset_table<link_lex *> *table)
+            {
+                instr *inst = new instr();
+                std::vector<ps_elem *> all_builds;
+
+                // go by roots
+                std::vector<link_lex *> roots = table->get_roots();
+                printf("roots=%i\n", roots.size());
+                for (link_lex *lex : roots)
+                {
+                    // pick next
+                    if (!check_lex_size(lex, 1))
+                    {
+                        printf("build::instr: !check_lex_size %s\n", lex->val->name());
+                        // error
+                        return NULL;
+                    }
+
+                    link_lex *pick_child = lex->entries.at(0);
+                    ps_elem *build_child = deep_build(pick_child, all_builds);
+
+                    if (lex->val->type == lex_type::GO)
+                    {
+                        prog_go *go = new prog_go(build_child);
+                        reg_entries.push_back(go);
+                        printf("build::instr: [OK] <go>\n");
+                    }
+                    else if (lex->val->type == lex_type::LINK_DEF)
+                    {
+                        printf("build::instr: [OK] <link_def>\n");
+                    }
+                    else if (lex->val->type == lex_type::HOOK_DEF)
+                    {
+                        hook_def *def = static_cast<hook_def *>(lex->val->value);
+                        if (def != NULL)
+                        {
+                            token_hook *tok_hook = new token_hook(def->name, build_child);
+                            if (!add_map_hook(tok_hook))
+                            {
+                                // err
+                            }
+
+                            printf("build::instr: [OK] <hook_def>\n");
+                        }
+                    }
+                    else
+                    {
+                        printf("build::instr: [ERR] unrecognized prog entry lex.\n");
+                    }
+                }
+
+                return inst;
+            }
+        };
+
         ps_elem *new_elem(lex_type type)
         {
             ps_elem *e = new ps_elem(type, NULL);
             return e;
         };
 
-        // s
+        /*
+instr *
+build_instr(offset_table<link_lex *> *lex)
+{
+printf("build::build_instr\n");
+instr *ins = new instr();
 
-        bool is_prog_entrypoing(lex_type type)
+std::vector<pair<int, std::vector<link_lex *>>>
+    levels = lex->as_list();
+if (levels.size() == 0 ||
+    levels.at(0).second.size() == 0)
+    return NULL;
+
+link_lex *entry = levels.at(0).second.at(0);
+
+queue<link_lex *> q;
+q.push(entry);
+
+// all data
+std::vector<ps_elem *> other_builds;
+std::vector<token_hook *> hook_builds;
+
+instr_builder bd;
+
+while (!q.empty())
+{
+    auto cur = q.front();
+    q.pop();
+    auto ttype = cur->val->type;
+
+    // 0.entrypoint
+    if (is_prog_entrypoing(ttype))
+    {
+        // build go
+        link_lex *next;
+        if (cur->entries.size() == 0)
         {
-            return type == lex_type::GO;
+            printf("build::instr: [ERR] <go> have no entries.\n");
+            // clear builded.
+            return NULL;
         }
 
-        // if list
-        // list = new list(val=deep_build(next))
+        next = cur->entries.at(0);
+        ps_elem *build_next = bd.deep_build(next, other_builds);
 
-        bool check_lex_size(link_lex *lex, int need)
-        {
-            return lex->entries.size() >= need;
-        };
+        prog_go *g = new prog_go(build_next);
+        printf("build::instr: [OK] build summary: builds=%i hooks=%i\n", other_builds.size(), hook_builds.size());
+        ins->add_entry(g);
+    }
+}
 
-        ps_elem *deep_build(link_lex *cur_lex, std::vector<ps_elem *> &builded, std::vector<token_hook *> &reg_hooks)
-        {
-            if (cur_lex == NULL)
-                return NULL;
-
-            auto ttype = cur_lex->val->type;
-
-            if (ttype == BL_LIST)
-            {
-                if (!check_lex_size(cur_lex, 1))
-                {
-                    printf("deep_build: [ERR] <list> check_lex_size\n");
-                    return NULL;
-                }
-
-                auto pick_next = cur_lex->entries.at(0);
-                ps_elem *build_next = deep_build(pick_next, builded, reg_hooks);
-                if (build_next == NULL)
-                {
-                    printf("deep_build: [ERR] <list> build_next returned 'null'\n");
-                    return NULL;
-                }
-
-                builded.push_back(build_next);
-                ps_elem *list = new ps_elem(lex_type::BL_LIST, new parser::list(build_next));
-                builded.push_back(list);
-
-                printf("deep_build: [ok] <list>\n");
-                return list;
-            }
-            else if (ttype == HOOK_DEF)
-            {
-            }
-            else if (ttype == BL_WORD)
-            {
-                ps_elem *word = new ps_elem(lex_type::BL_WORD, new parser::word());
-                builded.push_back(word);
-                printf("deep_build: [ok] <word>\n");
-                return word;
-            }
-        }
-
-        instr *
-        build_instr(offset_table<link_lex *> *lex)
-        {
-            printf("build::build_instr\n");
-            instr *ins = new instr();
-
-            std::vector<pair<int, std::vector<link_lex *>>>
-                levels = lex->as_list();
-            if (levels.size() == 0 ||
-                levels.at(0).second.size() == 0)
-                return NULL;
-
-            link_lex *entry = levels.at(0).second.at(0);
-
-            queue<link_lex *> q;
-            q.push(entry);
-
-            // all data
-            std::vector<ps_elem *> other_builds;
-            std::vector<token_hook *> hook_builds;
-
-            while (!q.empty())
-            {
-                auto cur = q.front();
-                q.pop();
-                auto ttype = cur->val->type;
-
-                // 0.entrypoint
-                if (is_prog_entrypoing(ttype))
-                {
-                    // build go
-                    link_lex *next;
-                    if (cur->entries.size() == 0)
-                    {
-                        printf("build::instr: [ERR] <go> have no entries.\n");
-                        // clear builded.
-                        return NULL;
-                    }
-
-                    next = cur->entries.at(0);
-                    ps_elem *build_next = deep_build(next, other_builds, hook_builds);
-
-                    prog_go *g = new prog_go(build_next);
-                    printf("build::instr: [OK] build summary: builds=%i hooks=%i\n", other_builds.size(), hook_builds.size());
-                    ins->add_entry(g);
-                }
-            }
-
-            return ins;
-        }
+return ins;
+}
+*/
     }
 }
 
