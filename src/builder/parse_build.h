@@ -132,9 +132,9 @@ namespace parcel
             };
 
         public:
-            instr *build(offset_table<link_lex *> *table)
+            bool build(offset_table<link_lex *> *table)
             {
-                instr *inst = new instr();
+                // instr *inst = new instr();
                 std::vector<ps_elem *> all_builds;
 
                 // go by roots
@@ -182,7 +182,7 @@ namespace parcel
                     }
                 }
 
-                return inst;
+                return true;
             };
 
             void propagate(string &lex)
