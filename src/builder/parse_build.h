@@ -109,6 +109,15 @@ namespace parcel
                     if (v != NULL)
                     {
                         // use hook with linking.
+                        auto find_hook = map_hooks.find(v->name);
+                        if (find_hook != end(map_hooks))
+                        {
+
+                            token_hook *hk = (*find_hook).second;
+                            ps_elem *he = new ps_elem(lex_type::HOOK_REF, hk);
+                            // printf("deep_build: [ok] <hook_ref>\n");
+                            return he;
+                        }
                     }
                 }
                 else if (ttype == BL_WORD)
@@ -150,13 +159,14 @@ namespace parcel
                     }
 
                     link_lex *pick_child = lex->entries.at(0);
+                    printf("child=%s\n", pick_child->val->name());
                     ps_elem *build_child = deep_build(pick_child, all_builds);
 
                     if (lex->val->type == lex_type::GO)
                     {
                         prog_go *go = new prog_go(build_child);
                         reg_entries.push_back(go);
-                        printf("instr_builder: [OK] <go>\n");
+                        printf("instr_builder: [OK] <go>->%s\n", type::nameof(build_child->type));
                     }
                     else if (lex->val->type == lex_type::LINK_DEF)
                     {
