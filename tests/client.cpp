@@ -15,10 +15,25 @@ int main()
     offset_table<parcel::build::link_lex *> *gt = parcel::build::build_lex_table(sr);
     if (gt != NULL)
     {
-        dump_lex(gt);
+        tools::dump::lextable(gt);
 
-        instr_builder bd;
-        instr *ins = bd.build(gt);
+        instr ins;
+        ins.build(gt);
+
+        // working with tokenizer.
+        std::vector<string> toks{
+            "13", "w1", "w2", "w3", "1235"};
+        for (string &s : toks)
+        {
+            ins.propagate(s);
+        }
+
+        printf("propagate=ok\n");
+        parcel::parser::token_hook *k1 = ins.find_hook("ex1");
+        if (k1 != NULL)
+        {
+            tools::dump::hook(k1);
+        }
 
         delete gt;
     }

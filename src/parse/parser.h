@@ -94,6 +94,7 @@ namespace parcel
             else if (el->type == parcel::type::BL_VEC)
             {
                 tk->type = tokens::vec;
+                // tk->val = new val_vector();
             }
 
             return tk;
@@ -225,7 +226,9 @@ namespace parcel
 
                     if (par->val != NULL)
                     {
+                        // printf("list_add_1\n");
                         list_add(par, el_t);
+                        // printf("list_add\n");
                         el_t = create_tk_for(el);
                     }
                 }
@@ -963,6 +966,7 @@ namespace parcel
 
             act_result act(string &lex, token *par, token *r2)
             {
+                printf("[token_hook] par\n");
                 act_result res = base->act(lex, tk);
                 if (res == act_result::FAIL)
                 {
@@ -971,7 +975,7 @@ namespace parcel
                 }
 
                 return res;
-            }
+            };
         };
 
         // ------------- ANALYZER.
