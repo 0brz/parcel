@@ -30,37 +30,6 @@ namespace parcel
     {
         class instr
         {
-            // for operate with data.
-            std::vector<token_hook *> hooks;
-
-            // prog entrypoints
-            std::vector<prog_go *> entries{};
-
-        public:
-            void add_entry(prog_go *go)
-            {
-                entries.push_back(go);
-            };
-
-            void add_hook(token_hook *hook)
-            {
-                hooks.push_back(hook);
-            };
-            // void add_hook(token_hook *hook);
-            // void delete_hook(token_hook *hook);
-            // void add_entry(element *root);
-
-            void propagate(string &lex)
-            {
-                for (prog_go *e : entries)
-                {
-                    e->act(lex, NULL, NULL);
-                }
-            };
-        };
-
-        class instr_builder
-        {
         private:
             std::map<string, token_hook *> map_hooks;
             std::vector<prog_go *> reg_entries{};
@@ -214,69 +183,27 @@ namespace parcel
                 }
 
                 return inst;
-            }
+            };
+
+            void propagate(string &lex)
+            {
+                for (prog_go *e : reg_entries)
+                {
+                    e->act(lex, NULL, NULL);
+                }
+            };
+
+            token_hook *find_hook(string name)
+            {
+                auto f = map_hooks.find(name);
+                if (f != end(map_hooks))
+                {
+                    return (*f).second;
+                }
+                else
+                    return NULL;
+            };
         };
-
-        ps_elem *new_elem(lex_type type)
-        {
-            ps_elem *e = new ps_elem(type, NULL);
-            return e;
-        };
-
-        /*
-instr *
-build_instr(offset_table<link_lex *> *lex)
-{
-printf("build::build_instr\n");
-instr *ins = new instr();
-
-std::vector<pair<int, std::vector<link_lex *>>>
-    levels = lex->as_list();
-if (levels.size() == 0 ||
-    levels.at(0).second.size() == 0)
-    return NULL;
-
-link_lex *entry = levels.at(0).second.at(0);
-
-queue<link_lex *> q;
-q.push(entry);
-
-// all data
-std::vector<ps_elem *> other_builds;
-std::vector<token_hook *> hook_builds;
-
-instr_builder bd;
-
-while (!q.empty())
-{
-    auto cur = q.front();
-    q.pop();
-    auto ttype = cur->val->type;
-
-    // 0.entrypoint
-    if (is_prog_entrypoing(ttype))
-    {
-        // build go
-        link_lex *next;
-        if (cur->entries.size() == 0)
-        {
-            printf("build::instr: [ERR] <go> have no entries.\n");
-            // clear builded.
-            return NULL;
-        }
-
-        next = cur->entries.at(0);
-        ps_elem *build_next = bd.deep_build(next, other_builds);
-
-        prog_go *g = new prog_go(build_next);
-        printf("build::instr: [OK] build summary: builds=%i hooks=%i\n", other_builds.size(), hook_builds.size());
-        ins->add_entry(g);
-    }
-}
-
-return ins;
-}
-*/
     }
 }
 

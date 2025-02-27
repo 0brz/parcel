@@ -17,8 +17,13 @@ int main()
     {
         dump_lex(gt);
 
-        instr_builder bd;
-        instr *ins = bd.build(gt);
+        instr ins;
+        ins.build(gt);
+        token_hook *k1 = ins.find_hook("ex1");
+        if (k1 != NULL)
+        {
+            // dump
+        }
 
         delete gt;
     }
