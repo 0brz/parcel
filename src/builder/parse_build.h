@@ -170,13 +170,12 @@ namespace parcel
 
                 // go by roots
                 std::vector<link_lex *> roots = table->get_roots();
-                printf("roots=%i\n", roots.size());
                 for (link_lex *lex : roots)
                 {
                     // pick next
                     if (!check_lex_size(lex, 1))
                     {
-                        printf("build::instr: !check_lex_size %s\n", lex->val->name());
+                        printf("instr_builder: !check_lex_size %s\n", lex->val->name());
                         // error
                         return NULL;
                     }
@@ -188,11 +187,11 @@ namespace parcel
                     {
                         prog_go *go = new prog_go(build_child);
                         reg_entries.push_back(go);
-                        printf("build::instr: [OK] <go>\n");
+                        printf("instr_builder: [OK] <go>\n");
                     }
                     else if (lex->val->type == lex_type::LINK_DEF)
                     {
-                        printf("build::instr: [OK] <link_def>\n");
+                        printf("instr_builder: [OK] <link_def>\n");
                     }
                     else if (lex->val->type == lex_type::HOOK_DEF)
                     {
@@ -205,12 +204,12 @@ namespace parcel
                                 // err
                             }
 
-                            printf("build::instr: [OK] <hook_def>\n");
+                            printf("instr_builder: [OK] <hook_def>\n");
                         }
                     }
                     else
                     {
-                        printf("build::instr: [ERR] unrecognized prog entry lex.\n");
+                        printf("instr_builder: [ERR] unrecognized prog entry lex.\n");
                     }
                 }
 
