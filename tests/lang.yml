@@ -2,7 +2,7 @@
 $ex1:
   list:
     seq:
-      num
+      char
 
 go:
   $ex1

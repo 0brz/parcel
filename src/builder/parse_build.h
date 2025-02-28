@@ -185,7 +185,8 @@ namespace parcel
                     }
                 }
                 else if (ttype == BL_WORD ||
-                         ttype == BL_NUMBER)
+                         ttype == BL_NUMBER ||
+                         ttype == BL_CHAR)
                 {
                     ps_elem *cur;
                     switch (ttype)
@@ -198,12 +199,16 @@ namespace parcel
                         cur = new ps_elem(ttype, new parser::num());
                         break;
 
+                    case BL_CHAR:
+                        cur = new ps_elem(ttype, new parser::base_char());
+                        break;
+
                     default:
                         break;
                     }
 
                     builded.push_back(cur);
-                    printf("deep_build: [ok] <word/num>\n");
+                    printf("deep_build: [ok] <word/num/char>\n");
                     return cur;
                 }
                 else

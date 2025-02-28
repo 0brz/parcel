@@ -466,8 +466,7 @@ lex *parcel::build::inplace_build_basetype(lexer &lx)
     if (lx.next_id(id) != lx.npos)
     {
         lex_type type = typeof(id);
-        if (type == lex_type::BL_WORD ||
-            type == lex_type::BL_NUMBER)
+        if (lang::is_basetype(type))
         {
             return new lex(type, NULL);
         }

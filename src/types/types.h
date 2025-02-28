@@ -24,6 +24,7 @@ namespace parcel
             BL_TAGVAL_TAG,
             BL_WORD,
             BL_NUMBER,
+            BL_CHAR,
             // literals...
             LITR_CHAR,
             LITR_STR,
@@ -50,7 +51,6 @@ namespace parcel
 
         extern const char *nameof(lex_type type);
         extern lex_type typeof(string & type_name);
-
     }
 }
 

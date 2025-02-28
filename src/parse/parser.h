@@ -105,7 +105,7 @@ namespace parcel
             return tk;
         };
 
-        // ------------- TOOLS
+        // ------------- PARSING.BASETYPES
 
         struct word : pr_val
         {
@@ -139,6 +139,26 @@ namespace parcel
                 return FAIL;
             }
         };
+
+        struct base_char : pr_val
+        {
+            void reset() {};
+            act_result act(string &lex, token *par, token *t2 = NULL)
+            {
+                // printf("pr_num\n");
+                if (lex.size() == 1)
+                {
+                    par->type = tokens::type::CHAR;
+                    par->val = new val_char(lex.at(0));
+                    return ACT;
+                }
+
+                // int v = stoi(lex);
+                return FAIL;
+            }
+        };
+
+        // ------------- TOOLS
 
         struct literal_string : pr_val
         {

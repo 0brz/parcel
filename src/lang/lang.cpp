@@ -18,16 +18,22 @@ bool parcel::lang::is_basic_tag(string &str)
     }
 };
 
-bool parcel::lang::is_basetype(string &str)
+bool parcel::lang::is_basetype(lex_type type)
 {
-    lex_type tp = typeof(str);
-    switch (tp)
+    switch (type)
     {
     case BL_WORD:
     case BL_NUMBER:
+    case BL_CHAR:
         return true;
 
     default:
         return false;
     }
+};
+
+bool parcel::lang::is_basetype(string &str)
+{
+    lex_type tp = typeof(str);
+    return is_basetype(tp);
 };

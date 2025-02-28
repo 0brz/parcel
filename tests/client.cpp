@@ -22,7 +22,7 @@ int main()
 
         // working with tokenizer.
         std::vector<string> toks{
-            "13", "w1", "w2", "w3", "1235"};
+            "13", "w1", "w2", "a", "!", "_", "1235"};
         for (string &s : toks)
         {
             ins.propagate(s);
