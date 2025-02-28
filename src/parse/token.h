@@ -93,6 +93,16 @@ namespace parcel
             }
         };
 
+        struct val_id : tvalue
+        {
+            string v;
+            val_id(string &v) : v(v) {};
+            const char *str()
+            {
+                return v.c_str();
+            }
+        };
+
         struct val_num : tvalue
         {
             string v;

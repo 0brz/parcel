@@ -5,3 +5,14 @@ lex_build (lextable)
 parse_build = deep_build
 1. check type-mapping
 2. build pr_value
+
+# ADD NEW TYPE
+add to tagtype enum types/types.h
+update nameof()
+update lang:: is_basetype()/is_basetag()...
+
+add LEX-value for new type: lexems/lexem.h
+add PARSE-value (token) for new type:  parse/parser.h
+
+check correct builder/parse_build
+add build to builder/parse_build

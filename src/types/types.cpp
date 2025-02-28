@@ -11,6 +11,7 @@ static map<lex_type, const char *> names{
     {BL_WORD, "word"},
     {BL_NUMBER, "num"},
     {BL_CHAR, "char"},
+    {BL_ID, "id"},
 
     {BL_TAGVAL, "tagval"},
     {BL_TAGVAL_TAG, "tag"},

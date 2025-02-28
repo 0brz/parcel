@@ -25,6 +25,7 @@ namespace parcel
             BL_WORD,
             BL_NUMBER,
             BL_CHAR,
+            BL_ID,
             // literals...
             LITR_CHAR,
             LITR_STR,

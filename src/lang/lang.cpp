@@ -25,6 +25,7 @@ bool parcel::lang::is_basetype(lex_type type)
     case BL_WORD:
     case BL_NUMBER:
     case BL_CHAR:
+    case BL_ID:
         return true;
 
     default:
