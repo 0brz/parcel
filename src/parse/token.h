@@ -16,6 +16,7 @@ namespace parcel
             word,
             number,
             CHAR,
+            ID,
 
             list,
             vec,
@@ -29,6 +30,7 @@ namespace parcel
             {word, "word"},
             {number, "number"},
             {CHAR, "char"},
+            {ID, "id"},
 
             {list, "list"},
             {vec, "vec"},

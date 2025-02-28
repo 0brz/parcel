@@ -186,13 +186,18 @@ namespace parcel
                 }
                 else if (ttype == BL_WORD ||
                          ttype == BL_NUMBER ||
-                         ttype == BL_CHAR)
+                         ttype == BL_CHAR ||
+                         ttype == BL_ID)
                 {
                     ps_elem *cur;
                     switch (ttype)
                     {
                     case BL_WORD:
                         cur = new ps_elem(ttype, new parser::word());
+                        break;
+
+                    case BL_ID:
+                        cur = new ps_elem(ttype, new parser::id());
                         break;
 
                     case BL_NUMBER:

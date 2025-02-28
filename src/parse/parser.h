@@ -158,6 +158,54 @@ namespace parcel
             }
         };
 
+        bool _is_id_char(char t)
+        {
+            if (t >= '0' && t <= '9')
+            {
+                return true;
+            }
+            else if (isalpha(t))
+                return true;
+            else if (t == '_')
+                return true;
+
+            return false;
+        }
+
+        struct id : pr_val
+        {
+            void reset() {};
+            act_result act(string &lex, token *par, token *t2 = NULL)
+            {
+                // printf("pr_num\n");
+                if (lex.size() > 1)
+                {
+                    bool success = true;
+                    for (int i = 0; i < lex.size() - 1; i++)
+                    {
+                        if (_is_id_char(lex[i]) && _is_id_char(lex[i + 1]))
+                        {
+                        }
+                        else
+                        {
+                            success = false;
+                            break;
+                        };
+                    }
+
+                    if (success)
+                    {
+                        par->type = tokens::type::ID;
+                        par->val = new val_id(lex);
+                        return ACT;
+                    }
+                }
+
+                // int v = stoi(lex);
+                return FAIL;
+            }
+        };
+
         // ------------- TOOLS
 
         struct literal_string : pr_val
