@@ -1,6 +1,6 @@
 
 $ex1:
-  list:
+  set:
     num
 
 go:

@@ -69,6 +69,33 @@ namespace parcel
                     printf("deep_build: [ok] <list>\n");
                     return list;
                 }
+                if (ttype == BL_SET)
+                {
+                    if (!check_lex_size(cur_lex, 1))
+                    {
+                        printf("deep_build: [ERR] <set> check_lex_size\n");
+                        return NULL;
+                    }
+
+                    // set has many childs.
+                    std::vector<ps_elem *> set_values;
+                    for (link_lex *l : cur_lex->entries)
+                    {
+                        ps_elem *child_build = deep_build(l, builded);
+                        if (child_build == NULL)
+                        {
+                            printf("deep_build: [ERR] <set> Error with build child element. lex=%s\n", l->val->name());
+                            return NULL;
+                        }
+
+                        set_values.push_back(child_build);
+                    }
+
+                    ps_elem *set = new ps_elem(lex_type::BL_SET, new parser::set(set_values));
+                    builded.push_back(set);
+                    printf("deep_build: [ok] <set(%i)>\n", set_values.size());
+                    return set;
+                }
                 else if (ttype == HOOK_DEF)
                 {
                     hook_def *v = static_cast<hook_def *>(cur_lex->val->value);
@@ -160,6 +187,7 @@ namespace parcel
             };
 
         public:
+            // builds top level instructions like hooks/links/go
             bool build(offset_table<link_lex *> *table)
             {
                 // instr *inst = new instr();
