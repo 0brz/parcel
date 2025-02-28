@@ -97,32 +97,41 @@ namespace parcel
                     printf("deep_build: [ok] <set(%i)>\n", set_values.size());
                     return set;
                 }
-                else if (ttype == BL_VEC)
+                else if (ttype == BL_VEC ||
+                         ttype == BL_SEQ)
                 {
                     if (!check_lex_size(cur_lex, 1))
                     {
-                        printf("deep_build: [ERR] <vec> check_lex_size\n");
+                        printf("deep_build: [ERR] <vec/seq> check_lex_size\n");
                         return NULL;
                     }
 
-                    // VEC has many childs.
+                    // BUILD CHILDS.
+                    // vec/seq has many childs.
                     std::vector<ps_elem *> vec_values;
                     for (link_lex *l : cur_lex->entries)
                     {
                         ps_elem *child_build = deep_build(l, builded);
                         if (child_build == NULL)
                         {
-                            printf("deep_build: [ERR] <vec> Error with build child element. lex=%s\n", l->val->name());
+                            printf("deep_build: [ERR] <vec/seq> Error with build child element. lex=%s\n", l->val->name());
                             return NULL;
                         }
 
                         vec_values.push_back(child_build);
                     }
 
-                    ps_elem *set = new ps_elem(lex_type::BL_VEC, new parser::vector(vec_values, this->cursor));
-                    builded.push_back(set);
-                    printf("deep_build: [ok] <vec(%i)>\n", vec_values.size());
-                    return set;
+                    printf("_____LEX_TYPE=%s\n", type::nameof(ttype));
+
+                    ps_elem *el;
+                    if (ttype == BL_VEC)
+                        el = new ps_elem(lex_type::BL_VEC, new parser::vector(vec_values, this->cursor));
+                    else if (ttype == BL_SEQ)
+                        el = new ps_elem(lex_type::BL_SEQ, new parser::seq(vec_values, this->cursor));
+
+                    builded.push_back(el);
+                    printf("deep_build: [ok] <vec/seq(%i)>\n", vec_values.size());
+                    return el;
                 }
                 else if (ttype == HOOK_DEF)
                 {

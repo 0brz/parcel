@@ -18,6 +18,7 @@ namespace parcel
             list,
             vec,
             set,
+            seq,
             literal_string,
             literal_char
         };
@@ -27,6 +28,7 @@ namespace parcel
             {number, "number"},
             {list, "list"},
             {vec, "vec"},
+            {seq, "seq"},
             {set, "set"},
             {literal_string, "litr.string"}};
 
@@ -127,6 +129,17 @@ namespace parcel
             const char *str()
             {
                 return "<set>";
+            }
+        };
+
+        struct val_seq : tvalue
+        {
+            std::vector<token *> v;
+            val_seq(std::vector<token *> &v) : v(v) {};
+            val_seq() {};
+            const char *str()
+            {
+                return "<seq>";
             }
         };
     }

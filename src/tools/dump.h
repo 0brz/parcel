@@ -94,6 +94,20 @@ namespace tools
                         // cout << ")\n";
                     }
                 }
+                else if (cur.first->type == type::seq)
+                {
+                    val_seq *ls = static_cast<val_seq *>(cur.first->val);
+                    if (ls != NULL)
+                    {
+                        // cout << setw(cur.second) << "[Vec] (";
+                        for (token *n : ls->v)
+                        {
+                            // cout <<tk_nameof(cur.first->type) << ",";
+                            q.push({n, cur.second + 3});
+                        }
+                        // cout << ")\n";
+                    }
+                }
 
                 q.pop();
             }

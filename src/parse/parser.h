@@ -96,6 +96,11 @@ namespace parcel
                 tk->type = tokens::vec;
                 // tk->val = new val_vector();
             }
+            else if (el->type == parcel::type::BL_SEQ)
+            {
+                tk->type = tokens::seq;
+                // tk->val = new val_vector();
+            }
 
             return tk;
         };
@@ -711,8 +716,8 @@ namespace parcel
                     e->second = create_tk_for(e->first);
                 }
 
-                val_vector *vec = new val_vector(builded_row);
-                par->type = tokens::vec;
+                val_seq *vec = new val_seq(builded_row);
+                par->type = tokens::seq;
                 par->val = vec;
             }
 

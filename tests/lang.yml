@@ -1,7 +1,7 @@
 
 $ex1:
   list:
-    vector:
+    seq:
       num
 
 go:
