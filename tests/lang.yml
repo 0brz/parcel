@@ -1,7 +1,8 @@
 
 $ex1:
-  set:
-    num
+  list:
+    vector:
+      num
 
 go:
   $ex1

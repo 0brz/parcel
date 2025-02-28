@@ -17,7 +17,7 @@ int main()
     {
         tools::dump::lextable(gt);
 
-        instr ins;
+        instr ins(0, 5);
         ins.build(gt);
 
         // working with tokenizer.
@@ -26,6 +26,7 @@ int main()
         for (string &s : toks)
         {
             ins.propagate(s);
+            ins.move_cursor(1);
         }
 
         printf("propagate=ok\n");

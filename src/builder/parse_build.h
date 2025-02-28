@@ -33,6 +33,7 @@ namespace parcel
         private:
             std::map<string, token_hook *> map_hooks;
             std::vector<prog_go *> reg_entries{};
+            shared_ptr<parser::parse_cursor> cursor;
 
             bool check_lex_size(link_lex *lex, int need)
             {
@@ -69,7 +70,7 @@ namespace parcel
                     printf("deep_build: [ok] <list>\n");
                     return list;
                 }
-                if (ttype == BL_SET)
+                else if (ttype == BL_SET)
                 {
                     if (!check_lex_size(cur_lex, 1))
                     {
@@ -94,6 +95,33 @@ namespace parcel
                     ps_elem *set = new ps_elem(lex_type::BL_SET, new parser::set(set_values));
                     builded.push_back(set);
                     printf("deep_build: [ok] <set(%i)>\n", set_values.size());
+                    return set;
+                }
+                else if (ttype == BL_VEC)
+                {
+                    if (!check_lex_size(cur_lex, 1))
+                    {
+                        printf("deep_build: [ERR] <vec> check_lex_size\n");
+                        return NULL;
+                    }
+
+                    // VEC has many childs.
+                    std::vector<ps_elem *> vec_values;
+                    for (link_lex *l : cur_lex->entries)
+                    {
+                        ps_elem *child_build = deep_build(l, builded);
+                        if (child_build == NULL)
+                        {
+                            printf("deep_build: [ERR] <vec> Error with build child element. lex=%s\n", l->val->name());
+                            return NULL;
+                        }
+
+                        vec_values.push_back(child_build);
+                    }
+
+                    ps_elem *set = new ps_elem(lex_type::BL_VEC, new parser::vector(vec_values, this->cursor));
+                    builded.push_back(set);
+                    printf("deep_build: [ok] <vec(%i)>\n", vec_values.size());
                     return set;
                 }
                 else if (ttype == HOOK_DEF)
@@ -187,6 +215,11 @@ namespace parcel
             };
 
         public:
+            instr(size_t begin_pos, size_t source_len)
+            {
+                cursor = make_shared<parser::parse_cursor>(begin_pos, source_len);
+            };
+
             // builds top level instructions like hooks/links/go
             bool build(offset_table<link_lex *> *table)
             {
@@ -248,6 +281,11 @@ namespace parcel
                 {
                     e->act(lex, NULL, NULL);
                 }
+            };
+
+            void move_cursor(size_t to)
+            {
+                (*cursor).pos += to;
             };
 
             token_hook *find_hook(string name)
