@@ -1,0 +1,8 @@
+
+$ex1:
+  list:
+    seq:
+      "w2"
+
+go:
+  $ex1 
