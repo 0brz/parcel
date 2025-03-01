@@ -21,9 +21,10 @@ add_executable(tt
     src/tools/offset_table.h
     src/tools/lexer/lex.h
     src/tools/btree.h
+    src/tools/tree.h
     src/tools/logger.h
-    src/builder/lex_build.cpp
-    src/builder/lex_build.h
+    src/builder/lextree_build.cpp
+    src/builder/lextree_build.h
 
     src/tools/ring.h
     src/parse/parser.h
