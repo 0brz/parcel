@@ -208,6 +208,8 @@ namespace parcel
 
         // ------------- TOOLS
 
+        // ------------- PARSING.LITERALS
+
         struct literal_string : pr_val
         {
             string val;
@@ -232,6 +234,69 @@ namespace parcel
             }
 
             literal_string(const char *t) : val(t) {};
+        };
+
+        struct literal_float : pr_val
+        {
+            float val;
+
+            void reset() {};
+
+            act_result act(string &lex, token *par, token *t2 = NULL)
+            {
+                try
+                {
+                    float fv = stof(lex);
+                    if (!lex.empty() && val == fv)
+                    {
+                        if (par != NULL)
+                        {
+                            float v = stof(lex);
+                            par->type = tokens::type::literal_float;
+                            par->val = new val_float(v);
+                            return ACT;
+                        }
+
+                        return ACT;
+                    }
+                }
+                catch (invalid_argument ex)
+                {
+                    return FAIL;
+                }
+
+                return FAIL;
+            }
+
+            literal_float(float &v) : val(v) {};
+        };
+
+        struct literal_int : pr_val
+        {
+            string val;
+
+            void reset() {};
+
+            act_result act(string &lex, token *par, token *t2 = NULL)
+            {
+                // compare like two strings
+                if (!lex.empty() && lex == val)
+                {
+                    if (par != NULL)
+                    {
+                        int v = stoi(lex);
+                        par->type = tokens::type::literal_int;
+                        par->val = new val_int(v);
+                        return ACT;
+                    }
+
+                    return ACT;
+                }
+                else
+                    return FAIL;
+            }
+
+            literal_int(const char *t) : val(t) {};
         };
 
         struct literal_char : pr_val
@@ -259,6 +324,8 @@ namespace parcel
 
             literal_char(char t) : val(t) {};
         };
+
+        // ------------- PARSING.COLLECTIONS
 
         struct list : pr_val
         {

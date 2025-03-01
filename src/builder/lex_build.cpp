@@ -320,6 +320,7 @@ bool _table_link_last(offset_table<link_lex *> *gt, link_lex *linked_lex)
         return false;
     }
 
+    // printf("LINK_TO=%s\n", v->val->name());
     v->entries.push_back(linked_lex);
 }
 
@@ -581,6 +582,7 @@ offset_table<link_lex *> *parcel::build::build_lex_table(string &src)
         {
             link_lex *linked = new link_lex(lit);
             _table_link_last(gt, linked);
+            gt->add(linked, line_offset);
 
             printf("~%zi [gt(link-last))].literal\n", line_offset);
             continue;

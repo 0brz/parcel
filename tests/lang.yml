@@ -2,7 +2,7 @@
 $ex1:
   list:
     seq:
-      id
+      13.1234
 
 go:
-  $ex1
+  $ex1 

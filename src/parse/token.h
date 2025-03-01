@@ -22,8 +22,11 @@ namespace parcel
             vec,
             set,
             seq,
+
             literal_string,
-            literal_char
+            literal_char,
+            literal_float,
+            literal_int
         };
 
         map<type, const char *> token_names{
@@ -36,7 +39,11 @@ namespace parcel
             {vec, "vec"},
             {seq, "seq"},
             {set, "set"},
-            {literal_string, "litr.string"}};
+
+            {literal_string, "litr.string"},
+            {literal_char, "litr.char"},
+            {literal_float, "litr.float"},
+            {literal_int, "litr.int"}};
 
         const char *nameof(type type)
         {
@@ -82,6 +89,26 @@ namespace parcel
             const char *str()
             {
                 return v.c_str();
+            }
+        };
+
+        struct val_float : tvalue
+        {
+            float v;
+            val_float(float &v) : v(v) {};
+            const char *str()
+            {
+                return "<float>";
+            }
+        };
+
+        struct val_int : tvalue
+        {
+            int v;
+            val_int(int &v) : v(v) {};
+            const char *str()
+            {
+                return "<int>";
             }
         };
 

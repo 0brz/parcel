@@ -216,6 +216,51 @@ namespace parcel
                     printf("deep_build: [ok] <word/num/char>\n");
                     return cur;
                 }
+                else if (ttype == LITR_CHAR)
+                {
+                    value_litr_char *v = static_cast<value_litr_char *>(cur_lex->val->value);
+                    if (v == NULL)
+                    {
+                        printf("deep_build: [ERR] <litr.char> cant cast LEX-Value\n");
+                        return NULL;
+                    }
+
+                    ps_elem *el = new ps_elem(lex_type::LITR_CHAR, new parser::literal_char(v->value));
+                    builded.push_back(el);
+                    printf("deep_build: [ok] <litr.char)>\n");
+                    return el;
+                }
+                else if (ttype == LITR_INT)
+                {
+                    value_litr_int *v = static_cast<value_litr_int *>(cur_lex->val->value);
+                    if (v == NULL)
+                    {
+                        printf("deep_build: [ERR] <litr.int> cant cast LEX-Value\n");
+                        return NULL;
+                    }
+
+                    // LITR.FLOAT -> LITR.STRING
+                    string sv = std::to_string(v->value);
+                    ps_elem *el = new ps_elem(lex_type::LITR_INT, new parser::literal_int(sv.c_str()));
+                    builded.push_back(el);
+                    printf("deep_build: [ok] <litr.int)>\n");
+                    return el;
+                }
+                else if (ttype == LITR_FLOAT)
+                {
+                    value_litr_float *v = static_cast<value_litr_float *>(cur_lex->val->value);
+                    if (v == NULL)
+                    {
+                        printf("deep_build: [ERR] <litr.float> cant cast LEX-Value\n");
+                        return NULL;
+                    }
+
+                    ps_elem *el = new ps_elem(lex_type::LITR_FLOAT, new parser::literal_float(v->value));
+                    builded.push_back(el);
+                    printf("deep_build: [ok] <litr.float)>\n");
+                    return el;
+                }
+
                 else
                 {
                     return NULL;
