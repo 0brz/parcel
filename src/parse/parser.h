@@ -218,8 +218,10 @@ namespace parcel
 
             act_result act(string &lex, token *par, token *t2 = NULL)
             {
+                printf("STRING COMP=%s %s\n", lex.c_str(), val.c_str());
                 if (!lex.empty() && lex == val)
                 {
+                    printf("STRING COMP= OKKKKKKKKKKKKKKKKK\n");
                     if (par != NULL)
                     {
                         par->type = tokens::type::literal_string;
@@ -234,6 +236,7 @@ namespace parcel
             }
 
             literal_string(const char *t) : val(t) {};
+            literal_string(string &t) : val(t) {};
         };
 
         struct literal_float : pr_val

@@ -260,7 +260,20 @@ namespace parcel
                     printf("deep_build: [ok] <litr.float)>\n");
                     return el;
                 }
+                else if (ttype == LITR_STR)
+                {
+                    value_litr_string *v = static_cast<value_litr_string *>(cur_lex->val->value);
+                    if (v == NULL)
+                    {
+                        printf("deep_build: [ERR] <litr.string> cant cast LEX-Value\n");
+                        return NULL;
+                    }
 
+                    ps_elem *el = new ps_elem(lex_type::LITR_STR, new parser::literal_string(v->value));
+                    builded.push_back(el);
+                    printf("deep_build: [ok] <litr.string)>\n");
+                    return el;
+                }
                 else
                 {
                     return NULL;

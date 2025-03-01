@@ -438,7 +438,8 @@ lex *parcel::build::inplace_build_literal(lexer &lx)
     }
     else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos)
     {
-        string _val = string(cur.c_str());
+        //
+        string _val = string(begin(cur) + 1, end(cur) - 1);
         auto _bl = _new_lex(lex_type::LITR_STR, new value_litr_string(_val));
         return _bl;
         //_link_last_block(gt, _bl);
