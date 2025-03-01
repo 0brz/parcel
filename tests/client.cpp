@@ -12,7 +12,9 @@ int main()
 {
     printf("Client code...\n");
     string sr = lexer::read_source_file("C:/git.local/parsing/bound_parsing/tests/lang.yml");
-    offset_table<parcel::build::link_lex *> *gt = parcel::build::build_lex_table(sr);
+    LexTree *gt = parcel::build::build_lextree(sr);
+
+    /*
     if (gt != NULL)
     {
         tools::dump::lextable(gt);
@@ -38,4 +40,5 @@ int main()
 
         delete gt;
     }
+        */
 }

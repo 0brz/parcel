@@ -21,10 +21,12 @@ private:
 
 public:
     // return first paths in graph (entrypoints)
-    vector<Element> get_roots()
+    int min_level() { return _min_level; };
+
+    vector<Element> get_by_offset(int offset)
     {
         std::vector<Element> v;
-        auto it = _entries.find(_min_level);
+        auto it = _entries.find(offset);
         if (it != end(_entries))
         {
             for (const Element &child : (*it).second)

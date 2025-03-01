@@ -8,6 +8,7 @@
 #include "../types/types.h"
 #include "../expr/expr.h"
 #include "../funcs/fn.h"
+#include "../tools/tree.h"
 
 using namespace std;
 using namespace parcel::type;
@@ -20,12 +21,10 @@ namespace parcel
 {
     namespace build
     {
-        struct link_lex
+        struct LexTree
         {
-            lex *val;
-            std::vector<link_lex *> entries; // maybe fix to small_vec
-            link_lex(lex *v) : val(v), entries{} {};
-            link_lex() : val(NULL) {};
+            std::vector<TreeValue<lex *> *> roots;
+            LexTree(std::vector<TreeValue<lex *> *> &v) : roots(v) {};
         };
 
         lex *inplace_build_tag(lexer &lx);
@@ -38,7 +37,7 @@ namespace parcel
         lex *inplace_build_fn_expr(lexer &lx);
         lex *inplace_build_fn_ref(lexer &lx);
 
-        offset_table<link_lex *> *build_lex_table(string &src);
+        LexTree *build_lextree(string &src);
     }
 }
 
