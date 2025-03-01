@@ -320,6 +320,7 @@ bool _table_link_last(offset_table<link_lex *> *gt, link_lex *linked_lex)
         return false;
     }
 
+    // printf("LINK_TO=%s\n", v->val->name());
     v->entries.push_back(linked_lex);
 }
 
@@ -437,7 +438,8 @@ lex *parcel::build::inplace_build_literal(lexer &lx)
     }
     else if (lx.next_like_rounded(cur, "\"", "\"", "") != lx.npos)
     {
-        string _val = string(cur.c_str());
+        //
+        string _val = string(begin(cur) + 1, end(cur) - 1);
         auto _bl = _new_lex(lex_type::LITR_STR, new value_litr_string(_val));
         return _bl;
         //_link_last_block(gt, _bl);
@@ -466,8 +468,7 @@ lex *parcel::build::inplace_build_basetype(lexer &lx)
     if (lx.next_id(id) != lx.npos)
     {
         lex_type type = typeof(id);
-        if (type == lex_type::BL_WORD ||
-            type == lex_type::BL_NUMBER)
+        if (lang::is_basetype(type))
         {
             return new lex(type, NULL);
         }
@@ -582,6 +583,7 @@ offset_table<link_lex *> *parcel::build::build_lex_table(string &src)
         {
             link_lex *linked = new link_lex(lit);
             _table_link_last(gt, linked);
+            gt->add(linked, line_offset);
 
             printf("~%zi [gt(link-last))].literal\n", line_offset);
             continue;

@@ -96,11 +96,16 @@ namespace parcel
                 tk->type = tokens::vec;
                 // tk->val = new val_vector();
             }
+            else if (el->type == parcel::type::BL_SEQ)
+            {
+                tk->type = tokens::seq;
+                // tk->val = new val_vector();
+            }
 
             return tk;
         };
 
-        // ------------- TOOLS
+        // ------------- PARSING.BASETYPES
 
         struct word : pr_val
         {
@@ -135,6 +140,76 @@ namespace parcel
             }
         };
 
+        struct base_char : pr_val
+        {
+            void reset() {};
+            act_result act(string &lex, token *par, token *t2 = NULL)
+            {
+                // printf("pr_num\n");
+                if (lex.size() == 1)
+                {
+                    par->type = tokens::type::CHAR;
+                    par->val = new val_char(lex.at(0));
+                    return ACT;
+                }
+
+                // int v = stoi(lex);
+                return FAIL;
+            }
+        };
+
+        bool _is_id_char(char t)
+        {
+            if (t >= '0' && t <= '9')
+            {
+                return true;
+            }
+            else if (isalpha(t))
+                return true;
+            else if (t == '_')
+                return true;
+
+            return false;
+        }
+
+        struct id : pr_val
+        {
+            void reset() {};
+            act_result act(string &lex, token *par, token *t2 = NULL)
+            {
+                // printf("pr_num\n");
+                if (lex.size() > 1)
+                {
+                    bool success = true;
+                    for (int i = 0; i < lex.size() - 1; i++)
+                    {
+                        if (_is_id_char(lex[i]) && _is_id_char(lex[i + 1]))
+                        {
+                        }
+                        else
+                        {
+                            success = false;
+                            break;
+                        };
+                    }
+
+                    if (success)
+                    {
+                        par->type = tokens::type::ID;
+                        par->val = new val_id(lex);
+                        return ACT;
+                    }
+                }
+
+                // int v = stoi(lex);
+                return FAIL;
+            }
+        };
+
+        // ------------- TOOLS
+
+        // ------------- PARSING.LITERALS
+
         struct literal_string : pr_val
         {
             string val;
@@ -143,8 +218,10 @@ namespace parcel
 
             act_result act(string &lex, token *par, token *t2 = NULL)
             {
+                printf("STRING COMP=%s %s\n", lex.c_str(), val.c_str());
                 if (!lex.empty() && lex == val)
                 {
+                    printf("STRING COMP= OKKKKKKKKKKKKKKKKK\n");
                     if (par != NULL)
                     {
                         par->type = tokens::type::literal_string;
@@ -159,6 +236,70 @@ namespace parcel
             }
 
             literal_string(const char *t) : val(t) {};
+            literal_string(string &t) : val(t) {};
+        };
+
+        struct literal_float : pr_val
+        {
+            float val;
+
+            void reset() {};
+
+            act_result act(string &lex, token *par, token *t2 = NULL)
+            {
+                try
+                {
+                    float fv = stof(lex);
+                    if (!lex.empty() && val == fv)
+                    {
+                        if (par != NULL)
+                        {
+                            float v = stof(lex);
+                            par->type = tokens::type::literal_float;
+                            par->val = new val_float(v);
+                            return ACT;
+                        }
+
+                        return ACT;
+                    }
+                }
+                catch (invalid_argument ex)
+                {
+                    return FAIL;
+                }
+
+                return FAIL;
+            }
+
+            literal_float(float &v) : val(v) {};
+        };
+
+        struct literal_int : pr_val
+        {
+            string val;
+
+            void reset() {};
+
+            act_result act(string &lex, token *par, token *t2 = NULL)
+            {
+                // compare like two strings
+                if (!lex.empty() && lex == val)
+                {
+                    if (par != NULL)
+                    {
+                        int v = stoi(lex);
+                        par->type = tokens::type::literal_int;
+                        par->val = new val_int(v);
+                        return ACT;
+                    }
+
+                    return ACT;
+                }
+                else
+                    return FAIL;
+            }
+
+            literal_int(const char *t) : val(t) {};
         };
 
         struct literal_char : pr_val
@@ -186,6 +327,8 @@ namespace parcel
 
             literal_char(char t) : val(t) {};
         };
+
+        // ------------- PARSING.COLLECTIONS
 
         struct list : pr_val
         {
@@ -711,8 +854,8 @@ namespace parcel
                     e->second = create_tk_for(e->first);
                 }
 
-                val_vector *vec = new val_vector(builded_row);
-                par->type = tokens::vec;
+                val_seq *vec = new val_seq(builded_row);
+                par->type = tokens::seq;
                 par->val = vec;
             }
 

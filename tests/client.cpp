@@ -17,15 +17,16 @@ int main()
     {
         tools::dump::lextable(gt);
 
-        instr ins;
+        instr ins(0, 5);
         ins.build(gt);
 
         // working with tokenizer.
         std::vector<string> toks{
-            "13", "w1", "w2", "w3", "1235"};
+            "13", "w1", "w2", "a", "!", "_", "12.55", "13.1234", "1235"};
         for (string &s : toks)
         {
             ins.propagate(s);
+            ins.move_cursor(1);
         }
 
         printf("propagate=ok\n");

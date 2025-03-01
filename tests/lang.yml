@@ -1,7 +1,8 @@
 
 $ex1:
   list:
-    num
+    seq:
+      "w2"
 
 go:
-  $ex1
+  $ex1 

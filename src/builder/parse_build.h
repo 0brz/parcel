@@ -33,6 +33,7 @@ namespace parcel
         private:
             std::map<string, token_hook *> map_hooks;
             std::vector<prog_go *> reg_entries{};
+            shared_ptr<parser::parse_cursor> cursor;
 
             bool check_lex_size(link_lex *lex, int need)
             {
@@ -68,6 +69,69 @@ namespace parcel
 
                     printf("deep_build: [ok] <list>\n");
                     return list;
+                }
+                else if (ttype == BL_SET)
+                {
+                    if (!check_lex_size(cur_lex, 1))
+                    {
+                        printf("deep_build: [ERR] <set> check_lex_size\n");
+                        return NULL;
+                    }
+
+                    // set has many childs.
+                    std::vector<ps_elem *> set_values;
+                    for (link_lex *l : cur_lex->entries)
+                    {
+                        ps_elem *child_build = deep_build(l, builded);
+                        if (child_build == NULL)
+                        {
+                            printf("deep_build: [ERR] <set> Error with build child element. lex=%s\n", l->val->name());
+                            return NULL;
+                        }
+
+                        set_values.push_back(child_build);
+                    }
+
+                    ps_elem *set = new ps_elem(lex_type::BL_SET, new parser::set(set_values));
+                    builded.push_back(set);
+                    printf("deep_build: [ok] <set(%i)>\n", set_values.size());
+                    return set;
+                }
+                else if (ttype == BL_VEC ||
+                         ttype == BL_SEQ)
+                {
+                    if (!check_lex_size(cur_lex, 1))
+                    {
+                        printf("deep_build: [ERR] <vec/seq> check_lex_size\n");
+                        return NULL;
+                    }
+
+                    // BUILD CHILDS.
+                    // vec/seq has many childs.
+                    std::vector<ps_elem *> vec_values;
+                    for (link_lex *l : cur_lex->entries)
+                    {
+                        ps_elem *child_build = deep_build(l, builded);
+                        if (child_build == NULL)
+                        {
+                            printf("deep_build: [ERR] <vec/seq> Error with build child element. lex=%s\n", l->val->name());
+                            return NULL;
+                        }
+
+                        vec_values.push_back(child_build);
+                    }
+
+                    printf("_____LEX_TYPE=%s\n", type::nameof(ttype));
+
+                    ps_elem *el;
+                    if (ttype == BL_VEC)
+                        el = new ps_elem(lex_type::BL_VEC, new parser::vector(vec_values, this->cursor));
+                    else if (ttype == BL_SEQ)
+                        el = new ps_elem(lex_type::BL_SEQ, new parser::seq(vec_values, this->cursor));
+
+                    builded.push_back(el);
+                    printf("deep_build: [ok] <vec/seq(%i)>\n", vec_values.size());
+                    return el;
                 }
                 else if (ttype == HOOK_DEF)
                 {
@@ -121,7 +185,9 @@ namespace parcel
                     }
                 }
                 else if (ttype == BL_WORD ||
-                         ttype == BL_NUMBER)
+                         ttype == BL_NUMBER ||
+                         ttype == BL_CHAR ||
+                         ttype == BL_ID)
                 {
                     ps_elem *cur;
                     switch (ttype)
@@ -130,8 +196,16 @@ namespace parcel
                         cur = new ps_elem(ttype, new parser::word());
                         break;
 
+                    case BL_ID:
+                        cur = new ps_elem(ttype, new parser::id());
+                        break;
+
                     case BL_NUMBER:
                         cur = new ps_elem(ttype, new parser::num());
+                        break;
+
+                    case BL_CHAR:
+                        cur = new ps_elem(ttype, new parser::base_char());
                         break;
 
                     default:
@@ -139,8 +213,66 @@ namespace parcel
                     }
 
                     builded.push_back(cur);
-                    printf("deep_build: [ok] <word/num>\n");
+                    printf("deep_build: [ok] <word/num/char>\n");
                     return cur;
+                }
+                else if (ttype == LITR_CHAR)
+                {
+                    value_litr_char *v = static_cast<value_litr_char *>(cur_lex->val->value);
+                    if (v == NULL)
+                    {
+                        printf("deep_build: [ERR] <litr.char> cant cast LEX-Value\n");
+                        return NULL;
+                    }
+
+                    ps_elem *el = new ps_elem(lex_type::LITR_CHAR, new parser::literal_char(v->value));
+                    builded.push_back(el);
+                    printf("deep_build: [ok] <litr.char)>\n");
+                    return el;
+                }
+                else if (ttype == LITR_INT)
+                {
+                    value_litr_int *v = static_cast<value_litr_int *>(cur_lex->val->value);
+                    if (v == NULL)
+                    {
+                        printf("deep_build: [ERR] <litr.int> cant cast LEX-Value\n");
+                        return NULL;
+                    }
+
+                    // LITR.FLOAT -> LITR.STRING
+                    string sv = std::to_string(v->value);
+                    ps_elem *el = new ps_elem(lex_type::LITR_INT, new parser::literal_int(sv.c_str()));
+                    builded.push_back(el);
+                    printf("deep_build: [ok] <litr.int)>\n");
+                    return el;
+                }
+                else if (ttype == LITR_FLOAT)
+                {
+                    value_litr_float *v = static_cast<value_litr_float *>(cur_lex->val->value);
+                    if (v == NULL)
+                    {
+                        printf("deep_build: [ERR] <litr.float> cant cast LEX-Value\n");
+                        return NULL;
+                    }
+
+                    ps_elem *el = new ps_elem(lex_type::LITR_FLOAT, new parser::literal_float(v->value));
+                    builded.push_back(el);
+                    printf("deep_build: [ok] <litr.float)>\n");
+                    return el;
+                }
+                else if (ttype == LITR_STR)
+                {
+                    value_litr_string *v = static_cast<value_litr_string *>(cur_lex->val->value);
+                    if (v == NULL)
+                    {
+                        printf("deep_build: [ERR] <litr.string> cant cast LEX-Value\n");
+                        return NULL;
+                    }
+
+                    ps_elem *el = new ps_elem(lex_type::LITR_STR, new parser::literal_string(v->value));
+                    builded.push_back(el);
+                    printf("deep_build: [ok] <litr.string)>\n");
+                    return el;
                 }
                 else
                 {
@@ -160,6 +292,12 @@ namespace parcel
             };
 
         public:
+            instr(size_t begin_pos, size_t source_len)
+            {
+                cursor = make_shared<parser::parse_cursor>(begin_pos, source_len);
+            };
+
+            // builds top level instructions like hooks/links/go
             bool build(offset_table<link_lex *> *table)
             {
                 // instr *inst = new instr();
@@ -220,6 +358,11 @@ namespace parcel
                 {
                     e->act(lex, NULL, NULL);
                 }
+            };
+
+            void move_cursor(size_t to)
+            {
+                (*cursor).pos += to;
             };
 
             token_hook *find_hook(string name)

@@ -15,20 +15,35 @@ namespace parcel
         {
             word,
             number,
+            CHAR,
+            ID,
+
             list,
             vec,
             set,
+            seq,
+
             literal_string,
-            literal_char
+            literal_char,
+            literal_float,
+            literal_int
         };
 
         map<type, const char *> token_names{
             {word, "word"},
             {number, "number"},
+            {CHAR, "char"},
+            {ID, "id"},
+
             {list, "list"},
             {vec, "vec"},
+            {seq, "seq"},
             {set, "set"},
-            {literal_string, "litr.string"}};
+
+            {literal_string, "litr.string"},
+            {literal_char, "litr.char"},
+            {literal_float, "litr.float"},
+            {literal_int, "litr.int"}};
 
         const char *nameof(type type)
         {
@@ -77,13 +92,43 @@ namespace parcel
             }
         };
 
-        struct val_char : tvalue
+        struct val_float : tvalue
         {
-            char v;
-            val_char(char v) : v(v) {};
+            float v;
+            val_float(float &v) : v(v) {};
             const char *str()
             {
-                return "<char>";
+                return "<float>";
+            }
+        };
+
+        struct val_int : tvalue
+        {
+            int v;
+            val_int(int &v) : v(v) {};
+            const char *str()
+            {
+                return "<int>";
+            }
+        };
+
+        struct val_char : tvalue
+        {
+            string v;
+            val_char(char v) : v(1, v) {};
+            const char *str()
+            {
+                return v.c_str();
+            }
+        };
+
+        struct val_id : tvalue
+        {
+            string v;
+            val_id(string &v) : v(v) {};
+            const char *str()
+            {
+                return v.c_str();
             }
         };
 
@@ -127,6 +172,17 @@ namespace parcel
             const char *str()
             {
                 return "<set>";
+            }
+        };
+
+        struct val_seq : tvalue
+        {
+            std::vector<token *> v;
+            val_seq(std::vector<token *> &v) : v(v) {};
+            val_seq() {};
+            const char *str()
+            {
+                return "<seq>";
             }
         };
     }
