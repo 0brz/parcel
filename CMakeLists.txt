@@ -25,9 +25,13 @@ add_executable(tt
     src/tools/logger.h
     src/builder/lextree_build.cpp
     src/builder/lextree_build.h
+    src/builder/parsetree_build.cpp
+    src/builder/parsetree_build.h
 
     src/tools/ring.h
-    src/parse/parser.h
+    src/parse/elements.cpp
+    src/parse/elements.h
+    src/parse/token.cpp
     src/parse/token.h
 
     src/tools/dump.h

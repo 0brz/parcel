@@ -2,8 +2,8 @@
 #define _DUMP_
 
 #include "../lexems/lexem.h"
-#include "../builder/lex_build.h"
-#include "../parse/parser.h"
+#include "../builder/lextree_build.h"
+#include "../parse/elements.h"
 #include "../parse/token.h"
 #include "offset_table.h"
 #include <iomanip>
@@ -17,14 +17,14 @@ namespace tools
 {
     namespace dump
     {
-        void lextable(offset_table<link_lex *> *table)
+        void lextable(offset_table<LinkedLex *> *table)
         {
-            std::vector<pair<int, std::vector<link_lex *>>> v = table->as_list();
+            std::vector<pair<int, std::vector<LinkedLex *>>> v = table->as_list();
             printf("Dump lex table. (count=%i)\n", v.size());
 
-            for (const pair<int, std::vector<link_lex *>> &e : v)
+            for (const pair<int, std::vector<LinkedLex *>> &e : v)
             {
-                for (const link_lex *t : e.second)
+                for (const LinkedLex *t : e.second)
                 {
                     cout << e.first << ":" << setw(e.first) << "[" << t->val->name() << "]\n";
                 }
@@ -45,11 +45,11 @@ namespace tools
 
                 if (cur.first->val != NULL)
                 {
-                    cout << setw(cur.second) << "[" << nameof(cur.first->type) << "]" << " v='" << cur.first->val->str() << "'\n";
+                    cout << setw(cur.second) << "[" << parcel::tokens::nameof(cur.first->type) << "]" << " v='" << cur.first->val->str() << "'\n";
                 }
                 else
                 {
-                    printf("[%s] (%s) Not Builded!\n", h->name.c_str(), nameof(cur.first->type));
+                    printf("[%s] (%s) Not Builded!\n", h->name.c_str(), parcel::tokens::nameof(cur.first->type));
                     // break;
                 }
 

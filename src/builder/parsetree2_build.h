@@ -8,7 +8,7 @@
 #include "../types/types.h"
 #include "../expr/expr.h"
 #include "../funcs/fn.h"
-#include "lex_build.h"
+#include "lextree_build.h"
 #include "../parse/parser.h"
 // #include "lex_build.h"
 #include <vector>
@@ -22,18 +22,27 @@ using namespace parcel::funcs;
 using namespace parcel::parser;
 using namespace parcel::build;
 
-using ps_elem = parcel::parser::element;
+using ps_elem = parcel::parser::ParseElement;
 
 namespace parcel
 {
     namespace build
     {
+        struct ParseTree
+        {
+            std::map<string, token_hook *> hooks;
+            std::vector<prog_go *> roots;
+            ParseTree() {};
+        };
+
+        ParseTree *build_parsetree(LexTree *lextree, shared_ptr<ParseCursor> &cursor);
+
         class instr
         {
         private:
             std::map<string, token_hook *> map_hooks;
             std::vector<prog_go *> reg_entries{};
-            shared_ptr<parser::parse_cursor> cursor;
+            shared_ptr<parser::ParseCursor> cursor;
 
             bool check_lex_size(link_lex *lex, int need)
             {
@@ -294,7 +303,7 @@ namespace parcel
         public:
             instr(size_t begin_pos, size_t source_len)
             {
-                cursor = make_shared<parser::parse_cursor>(begin_pos, source_len);
+                cursor = make_shared<parser::ParseCursor>(begin_pos, source_len);
             };
 
             // builds top level instructions like hooks/links/go

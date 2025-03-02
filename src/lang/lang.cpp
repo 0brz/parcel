@@ -33,8 +33,35 @@ bool parcel::lang::is_basetype(lex_type type)
     }
 };
 
+bool parcel::lang::is_instr_entrypoint(lex_type type)
+{
+    switch (type)
+    {
+    case GO:
+    case LINK_DEF:
+    case HOOK_DEF:
+        return true;
+
+    default:
+        return false;
+    }
+};
+
 bool parcel::lang::is_basetype(string &str)
 {
     lex_type tp = typeof(str);
     return is_basetype(tp);
+};
+
+bool parcel::lang::is_collection(lex_type type)
+{
+    switch (type)
+    {
+    case type::lex_type::BL_SET:
+    case type::lex_type::BL_LIST:
+        return true;
+
+    default:
+        return false;
+    }
 };

@@ -7,21 +7,23 @@
 #include "token.h"
 #include <queue>
 #include "../types/types.h"
+#include "../lang/lang.h"
 #include "../tools/ring.h"
 
 using namespace parcel::tokens;
 using namespace parcel::type;
+using namespace parcel::lang;
 
 namespace parcel
 {
     namespace parser
     {
-        class parse_cursor
+        class ParseCursor
         {
         public:
             size_t pos;
             size_t size;
-            parse_cursor(size_t pos, size_t sz) : pos(pos), size(sz) {};
+            ParseCursor(size_t pos, size_t sz) : pos(pos), size(sz) {};
             bool at_end() { return pos == size - 1; };
         };
 
@@ -33,19 +35,19 @@ namespace parcel
             ERR_TOKEN_TYPE,
         };
 
-        struct pr_val
+        struct ParseValue
         {
             // fn info
             virtual act_result act(string &lex, token *par, token *t2 = NULL) = 0;
             virtual void reset() = 0;
         };
 
-        struct element
+        struct ParseElement
         {
             lex_type type;
-            pr_val *val;
+            ParseValue *val;
 
-            element(lex_type type, pr_val *v) : type(type), val(v) {};
+            ParseElement(lex_type type, ParseValue *v) : type(type), val(v) {};
             void reset() {};
 
             act_result act(string &lex, token *par, token *t2 = NULL)
@@ -60,54 +62,24 @@ namespace parcel
         };
 
         // ------------- TOOLS
-        void list_add(token *list, token *tk)
-        {
-            val_list *v = static_cast<val_list *>(list->val);
-            if (v != NULL)
-            {
-                v->v.push_back(tk);
-            }
-        };
+        void list_add(token *list, token *tk);
 
-        void set_add(token *list, token *tk)
-        {
-            val_set *v = static_cast<val_set *>(list->val);
-            if (v != NULL)
-            {
-                v->v.push_back(tk);
-            }
-        };
+        void set_add(token *list, token *tk);
 
-        token *create_tk_for(element *el)
-        {
-            auto tk = new token();
-            if (el->type == parcel::type::BL_LIST)
-            {
-                tk->type = tokens::list;
-                tk->val = new val_list();
-            }
-            else if (el->type == parcel::type::BL_SET)
-            {
-                tk->type = tokens::set;
-                tk->val = new val_set();
-            }
-            else if (el->type == parcel::type::BL_VEC)
-            {
-                tk->type = tokens::vec;
-                // tk->val = new val_vector();
-            }
-            else if (el->type == parcel::type::BL_SEQ)
-            {
-                tk->type = tokens::seq;
-                // tk->val = new val_vector();
-            }
+        token *create_tk_for(ParseElement *el);
 
-            return tk;
-        };
+        // ------------- UTILS.
+        void deep_clear_tokens(parcel::tokens::token *root);
+
+        void deep_reset_elems(ParseElement *root);
+
+        bool collection_empty(token *tk);
+
+        bool is_id_char(char t);
 
         // ------------- PARSING.BASETYPES
 
-        struct word : pr_val
+        struct word : ParseValue
         {
             void reset() {};
             act_result act(string &lex, token *par, token *t2 = NULL)
@@ -122,7 +94,7 @@ namespace parcel
             }
         };
 
-        struct num : pr_val
+        struct num : ParseValue
         {
             void reset() {};
             act_result act(string &lex, token *par, token *t2 = NULL)
@@ -140,7 +112,7 @@ namespace parcel
             }
         };
 
-        struct base_char : pr_val
+        struct base_char : ParseValue
         {
             void reset() {};
             act_result act(string &lex, token *par, token *t2 = NULL)
@@ -158,21 +130,7 @@ namespace parcel
             }
         };
 
-        bool _is_id_char(char t)
-        {
-            if (t >= '0' && t <= '9')
-            {
-                return true;
-            }
-            else if (isalpha(t))
-                return true;
-            else if (t == '_')
-                return true;
-
-            return false;
-        }
-
-        struct id : pr_val
+        struct id : ParseValue
         {
             void reset() {};
             act_result act(string &lex, token *par, token *t2 = NULL)
@@ -183,7 +141,7 @@ namespace parcel
                     bool success = true;
                     for (int i = 0; i < lex.size() - 1; i++)
                     {
-                        if (_is_id_char(lex[i]) && _is_id_char(lex[i + 1]))
+                        if (is_id_char(lex[i]) && is_id_char(lex[i + 1]))
                         {
                         }
                         else
@@ -210,7 +168,7 @@ namespace parcel
 
         // ------------- PARSING.LITERALS
 
-        struct literal_string : pr_val
+        struct literal_string : ParseValue
         {
             string val;
 
@@ -239,7 +197,7 @@ namespace parcel
             literal_string(string &t) : val(t) {};
         };
 
-        struct literal_float : pr_val
+        struct literal_float : ParseValue
         {
             float val;
 
@@ -274,7 +232,7 @@ namespace parcel
             literal_float(float &v) : val(v) {};
         };
 
-        struct literal_int : pr_val
+        struct literal_int : ParseValue
         {
             string val;
 
@@ -302,7 +260,7 @@ namespace parcel
             literal_int(const char *t) : val(t) {};
         };
 
-        struct literal_char : pr_val
+        struct literal_char : ParseValue
         {
             char val;
 
@@ -330,9 +288,9 @@ namespace parcel
 
         // ------------- PARSING.COLLECTIONS
 
-        struct list : pr_val
+        struct list : ParseValue
         {
-            element *el;
+            ParseElement *el;
             token *el_t;  // storing the deep stucture
             token *el_t2; // t2 param
 
@@ -340,7 +298,7 @@ namespace parcel
                 // el->reset();
             };
 
-            list(element *basetype)
+            list(ParseElement *basetype)
             {
                 el = basetype;
                 el_t = create_tk_for(el);
@@ -390,18 +348,18 @@ namespace parcel
             };
         };
 
-        struct set : pr_val
+        struct set : ParseValue
         {
             // for each pair el-token
-            std::vector<element *> els_row;
+            std::vector<ParseElement *> els_row;
             std::vector<token *> tk_row; // storing the deep stucture
 
             void reset() {};
 
-            set(std::vector<element *> &els)
+            set(std::vector<ParseElement *> &els)
             {
                 els_row = els;
-                for (element *e : els_row)
+                for (ParseElement *e : els_row)
                 {
                     tk_row.push_back(create_tk_for(e));
                 }
@@ -443,138 +401,10 @@ namespace parcel
             };
         };
 
-        // ------------- UTILS.
-        void deep_clear_tokens(token *root)
+        struct vector : ParseValue
         {
-            queue<token *> q;
-            q.push(root);
-
-            printf("____[deep_clear_lists]\n");
-
-            while (!q.empty())
-            {
-                token *t = q.front();
-                q.pop();
-
-                if (t->type == tokens::list)
-                {
-                    val_list *ls = static_cast<val_list *>(t->val);
-                    printf("_____LS=%i\n", ls->v.size());
-                    for (auto tk : ls->v)
-                    {
-                        q.push(tk);
-                    }
-                    ls->v.clear();
-                    printf("_____LS2=%i\n", ls->v.size());
-                }
-                else if (t->type == tokens::set)
-                {
-                    val_set *ls = static_cast<val_set *>(t->val);
-                    for (auto tk : ls->v)
-                    {
-                        q.push(tk);
-                    }
-                    ls->v.clear();
-                }
-                else if (t->type == tokens::vec)
-                {
-                    val_vector *vec = static_cast<val_vector *>(t->val);
-                    for (auto tk : vec->v)
-                    {
-                        q.push(tk);
-                    }
-                    // vec->v.clear();
-                }
-            }
-
-            if (root->type == tokens::list)
-            {
-            }
-        };
-
-        void deep_reset_elems(element *root)
-        {
-            queue<element *> q;
-            q.push(root);
-
-            while (!q.empty())
-            {
-                element *t = q.front();
-                q.pop();
-
-                // pay attention to collecitons.
-                // they need be clear all represented values
-                // tokens: deep_clear lists
-
-                if (t->type == type::BL_SET)
-                {
-                    set *set = static_cast<parser::set *>(t->val);
-                    if (set != NULL)
-                    {
-                        for (auto de : set->els_row)
-                        {
-                            q.push(de);
-                        }
-
-                        for (auto tk : set->tk_row)
-                        {
-                            deep_clear_tokens(tk);
-                        }
-                    }
-                }
-                else if (t->type == type::BL_LIST)
-                {
-                    parser::list *ls = static_cast<parser::list *>(t->val);
-                    if (ls != NULL)
-                    {
-                        q.push(ls->el);
-                        deep_clear_tokens(ls->el_t);
-                    }
-                }
-                /*
-                else if (t->type == cond_type::type_ps_vec) {
-                    pr_vector* vec = static_cast<pr_vector*>(t->val);
-                    vec->reset();
-                }
-                    */
-
-                t->val->reset();
-            }
-        };
-
-        bool is_collection(type::lex_type type)
-        {
-            switch (type)
-            {
-            case type::lex_type::BL_SET:
-            case type::lex_type::BL_LIST:
-                return true;
-
-            default:
-                return false;
-            }
-        };
-
-        bool collection_empty(token *tk)
-        {
-            if (tk->type == tokens::list)
-            {
-                val_list *ls = static_cast<val_list *>(tk->val);
-                return ls->v.empty();
-            }
-            else if (tk->type == tokens::set)
-            {
-                val_set *ls = static_cast<val_set *>(tk->val);
-                return ls->v.empty();
-            }
-            return true;
-        };
-        // ------------- UTILS.
-
-        struct vector : pr_val
-        {
-            ring<pair<element *, token *> *> el_ring;
-            shared_ptr<parse_cursor> lex_cursor;
+            ring<pair<ParseElement *, token *> *> el_ring;
+            shared_ptr<ParseCursor> lex_cursor;
 
             void reset()
             {
@@ -605,13 +435,13 @@ namespace parcel
                 par->val = vec;
             }
 
-            vector(std::vector<element *> &v, shared_ptr<parse_cursor> cursor)
+            vector(std::vector<ParseElement *> &v, shared_ptr<ParseCursor> cursor)
             {
                 lex_cursor = cursor;
 
-                for (element *e : v)
+                for (ParseElement *e : v)
                 {
-                    pair<element *, token *> *pr = new pair<element *, token *>{e, create_tk_for(e)};
+                    pair<ParseElement *, token *> *pr = new pair<ParseElement *, token *>{e, create_tk_for(e)};
                     el_ring.add_end(pr);
                 }
 
@@ -632,7 +462,7 @@ namespace parcel
             act_result act(string &lex, token *par, token *t2 = NULL)
             { // vec
 
-                pair<element *, token *> *cur_pair = el_ring.get_current();
+                pair<ParseElement *, token *> *cur_pair = el_ring.get_current();
                 act_result res = cur_pair->first->act(lex, cur_pair->second);
 
                 printf("-------------[vec].act() s=%s ring=%s\n", lex.c_str(), nameof(cur_pair->first->type));
@@ -643,7 +473,7 @@ namespace parcel
                 {
                     if (is_ring_ending())
                     { // finish build vec.
-                        bool is_coll = is_collection(cur_pair->first->type);
+                        bool is_coll = parcel::lang::is_collection(cur_pair->first->type);
                         // printf("[vec].act() END.ACT s=%s is_coll=%i\n", lex.c_str(), is_coll);
 
                         //
@@ -825,10 +655,10 @@ namespace parcel
             };
         };
 
-        struct seq : pr_val
+        struct seq : ParseValue
         {
-            ring<pair<element *, token *> *> el_ring;
-            shared_ptr<parse_cursor> lex_cursor;
+            ring<pair<ParseElement *, token *> *> el_ring;
+            shared_ptr<ParseCursor> lex_cursor;
 
             void reset()
             {
@@ -859,13 +689,13 @@ namespace parcel
                 par->val = vec;
             }
 
-            seq(std::vector<element *> &v, shared_ptr<parse_cursor> cursor)
+            seq(std::vector<ParseElement *> &v, shared_ptr<ParseCursor> cursor)
             {
                 lex_cursor = cursor;
 
-                for (element *e : v)
+                for (ParseElement *e : v)
                 {
-                    pair<element *, token *> *pr = new pair<element *, token *>{e, create_tk_for(e)};
+                    pair<ParseElement *, token *> *pr = new pair<ParseElement *, token *>{e, create_tk_for(e)};
                     el_ring.add_end(pr);
                 }
 
@@ -886,7 +716,7 @@ namespace parcel
             act_result act(string &lex, token *par, token *t2 = NULL)
             { // vec
 
-                pair<element *, token *> *cur_pair = el_ring.get_current();
+                pair<ParseElement *, token *> *cur_pair = el_ring.get_current();
                 act_result res = cur_pair->first->act(lex, cur_pair->second);
 
                 printf("-------------[seq].act() s=%s ring=%s\n", lex.c_str(), nameof(cur_pair->first->type));
@@ -1075,13 +905,13 @@ namespace parcel
             };
         };
 
-        struct prog_go : pr_val
+        struct prog_go : ParseValue
         {
-            element *base; // by value
+            ParseElement *base; // by value
 
             void reset() {};
 
-            prog_go(element *bs)
+            prog_go(ParseElement *bs)
             {
                 base = bs;
             }
@@ -1092,15 +922,15 @@ namespace parcel
             }
         };
 
-        struct token_hook : pr_val
+        struct token_hook : ParseValue
         {
             string name;
-            element *base; // by value
-            token *tk;     // storing deep structure
+            ParseElement *base; // by value
+            token *tk;          // storing deep structure
 
             void reset() {};
 
-            token_hook(string nam, element *bs)
+            token_hook(string nam, ParseElement *bs)
             {
                 name = nam;
                 base = bs;

@@ -7,3 +7,11 @@ parseTree_builder
 bulder:
 buildInfo
 table.cleanup();
+
+
+
+instr
+- prog_go
+- hooks
+- links
+- build_info

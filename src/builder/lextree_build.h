@@ -27,6 +27,8 @@ namespace parcel
             LexTree(std::vector<TreeValue<lex *> *> &v) : roots(v) {};
         };
 
+        using LinkedLex = TreeValue<lex *>;
+
         lex *inplace_build_tag(lexer &lx);
         lex *inplace_build_basetype(lexer &lx);
         lex *inplace_build_hook_ref(lexer &lx);

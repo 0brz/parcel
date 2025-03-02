@@ -3,8 +3,6 @@
 
 using namespace parcel::build;
 
-using LinkedLex = TreeValue<lex *>;
-
 // fix
 lex *_new_lex(lex_type type, lvalue *val)
 {
