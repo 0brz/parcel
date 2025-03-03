@@ -35,7 +35,7 @@ namespace parcel
             ParseTree() {};
         };
 
-        ParseTree *build_parsetree(LexTree *lextree, shared_ptr<ParseCursor> &cursor);
+        ParseTree *build_parsetree(LexTree *lextree);
 
     }
 }

@@ -21,13 +21,13 @@ namespace parcel
 {
     namespace build
     {
+        using LinkedLex = TreeValue<lex *>;
+
         struct LexTree
         {
-            std::vector<TreeValue<lex *> *> roots;
-            LexTree(std::vector<TreeValue<lex *> *> &v) : roots(v) {};
+            std::vector<LinkedLex *> roots{};
+            LexTree(std::vector<LinkedLex *> &v) : roots(v) {};
         };
-
-        using LinkedLex = TreeValue<lex *>;
 
         lex *inplace_build_tag(lexer &lx);
         lex *inplace_build_basetype(lexer &lx);

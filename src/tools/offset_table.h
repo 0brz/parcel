@@ -148,8 +148,8 @@ public:
 
     offset_table() : _last_level(0), _min_level(6), _diff(2), _max_level(-1) {};
 
-    ~offset_table()
-    {
+    ~offset_table() {
+        /*
         for (auto &entry : _entries)
         {
             for (auto &ge : entry.second)
@@ -160,6 +160,7 @@ public:
                 }
             }
         }
+            */
     };
 };
 

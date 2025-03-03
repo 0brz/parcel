@@ -692,6 +692,7 @@ LexTree *parcel::build::build_lextree(string &src)
     }
 
     // printf("Build lex graph end.\n");
+
     vector<LinkedLex *> entrypoints = gt.get_by_offset(gt.min_level());
     LexTree *tree = new LexTree(entrypoints);
 

@@ -14,8 +14,9 @@ int main()
     string sr = lexer::read_source_file("C:/git.local/parsing/bound_parsing/tests/lang.yml");
     LexTree *gt = parcel::build::build_lextree(sr);
     shared_ptr<parcel::parser::ParseCursor> cursor = make_shared<parcel::parser::ParseCursor>(0, 6);
-    auto t2 = parcel::build::build_parsetree(gt, cursor);
-
+    printf("PARSETREE\n");
+    auto t2 = parcel::build::build_parsetree(gt);
+    printf("end\n");
     /*
     if (gt != NULL)
     {
