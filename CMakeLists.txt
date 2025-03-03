@@ -25,8 +25,8 @@ add_executable(tt
     src/tools/logger.h
     src/builder/lextree_build.cpp
     src/builder/lextree_build.h
-    src/builder/parsetree_build.cpp
-    src/builder/parsetree_build.h
+    src/builder/parseinstr_build.cpp
+    src/builder/parseinstr_build.h
 
     src/tools/ring.h
     src/parse/elements.cpp

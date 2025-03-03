@@ -5,7 +5,7 @@
 #include <../include/tools.h>
 #include <../src/builder/lextree_build.h>
 #include <../src/tools/lexer/lex.h>
-#include <../src/builder/parsetree_build.h>
+#include <../src/builder/parseinstr_build.h>
 #include <../src/tools/dump.h>
 
 int main()
@@ -15,7 +15,7 @@ int main()
     LexTree *gt = parcel::build::build_lextree(sr);
     shared_ptr<parcel::parser::ParseCursor> cursor = make_shared<parcel::parser::ParseCursor>(0, 6);
     printf("PARSETREE\n");
-    auto t2 = parcel::build::build_parsetree(gt);
+    auto t2 = parcel::build::build_parseinstr(gt);
     printf("end\n");
     /*
     if (gt != NULL)

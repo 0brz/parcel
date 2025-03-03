@@ -1,4 +1,4 @@
-#include "parsetree_build.h"
+#include "parseinstr_build.h"
 #include <stack>
 
 using namespace parcel::build;
@@ -337,11 +337,11 @@ ParseElement *deep_build(LinkedLex *current, BuildTable &table)
     return el;
 };
 
-ParseTree *parcel::build::build_parsetree(LexTree *lextree)
+Instr *parcel::build::build_parseinstr(LexTree *lextree)
 {
     BuildTable bt(make_shared<ParseCursor>(0, 5));
 
-    ParseTree *tree = new ParseTree();
+    Instr *tree = new Instr();
     std::vector<ParseElement *> all_builds;
 
     for (const auto &lex : lextree->roots)

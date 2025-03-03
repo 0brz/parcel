@@ -28,15 +28,15 @@ namespace parcel
 {
     namespace build
     {
-        struct ParseTree
+        struct Instr
         {
             std::map<string, token_hook *> hooks;
             std::vector<prog_go *> roots;
             shared_ptr<ParseCursor> cursor;
-            ParseTree() {};
+            Instr() {};
         };
 
-        ParseTree *build_parsetree(LexTree *lextree);
+        Instr *build_parseinstr(LexTree *lextree);
 
     }
 }
