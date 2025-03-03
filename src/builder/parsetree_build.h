@@ -32,6 +32,7 @@ namespace parcel
         {
             std::map<string, token_hook *> hooks;
             std::vector<prog_go *> roots;
+            shared_ptr<ParseCursor> cursor;
             ParseTree() {};
         };
 
