@@ -4,14 +4,6 @@
 using namespace parcel::build;
 using namespace parcel::parser;
 
-/*
-    builder
-    --all_builds
-    --cursor
-    --mapped_hooks
-    --mapped_links
-*/
-
 struct BuildTable
 {
     std::vector<ParseElement *> all_builds;
@@ -21,7 +13,9 @@ struct BuildTable
     BuildTable(shared_ptr<ParseCursor> &cursor) : cursor(cursor), entries{}, hooks{}, all_builds{} {};
 };
 
-// PRIVATE
+ParseElement *deep_build(LinkedLex *current, BuildTable &table);
+
+typedef ParseElement *(*BuildElementImpl)(LinkedLex *, BuildTable &table);
 
 namespace utils
 {
@@ -30,40 +24,6 @@ namespace utils
         return lex->entries.size() >= need;
     };
 }
-ParseElement *deep_build(LinkedLex *current, BuildTable &table);
-
-// deep_build
-
-ParseElement *create_basetype(LinkedLex *current)
-{
-    ParseElement *cur = NULL;
-    auto ttype = current->val->type;
-    switch (ttype)
-    {
-    case BL_WORD:
-        cur = new ParseElement(ttype, new parcel::parser::word());
-        break;
-
-    case BL_ID:
-        cur = new ParseElement(ttype, new parcel::parser::id());
-        break;
-
-    case BL_NUMBER:
-        cur = new ParseElement(ttype, new parcel::parser::num());
-        break;
-
-    case BL_CHAR:
-        cur = new ParseElement(ttype, new parcel::parser::base_char());
-        break;
-
-    default:
-        return NULL;
-    }
-
-    return cur;
-}
-
-typedef ParseElement *(*BuildElementImpl)(LinkedLex *, BuildTable &table);
 
 namespace collections
 {
@@ -377,7 +337,6 @@ ParseElement *deep_build(LinkedLex *current, BuildTable &table)
     return el;
 };
 
-// IMPL
 ParseTree *parcel::build::build_parsetree(LexTree *lextree)
 {
     BuildTable bt(make_shared<ParseCursor>(0, 5));
