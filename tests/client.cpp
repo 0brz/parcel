@@ -3,16 +3,21 @@
 #define PARCEL_DEV
 #include <../include/parcel.h>
 #include <../include/tools.h>
-#include <../src/builder/lex_build.h>
+#include <../src/builder/lextree_build.h>
 #include <../src/tools/lexer/lex.h>
+#include <../src/builder/parseinstr_build.h>
 #include <../src/tools/dump.h>
-#include <../src/builder/parse_build.h>
 
 int main()
 {
     printf("Client code...\n");
     string sr = lexer::read_source_file("C:/git.local/parsing/bound_parsing/tests/lang.yml");
-    offset_table<parcel::build::link_lex *> *gt = parcel::build::build_lex_table(sr);
+    LexTree *gt = parcel::build::build_lextree(sr);
+    shared_ptr<parcel::parser::ParseCursor> cursor = make_shared<parcel::parser::ParseCursor>(0, 6);
+    printf("PARSETREE\n");
+    auto t2 = parcel::build::build_parseinstr(gt);
+    printf("end\n");
+    /*
     if (gt != NULL)
     {
         tools::dump::lextable(gt);
@@ -38,4 +43,5 @@ int main()
 
         delete gt;
     }
+        */
 }

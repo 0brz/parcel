@@ -13,7 +13,7 @@ template <typename Element>
 class offset_table
 {
 private:
-    map<int, vector<Element>> _entries;
+    map<int, std::vector<Element>> _entries;
     int _last_level;
     int _min_level;
     int _diff;
@@ -21,10 +21,12 @@ private:
 
 public:
     // return first paths in graph (entrypoints)
-    vector<Element> get_roots()
+    int min_level() { return _min_level; };
+
+    std::vector<Element> get_by_offset(int offset)
     {
         std::vector<Element> v;
-        auto it = _entries.find(_min_level);
+        auto it = _entries.find(offset);
         if (it != end(_entries))
         {
             for (const Element &child : (*it).second)
@@ -36,7 +38,7 @@ public:
         return v;
     };
 
-    vector<pair<int, vector<Element>>> as_list()
+    std::vector<pair<int, std::vector<Element>>> as_list()
     {
         std::vector<pair<int, std::vector<Element>>> v;
 
@@ -62,7 +64,7 @@ public:
         return v;
     };
 
-    bool head(vector<Element> &out)
+    bool head(std::vector<Element> &out)
     {
         auto fn = _entries.find(_min_level);
         if (fn != end(_entries))
@@ -75,7 +77,7 @@ public:
     };
 
     // return last paths in graph (most deepest)
-    bool tail(vector<Element> &out)
+    bool tail(std::vector<Element> &out)
     {
         auto fn = _entries.find(_last_level);
         if (fn != end(_entries))
@@ -146,8 +148,8 @@ public:
 
     offset_table() : _last_level(0), _min_level(6), _diff(2), _max_level(-1) {};
 
-    ~offset_table()
-    {
+    ~offset_table() {
+        /*
         for (auto &entry : _entries)
         {
             for (auto &ge : entry.second)
@@ -158,6 +160,7 @@ public:
                 }
             }
         }
+            */
     };
 };
 

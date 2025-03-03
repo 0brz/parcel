@@ -1,29 +1,17 @@
+Lex -> LexTable
+ParseElement -> ParseTree
 
-/*
+lextable_builder
+parseTree_builder
 
-[sep] cursor
-[sep to single] graph
-
-[mm]
-gt
-values
-
-/*
-     val: word|number|version|ip --simple blocks sequence
-     val: tagval:  -- defined block
-*/
-
-вохзможность описать свои теги с помощью других тегов и функций
-
-use:
-я описал правила для форматирования входного текста
-программа собрала данные по моим правилам -> в граф распаршенныъ обьектов
+bulder:
+buildInfo
+table.cleanup();
 
 
-=========== GOALS
-prepare built-in functions
-describe how i can parse my text/file to get usefull data
 
-
-*/
-
+instr
+- prog_go
+- hooks
+- links
+- build_info

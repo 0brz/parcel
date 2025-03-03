@@ -1,4 +1,4 @@
-#include "lex_build.h"
+#include "lextree_build.h"
 #include <stack>
 
 using namespace parcel::build;
@@ -311,9 +311,9 @@ bool try_build_fn_expr(stack<string> &postfix, btree<fn_ref *> *tree)
 ============================
 */
 
-bool _table_link_last(offset_table<link_lex *> *gt, link_lex *linked_lex)
+bool _table_link_last(offset_table<LinkedLex *> *gt, LinkedLex *linked_lex)
 {
-    link_lex *v;
+    LinkedLex *v;
     if (!gt->last(v))
     {
         printf("[_table_link_last] ret null\n");
@@ -322,11 +322,29 @@ bool _table_link_last(offset_table<link_lex *> *gt, link_lex *linked_lex)
 
     // printf("LINK_TO=%s\n", v->val->name());
     v->entries.push_back(linked_lex);
+};
+
+namespace utils
+{
+    bool link_last_node(offset_table<LinkedLex *> &gt, LinkedLex *linked_lex)
+    {
+        LinkedLex *v;
+        if (!gt.last(v))
+        {
+            printf("[_table_link_last] ret null\n");
+            return false;
+        }
+
+        // printf("LINK_TO=%s\n", v->val->name());
+        v->entries.push_back(linked_lex);
+    };
 }
 
 /*
 ============================
 */
+
+#pragma region build impls
 
 lex *parcel::build::inplace_build_tag(lexer &lx)
 {
@@ -538,9 +556,11 @@ lex *parcel::build::inplace_build_fn_expr(lexer &lx)
     return l;
 };
 
-offset_table<link_lex *> *parcel::build::build_lex_table(string &src)
+#pragma endregion
+
+LexTree *parcel::build::build_lextree(string &src)
 {
-    offset_table<link_lex *> *gt = new offset_table<link_lex *>();
+    offset_table<LinkedLex *> gt;
 
     lexer lx(src);
     string cur;
@@ -556,23 +576,29 @@ offset_table<link_lex *> *parcel::build::build_lex_table(string &src)
         lex *bl = NULL;
         if ((bl = inplace_build_hook_def(lx)) != NULL)
         {
+            LinkedLex *linked = new LinkedLex(bl);
 
-            gt->add({new link_lex(bl)}, line_offset);
+            gt.add(linked, line_offset);
+
             printf("~%zi [gt(nolink))].hook_def\n", line_offset);
             continue;
         }
         else if ((bl = inplace_build_hook_ref(lx)) != NULL)
         {
-            link_lex *linked = new link_lex(bl);
-            _table_link_last(gt, linked);
+            LinkedLex *linked = new LinkedLex(bl);
 
-            gt->add(linked, line_offset);
+            utils::link_last_node(gt, linked);
+            gt.add(linked, line_offset);
+
             printf("~%zi [gt(nolink))].hook_ref\n", line_offset);
             continue;
         }
         else if ((bl = inplace_build_link_def(lx)) != NULL)
         {
-            gt->add(new link_lex(bl), line_offset);
+            LinkedLex *linked = new LinkedLex(bl);
+
+            gt.add(linked, line_offset);
+
             printf("~%zi [gt(nolink))].link\n", line_offset);
             continue;
         }
@@ -581,9 +607,10 @@ offset_table<link_lex *> *parcel::build::build_lex_table(string &src)
         lex *lit;
         if ((lit = inplace_build_literal(lx)) != NULL)
         {
-            link_lex *linked = new link_lex(lit);
-            _table_link_last(gt, linked);
-            gt->add(linked, line_offset);
+            LinkedLex *linked = new LinkedLex(lit);
+
+            utils::link_last_node(gt, linked);
+            gt.add(linked, line_offset);
 
             printf("~%zi [gt(link-last))].literal\n", line_offset);
             continue;
@@ -593,19 +620,21 @@ offset_table<link_lex *> *parcel::build::build_lex_table(string &src)
         lex *fn;
         if ((fn = inplace_build_fn_expr(lx)) != NULL)
         {
-            link_lex *linked = new link_lex(fn);
-            _table_link_last(gt, linked);
+            LinkedLex *linked = new LinkedLex(fn);
 
-            gt->add(linked, line_offset);
+            utils::link_last_node(gt, linked);
+            gt.add(linked, line_offset);
+
             printf("~%zi [gt(link-last))].fn_expr\n", line_offset);
             continue;
         }
         else if ((fn = inplace_build_fn_ref(lx)) != NULL)
         {
-            link_lex *linked = new link_lex(fn);
-            _table_link_last(gt, linked);
+            LinkedLex *linked = new LinkedLex(fn);
 
-            gt->add(linked, line_offset);
+            utils::link_last_node(gt, linked);
+            gt.add(linked, line_offset);
+
             printf("~%zi [gt(link-last))].fn_ref\n", line_offset);
             continue;
         }
@@ -615,20 +644,10 @@ offset_table<link_lex *> *parcel::build::build_lex_table(string &src)
         if ((tag = inplace_build_tag(lx)) != NULL)
         {
             // root tags
-            if (line_offset == 0)
-            {
-                link_lex *linked = new link_lex(tag);
-                _table_link_last(gt, linked);
+            LinkedLex *linked = new LinkedLex(tag);
 
-                gt->add(linked, line_offset);
-            }
-            else
-            {
-                link_lex *linked = new link_lex(tag);
-                _table_link_last(gt, linked);
-
-                gt->add(linked, line_offset);
-            }
+            utils::link_last_node(gt, linked);
+            gt.add(linked, line_offset);
 
             printf("~%zi [gt(link-last))].tag\n", line_offset);
             continue;
@@ -639,20 +658,10 @@ offset_table<link_lex *> *parcel::build::build_lex_table(string &src)
         if ((basetype = inplace_build_basetype(lx)) != NULL)
         {
             // root tags
-            if (line_offset == 0)
-            {
-                link_lex *linked = new link_lex(basetype);
-                _table_link_last(gt, linked);
+            LinkedLex *linked = new LinkedLex(basetype);
 
-                gt->add(linked, line_offset);
-            }
-            else
-            {
-                link_lex *linked = new link_lex(basetype);
-                _table_link_last(gt, linked);
-
-                gt->add(linked, line_offset);
-            }
+            utils::link_last_node(gt, linked);
+            gt.add(linked, line_offset);
 
             printf("~%zi [gt(link-last))].basetype\n", line_offset);
             continue;
@@ -672,7 +681,9 @@ offset_table<link_lex *> *parcel::build::build_lex_table(string &src)
                 stringstream at;
                 lx.get_cursor_dest(at);
                 printf("[build] lex_graph: unrecognized symbol sequence at (%c) '%s'\n", t, at.str().c_str());
-                delete gt;
+
+                // cleanup table
+                gt.~offset_table();
                 return NULL;
             }
             else
@@ -680,7 +691,10 @@ offset_table<link_lex *> *parcel::build::build_lex_table(string &src)
         }
     }
 
-    printf("Build lex graph end.\n");
+    // printf("Build lex graph end.\n");
 
-    return gt;
+    vector<LinkedLex *> entrypoints = gt.get_by_offset(gt.min_level());
+    LexTree *tree = new LexTree(entrypoints);
+
+    return tree;
 };

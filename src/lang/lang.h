@@ -29,6 +29,8 @@ namespace parcel
         bool is_basic_tag(string &str);
         bool is_basetype(string &str);
         bool is_basetype(lex_type type);
+        bool is_instr_entrypoint(lex_type type);
+        bool is_collection(lex_type type);
     }
 }
 
