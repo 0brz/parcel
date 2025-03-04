@@ -7,14 +7,21 @@
 #include <../src/tools/lexer/lex.h>
 #include <../src/builder/parseinstr_build.h>
 #include <../src/tools/dump.h>
+#include <../src/tools/log.h>
+
 
 int main()
 {
+    //std::cout << "\033[1;31mbold red text\033[0m\n" << endl;
+
+    parcel::tools::Log.Error("Error");
+    parcel::tools::Log.Info("Error");
+    parcel::tools::Log.Warning("Error");
+
     printf("Client code...\n");
     string sr = lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/lang.yml");
     LexTree *gt = parcel::build::build_lextree(sr);
     shared_ptr<parcel::parser::ParseCursor> cursor = make_shared<parcel::parser::ParseCursor>(0, 6);
-    printf("PARSETREE\n");
     auto t2 = parcel::build::build_parseinstr(gt);
     printf("end\n");
     /*

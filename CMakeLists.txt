@@ -24,6 +24,7 @@ add_executable(tt
     src/tools/lexer/lex.h
     src/tools/btree.h
     src/tools/tree.h
+    src/tools/log.h
     src/tools/logger.h
     src/builder/lextree_build.cpp
     src/builder/lextree_build.h
