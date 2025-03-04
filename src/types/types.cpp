@@ -52,7 +52,7 @@ const char *parcel::type::nameof(lex_type type)
     return (*fn).second;
 };
 
-lex_type parcel::type::typeof(string & type_name)
+lex_type parcel::type::get_type(std::string& type_name)
 {
     for (auto it = begin(names); it != names.end(); it++)
     {

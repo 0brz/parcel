@@ -9,6 +9,7 @@
 #include <optional>
 #include <string>
 #include <map>
+
 using namespace std;
 
 namespace parcel
@@ -50,8 +51,8 @@ namespace parcel
             _TYPE_ERR
         };
 
-        extern const char *nameof(lex_type type);
-        extern lex_type typeof(string & type_name);
+         lex_type get_type(std::string& );
+         const char *nameof(lex_type );
     }
 }
 

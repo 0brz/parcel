@@ -11,7 +11,7 @@
 int main()
 {
     printf("Client code...\n");
-    string sr = lexer::read_source_file("C:/git.local/parsing/bound_parsing/tests/lang.yml");
+    string sr = lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/lang.yml");
     LexTree *gt = parcel::build::build_lextree(sr);
     shared_ptr<parcel::parser::ParseCursor> cursor = make_shared<parcel::parser::ParseCursor>(0, 6);
     printf("PARSETREE\n");

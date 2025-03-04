@@ -10,7 +10,7 @@ struct BuildTable
     std::map<string, token_hook *> hooks;
     std::vector<prog_go *> entries;
     shared_ptr<ParseCursor> cursor;
-    BuildTable(shared_ptr<ParseCursor> &cursor) : cursor(cursor), entries{}, hooks{}, all_builds{} {};
+    BuildTable(shared_ptr<ParseCursor> &&cursor) : cursor(cursor), entries{}, hooks{}, all_builds{} {};
 };
 
 ParseElement *deep_build(LinkedLex *current, BuildTable &table);

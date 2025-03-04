@@ -4,6 +4,8 @@ project(bound_parsing)
 
 include_directories(include)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
+
 add_executable(tt
     tests/client.cpp
     #src/tools/lex.h

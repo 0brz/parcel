@@ -9,7 +9,9 @@
 #include "../types/types.h"
 #include "../lang/lang.h"
 #include "../tools/ring.h"
+#include <memory>
 
+using namespace std;
 using namespace parcel::tokens;
 using namespace parcel::type;
 using namespace parcel::lang;

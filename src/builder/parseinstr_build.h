@@ -12,6 +12,7 @@
 #include "../parse/elements.h"
 // #include "lex_build.h"
 #include <vector>
+#include <memory>
 
 using namespace std;
 using namespace parcel::type;

@@ -358,7 +358,7 @@ lex *parcel::build::inplace_build_tag(lexer &lx)
         {
             lx.cursor_move(1);
 
-            lex_type type = typeof(tagname);
+            lex_type type = type::get_type(tagname);
             lex *_bl = _new_lex(type, NULL); // tagword doesnt have a value
             return _bl;
         }
@@ -485,7 +485,7 @@ lex *parcel::build::inplace_build_basetype(lexer &lx)
 
     if (lx.next_id(id) != lx.npos)
     {
-        lex_type type = typeof(id);
+        lex_type type = type::get_type(id);
         if (lang::is_basetype(type))
         {
             return new lex(type, NULL);
