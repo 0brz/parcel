@@ -23,6 +23,8 @@ public:
     // return first paths in graph (entrypoints)
     int min_level() { return _min_level; };
 
+    int diff() {return _diff;};
+
     std::vector<Element> get_by_offset(int offset)
     {
         std::vector<Element> v;
@@ -146,7 +148,7 @@ public:
         _min_level = min(_min_level, offset);
     };
 
-    offset_table() : _last_level(0), _min_level(6), _diff(2), _max_level(-1) {};
+    offset_table(size_t offset_diff) : _last_level(0), _min_level(6), _diff(offset_diff), _max_level(-1) {};
 
     ~offset_table() {
         /*

@@ -15,7 +15,7 @@ using namespace std;
 namespace parcel {
     namespace tools {
         
-        class Logger {
+        static class Logger {
             private:
             void write(const char* colorPrefix, const char* msg) {
                 cout << colorPrefix << msg << "\033[0m" << endl;

@@ -2,6 +2,7 @@
 #define _TOOLS_TREE_H_
 
 #include <vector>
+#include "log.h"
 
 template <typename TypeOf>
 struct TreeValue
@@ -11,7 +12,7 @@ struct TreeValue
     TreeValue(TypeOf &v) : val(v), entries{} {};
     ~TreeValue()
     {
-        printf("~[TreeValue]\n");
+        parcel::tools::Log.Warning("~[TreeValue]");
     }
 };
 

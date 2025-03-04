@@ -326,12 +326,11 @@ bool _table_link_last(offset_table<LinkedLex *> *gt, LinkedLex *linked_lex)
 
 namespace utils
 {
-    bool link_last_node(offset_table<LinkedLex *> &gt, LinkedLex *linked_lex)
+    bool link_to_parent(offset_table<LinkedLex *> &gt, LinkedLex *linked_lex, size_t offset)
     {
         LinkedLex *v;
-        if (!gt.last(v))
+        if (!gt.parent(offset-gt.diff(), v))
         {
-            printf("[_table_link_last] ret null\n");
             return false;
         }
 
@@ -560,7 +559,7 @@ lex *parcel::build::inplace_build_fn_expr(lexer &lx)
 
 LexTree *parcel::build::build_lextree(string &src)
 {
-    offset_table<LinkedLex *> gt;
+    offset_table<LinkedLex *> gt(lang::tabs_diff);
 
     lexer lx(src);
     string cur;
@@ -587,7 +586,7 @@ LexTree *parcel::build::build_lextree(string &src)
         {
             LinkedLex *linked = new LinkedLex(bl);
 
-            utils::link_last_node(gt, linked);
+            utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
             printf("~%zi [gt(nolink))].hook_ref\n", line_offset);
@@ -609,7 +608,7 @@ LexTree *parcel::build::build_lextree(string &src)
         {
             LinkedLex *linked = new LinkedLex(lit);
 
-            utils::link_last_node(gt, linked);
+            utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
             printf("~%zi [gt(link-last))].literal\n", line_offset);
@@ -622,7 +621,7 @@ LexTree *parcel::build::build_lextree(string &src)
         {
             LinkedLex *linked = new LinkedLex(fn);
 
-            utils::link_last_node(gt, linked);
+            utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
             printf("~%zi [gt(link-last))].fn_expr\n", line_offset);
@@ -632,7 +631,7 @@ LexTree *parcel::build::build_lextree(string &src)
         {
             LinkedLex *linked = new LinkedLex(fn);
 
-            utils::link_last_node(gt, linked);
+            utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
             printf("~%zi [gt(link-last))].fn_ref\n", line_offset);
@@ -646,7 +645,7 @@ LexTree *parcel::build::build_lextree(string &src)
             // root tags
             LinkedLex *linked = new LinkedLex(tag);
 
-            utils::link_last_node(gt, linked);
+            utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
             printf("~%zi [gt(link-last))].tag\n", line_offset);
@@ -660,7 +659,7 @@ LexTree *parcel::build::build_lextree(string &src)
             // root tags
             LinkedLex *linked = new LinkedLex(basetype);
 
-            utils::link_last_node(gt, linked);
+            utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
             printf("~%zi [gt(link-last))].basetype\n", line_offset);

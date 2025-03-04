@@ -35,6 +35,17 @@ namespace parcel
             std::vector<prog_go *> roots;
             shared_ptr<ParseCursor> cursor;
             Instr() {};
+            ~Instr() {
+                // clear hooks
+                for (auto & v : hooks) {
+                    delete v.second;
+                }
+
+                // clear go
+                for (auto & v : roots) {
+                    delete v;
+                }
+            }
         };
 
         Instr *build_parseinstr(LexTree *lextree);

@@ -1,8 +1,8 @@
 
 $ex1:
   list:
-    seq:
-      "w2"
+    seq: 
+      word
 
 go:
   $ex1 
