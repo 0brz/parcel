@@ -335,6 +335,7 @@ ParseElement *deep_build(LinkedLex *current, BuildTable &table)
     ParseElement *el = impl(current, table);
 
     delete current->val;
+    delete current;
 
     return el;
 };
@@ -344,7 +345,6 @@ Instr *parcel::build::build_parseinstr(LexTree *lextree)
     BuildTable bt(make_shared<ParseCursor>(0, 5));
 
     Instr *tree = new Instr();
-    std::vector<ParseElement *> all_builds;
 
     for (const auto &lex : lextree->roots)
     {
@@ -359,7 +359,9 @@ Instr *parcel::build::build_parseinstr(LexTree *lextree)
         {
             prog_go *g = entries::build_go(lex, bt);
             bt.entries.push_back(g);
+
             delete lex->val;
+            delete lex;
         }
         else if (lex->val->type == HOOK_DEF)
         {
@@ -368,6 +370,7 @@ Instr *parcel::build::build_parseinstr(LexTree *lextree)
                 bt.hooks[hook->name] = hook;
 
             delete lex->val;
+            delete lex;
         }
         else
         {

@@ -9,6 +9,10 @@ struct TreeValue
     TypeOf val;
     std::vector<TreeValue *> entries; // maybe fix to small_vec
     TreeValue(TypeOf &v) : val(v), entries{} {};
+    ~TreeValue()
+    {
+        printf("~[TreeValue]\n");
+    }
 };
 
 #endif
