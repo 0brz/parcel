@@ -1,9 +1,4 @@
 
 $ex1:
   list:
-    seq: 
-      word
-    a
-
-go:
-  $ex1 
+    word

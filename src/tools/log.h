@@ -22,6 +22,7 @@ namespace parcel {
             };
 
             public:
+            void Link(const char* msg) {write(KBLU, msg);};
             void Info(const char* msg) {write(KWHT, msg);};
             void Error(const char* msg) {write(KRED, msg);};
             void Warning(const char* msg) {write(KYEL, msg);};

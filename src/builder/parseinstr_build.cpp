@@ -334,9 +334,6 @@ ParseElement *deep_build(LinkedLex *current, BuildTable &table)
 
     ParseElement *el = impl(current, table);
 
-    delete current->val;
-    delete current;
-
     return el;
 };
 
@@ -359,18 +356,12 @@ Instr *parcel::build::build_parseinstr(LexTree *lextree)
         {
             prog_go *g = entries::build_go(lex, bt);
             bt.entries.push_back(g);
-
-            delete lex->val;
-            delete lex;
         }
         else if (lex->val->type == HOOK_DEF)
         {
             token_hook *hook = entries::build_hook(lex, bt);
             if (hook != NULL)
                 bt.hooks[hook->name] = hook;
-
-            delete lex->val;
-            delete lex;
         }
         else
         {

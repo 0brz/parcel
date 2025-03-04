@@ -18,10 +18,10 @@ int main()
     string sr = lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/lang.yml");
     LexTree *gt = parcel::build::build_lextree(sr);
     shared_ptr<parcel::parser::ParseCursor> cursor = make_shared<parcel::parser::ParseCursor>(0, 6);
-    //Instr* ins = parcel::build::build_parseinstr(gt);
+    Instr* ins = parcel::build::build_parseinstr(gt);
     
     delete gt;
-    //delete ins;
+    delete ins;
 
     printf("end\n");
     /*

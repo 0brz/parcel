@@ -9,6 +9,7 @@
 #include "../types/types.h"
 #include "../lang/lang.h"
 #include "../tools/ring.h"
+#include "../tools/log.h"
 #include <memory>
 
 using namespace std;
@@ -42,6 +43,7 @@ namespace parcel
             // fn info
             virtual act_result act(string &lex, token *par, token *t2 = NULL) = 0;
             virtual void reset() = 0;
+            virtual ~ParseValue() {};
         };
 
         struct ParseElement
@@ -63,6 +65,7 @@ namespace parcel
             };
 
             ~ParseElement() {
+                parcel::tools::Log.Link("~ParseElement");
                 delete val;
             }
         };
@@ -312,6 +315,7 @@ namespace parcel
             }
 
             ~list() {
+                parcel::tools::Log.Link("~token::list");
                 delete el;
                 delete el_t;
                 delete el_t2;
@@ -975,6 +979,7 @@ namespace parcel
             };
 
             ~token_hook() {
+                parcel::tools::Log.Link("~token_hook");
                 delete base;
                 delete tk;
             }

@@ -45,6 +45,9 @@ namespace parcel
             tvalue *val;
             string *dbg_val;
             // str?
+            ~token() {
+                delete val;
+            }
         };
 
         struct val_word : tvalue
