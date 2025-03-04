@@ -677,12 +677,17 @@ LexTree *parcel::build::build_lextree(string &src)
             char t = lx.at(lx.cursor_get());
             if ((!_is_tspace(t) && !_is_special_delim(t)))
             {
+                parcel::tools::Log.Error("[LexTree] error: unrecognized symbol.");
+
                 stringstream at;
                 lx.get_cursor_dest(at);
                 printf("[build] lex_graph: unrecognized symbol sequence at (%c) '%s'\n", t, at.str().c_str());
 
-                // cleanup table
-                gt.~offset_table();
+                // cleanup builded blocks
+                vector<LinkedLex *> entries = gt.get_by_offset(gt.min_level());
+                LexTree *tree = new LexTree(entries);
+                delete tree;
+
                 return NULL;
             }
             else
