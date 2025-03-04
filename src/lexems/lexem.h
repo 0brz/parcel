@@ -25,6 +25,14 @@ namespace parcel
 
             inline const char *name() { return nameof(type); };
             lex(lex_type type, lvalue *val) : type(type), value(val) {};
+            ~lex()
+            {
+                printf("~[lex] type=%s\n", name());
+                if (value != NULL)
+                {
+                    delete value;
+                }
+            }
         };
 
         template <typename ValueType, lex_type LexType>

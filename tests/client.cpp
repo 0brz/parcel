@@ -42,6 +42,32 @@ int main()
         }
 
         delete gt;
+
+
+        ///////////////////
+        void propagate(string &lex)
+            {
+                for (prog_go *e : reg_entries)
+                {
+                    e->act(lex, NULL, NULL);
+                }
+            };
+
+            void move_cursor(size_t to)
+            {
+                (*cursor).pos += to;
+            };
+
+            token_hook *find_hook(string name)
+            {
+                auto f = map_hooks.find(name);
+                if (f != end(map_hooks))
+                {
+                    return (*f).second;
+                }
+                else
+                    return NULL;
+            };
     }
         */
 }
