@@ -25,6 +25,7 @@ namespace parcel {
                 bool next_token(string& in);
                 void clean_options();
                 void add_option(input::option opt);
+                void del_option(input::option opt);
         };
     }
 }
