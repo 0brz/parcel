@@ -130,6 +130,10 @@ namespace parcel
             {
                 return "<list>";
             }
+
+            ~val_list() {
+                
+            }
         };
 
         struct val_vector : tvalue
