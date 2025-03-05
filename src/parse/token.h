@@ -45,6 +45,9 @@ namespace parcel
             tvalue *val;
             string *dbg_val;
             // str?
+            ~token() {
+                delete val;
+            }
         };
 
         struct val_word : tvalue
@@ -126,6 +129,10 @@ namespace parcel
             const char *str()
             {
                 return "<list>";
+            }
+
+            ~val_list() {
+                
             }
         };
 

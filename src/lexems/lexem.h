@@ -3,6 +3,7 @@
 
 #include "../types/types.h"
 #include <vector>
+#include "../tools/log.h"
 
 using namespace parcel::type;
 
@@ -25,6 +26,14 @@ namespace parcel
 
             inline const char *name() { return nameof(type); };
             lex(lex_type type, lvalue *val) : type(type), value(val) {};
+            ~lex()
+            {
+                parcel::tools::Log.Warning("~[lex]");
+                if (value != NULL)
+                {
+                    delete value;
+                }
+            }
         };
 
         template <typename ValueType, lex_type LexType>

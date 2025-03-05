@@ -10,7 +10,7 @@ struct BuildTable
     std::map<string, token_hook *> hooks;
     std::vector<prog_go *> entries;
     shared_ptr<ParseCursor> cursor;
-    BuildTable(shared_ptr<ParseCursor> &cursor) : cursor(cursor), entries{}, hooks{}, all_builds{} {};
+    BuildTable(shared_ptr<ParseCursor> &&cursor) : cursor(cursor), entries{}, hooks{}, all_builds{} {};
 };
 
 ParseElement *deep_build(LinkedLex *current, BuildTable &table);
@@ -342,7 +342,6 @@ Instr *parcel::build::build_parseinstr(LexTree *lextree)
     BuildTable bt(make_shared<ParseCursor>(0, 5));
 
     Instr *tree = new Instr();
-    std::vector<ParseElement *> all_builds;
 
     for (const auto &lex : lextree->roots)
     {

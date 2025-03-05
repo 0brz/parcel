@@ -326,12 +326,11 @@ bool _table_link_last(offset_table<LinkedLex *> *gt, LinkedLex *linked_lex)
 
 namespace utils
 {
-    bool link_last_node(offset_table<LinkedLex *> &gt, LinkedLex *linked_lex)
+    bool link_to_parent(offset_table<LinkedLex *> &gt, LinkedLex *linked_lex, size_t offset)
     {
         LinkedLex *v;
-        if (!gt.last(v))
+        if (!gt.parent(offset-gt.diff(), v))
         {
-            printf("[_table_link_last] ret null\n");
             return false;
         }
 
@@ -358,7 +357,7 @@ lex *parcel::build::inplace_build_tag(lexer &lx)
         {
             lx.cursor_move(1);
 
-            lex_type type = typeof(tagname);
+            lex_type type = type::get_type(tagname);
             lex *_bl = _new_lex(type, NULL); // tagword doesnt have a value
             return _bl;
         }
@@ -485,7 +484,7 @@ lex *parcel::build::inplace_build_basetype(lexer &lx)
 
     if (lx.next_id(id) != lx.npos)
     {
-        lex_type type = typeof(id);
+        lex_type type = type::get_type(id);
         if (lang::is_basetype(type))
         {
             return new lex(type, NULL);
@@ -560,7 +559,7 @@ lex *parcel::build::inplace_build_fn_expr(lexer &lx)
 
 LexTree *parcel::build::build_lextree(string &src)
 {
-    offset_table<LinkedLex *> gt;
+    offset_table<LinkedLex *> gt(lang::tabs_diff);
 
     lexer lx(src);
     string cur;
@@ -587,7 +586,7 @@ LexTree *parcel::build::build_lextree(string &src)
         {
             LinkedLex *linked = new LinkedLex(bl);
 
-            utils::link_last_node(gt, linked);
+            utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
             printf("~%zi [gt(nolink))].hook_ref\n", line_offset);
@@ -609,7 +608,7 @@ LexTree *parcel::build::build_lextree(string &src)
         {
             LinkedLex *linked = new LinkedLex(lit);
 
-            utils::link_last_node(gt, linked);
+            utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
             printf("~%zi [gt(link-last))].literal\n", line_offset);
@@ -622,7 +621,7 @@ LexTree *parcel::build::build_lextree(string &src)
         {
             LinkedLex *linked = new LinkedLex(fn);
 
-            utils::link_last_node(gt, linked);
+            utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
             printf("~%zi [gt(link-last))].fn_expr\n", line_offset);
@@ -632,7 +631,7 @@ LexTree *parcel::build::build_lextree(string &src)
         {
             LinkedLex *linked = new LinkedLex(fn);
 
-            utils::link_last_node(gt, linked);
+            utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
             printf("~%zi [gt(link-last))].fn_ref\n", line_offset);
@@ -646,7 +645,7 @@ LexTree *parcel::build::build_lextree(string &src)
             // root tags
             LinkedLex *linked = new LinkedLex(tag);
 
-            utils::link_last_node(gt, linked);
+            utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
             printf("~%zi [gt(link-last))].tag\n", line_offset);
@@ -660,7 +659,7 @@ LexTree *parcel::build::build_lextree(string &src)
             // root tags
             LinkedLex *linked = new LinkedLex(basetype);
 
-            utils::link_last_node(gt, linked);
+            utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
             printf("~%zi [gt(link-last))].basetype\n", line_offset);
@@ -678,12 +677,17 @@ LexTree *parcel::build::build_lextree(string &src)
             char t = lx.at(lx.cursor_get());
             if ((!_is_tspace(t) && !_is_special_delim(t)))
             {
+                parcel::tools::Log.Error("[LexTree] error: unrecognized symbol.");
+
                 stringstream at;
                 lx.get_cursor_dest(at);
                 printf("[build] lex_graph: unrecognized symbol sequence at (%c) '%s'\n", t, at.str().c_str());
 
-                // cleanup table
-                gt.~offset_table();
+                // cleanup builded blocks
+                vector<LinkedLex *> entries = gt.get_by_offset(gt.min_level());
+                LexTree *tree = new LexTree(entries);
+                delete tree;
+
                 return NULL;
             }
             else

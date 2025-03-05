@@ -9,7 +9,10 @@
 #include "../types/types.h"
 #include "../lang/lang.h"
 #include "../tools/ring.h"
+#include "../tools/log.h"
+#include <memory>
 
+using namespace std;
 using namespace parcel::tokens;
 using namespace parcel::type;
 using namespace parcel::lang;
@@ -40,6 +43,7 @@ namespace parcel
             // fn info
             virtual act_result act(string &lex, token *par, token *t2 = NULL) = 0;
             virtual void reset() = 0;
+            virtual ~ParseValue() {};
         };
 
         struct ParseElement
@@ -59,6 +63,11 @@ namespace parcel
 
                 return FAIL;
             };
+
+            ~ParseElement() {
+                parcel::tools::Log.Link("~ParseElement");
+                delete val;
+            }
         };
 
         // ------------- TOOLS
@@ -305,6 +314,13 @@ namespace parcel
                 el_t2 = create_tk_for(el);
             }
 
+            ~list() {
+                parcel::tools::Log.Link("~token::list");
+                delete el;
+                delete el_t;
+                delete el_t2;
+            }
+
             act_result act(string &lex, token *par, token *t2 = NULL)
             { // par=list
 
@@ -315,7 +331,7 @@ namespace parcel
 
                     if (el_t2->val != NULL)
                     {
-                        printf("__[list]: ACT (r2) s=%s\n", lex.c_str());
+                        //printf("__[list]: ACT (r2) s=%s\n", lex.c_str());
                         list_add(par, el_t2);
                         el_t2 = create_tk_for(el);
                         // fix: recreate toke
@@ -335,12 +351,12 @@ namespace parcel
                 }
                 else if (res == MOD)
                 {
-                    printf("__[list]: mod s=%s\n", lex.c_str());
+                    //printf("__[list]: mod s=%s\n", lex.c_str());
                     // keep building...
                 }
                 else if (res == FAIL)
                 {
-                    printf("__[list]: fail s=%s\n", lex.c_str());
+                    //printf("__[list]: fail s=%s\n", lex.c_str());
                     // clear token?
                 }
 
@@ -700,7 +716,7 @@ namespace parcel
                 }
 
                 el_ring.to_begin();
-                printf("vec.ring.builded=%i\n", el_ring.len());
+                //printf("vec.ring.builded=%i\n", el_ring.len());
             };
 
             bool is_ring_ending()
@@ -713,13 +729,21 @@ namespace parcel
                     return false;
             }
 
+            ~seq() {
+                auto ls = el_ring.as_row();
+                for (auto & v : ls) {
+                    delete v->first;
+                    delete v->second;
+                }
+            }
+
             act_result act(string &lex, token *par, token *t2 = NULL)
             { // vec
 
                 pair<ParseElement *, token *> *cur_pair = el_ring.get_current();
                 act_result res = cur_pair->first->act(lex, cur_pair->second);
 
-                printf("-------------[seq].act() s=%s ring=%s\n", lex.c_str(), nameof(cur_pair->first->type));
+                //printf("-------------[seq].act() s=%s ring=%s\n", lex.c_str(), nameof(cur_pair->first->type));
 
                 bool prev_ending = is_ring_ending();
 
@@ -730,7 +754,7 @@ namespace parcel
 
                         if (is_ring_ending() && is_collection(cur_pair->first->type) && (lex_cursor.get()->at_end()))
                         {
-                            printf("[seq].act() (ACT) -> ACT  list,ring_end,curs_end s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
+                            //printf("[seq].act() (ACT) -> ACT  list,ring_end,curs_end s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
                             // ring end
                             // curs end
                             // last coll
@@ -743,13 +767,13 @@ namespace parcel
                         // end.list (cont rule)
                         if (is_collection(cur_pair->first->type))
                         {
-                            printf("[seq].act() (ACT) -> MOD  list,ring_end s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
+                            //printf("[seq].act() (ACT) -> MOD  list,ring_end s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
                             return MOD;
                         }
                         // end.t
                         else
                         {
-                            printf("[seq].act() (ACT) -> ACT  T,ring_end s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
+                            //printf("[seq].act() (ACT) -> ACT  T,ring_end s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
 
                             build_out(par);
                             el_ring.to_begin();
@@ -764,13 +788,13 @@ namespace parcel
                         // mid.list
                         if (is_collection(cur_pair->first->type))
                         {
-                            printf("[seq].act() (ACT) -> MOD mid.list s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
+                            //printf("[seq].act() (ACT) -> MOD mid.list s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
                             return MOD;
                         }
                         // mid.t
                         else
                         {
-                            printf("[seq].act() (ACT) -> MOD  mid.T s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
+                            //printf("[seq].act() (ACT) -> MOD  mid.T s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
                             el_ring.to_next();
                             return MOD;
                         }
@@ -784,7 +808,7 @@ namespace parcel
                     if (is_ring_ending() && is_collection(cur_pair->first->type) && (lex_cursor.get()->at_end()))
                     {
 
-                        printf("[seq].act() (MOD) -> ACT curs_end s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
+                        //printf("[seq].act() (MOD) -> ACT curs_end s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
                         // ring end
                         // curs end
                         // last coll
@@ -794,7 +818,7 @@ namespace parcel
                         return ACT;
                     }
 
-                    printf("[seq].act() (MOD) -> MOD s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
+                    //printf("[seq].act() (MOD) -> MOD s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
                     return MOD;
                 }
                 else if (res == FAIL)
@@ -827,7 +851,7 @@ namespace parcel
                             {
                                 if (lex_cursor.get()->at_end())
                                 {
-                                    printf("+++++++++ s=%s [FAIL, ACT, coll, ring-end, curs-end] -> ACT %s\n", lex.c_str(), nameof(cur_pair->first->type));
+                                    //printf("+++++++++ s=%s [FAIL, ACT, coll, ring-end, curs-end] -> ACT %s\n", lex.c_str(), nameof(cur_pair->first->type));
                                     next_pair->second = temp_token;
                                     build_out(par);
                                     el_ring.to_begin();
@@ -835,7 +859,7 @@ namespace parcel
                                 }
                                 else
                                 {
-                                    printf("+++++++++ s=%s [FAIL, ACT, coll, ring-end] -> MOD %s\n", lex.c_str(), nameof(cur_pair->first->type));
+                                    //printf("+++++++++ s=%s [FAIL, ACT, coll, ring-end] -> MOD %s\n", lex.c_str(), nameof(cur_pair->first->type));
                                     next_pair->second = temp_token;
                                     // its not curs_end, keep building last list.
                                     return MOD;
@@ -844,7 +868,7 @@ namespace parcel
                             else if (is_ring_ending() && !is_collection(next_pair->first->type))
                             {
                                 // on last elem. T, Build
-                                printf("+++++++++ s=%s [FAIL, ACT, !coll, ring-end] -> ACT %s\n", lex.c_str(), nameof(cur_pair->first->type));
+                                //printf("+++++++++ s=%s [FAIL, ACT, !coll, ring-end] -> ACT %s\n", lex.c_str(), nameof(cur_pair->first->type));
                                 next_pair->second = temp_token;
                                 build_out(par);
                                 el_ring.to_begin();
@@ -852,7 +876,7 @@ namespace parcel
                             }
                             else if (prev_ending)
                             {
-                                printf("+++++++++ s=%s [FAIL, ACT, coll, prev-end] -> ACT %s\n", lex.c_str(), nameof(cur_pair->first->type));
+                                //printf("+++++++++ s=%s [FAIL, ACT, coll, prev-end] -> ACT %s\n", lex.c_str(), nameof(cur_pair->first->type));
                                 build_out(par);
                                 next_pair->second = temp_token;
                                 if (!is_collection(next_pair->first->type))
@@ -863,7 +887,7 @@ namespace parcel
                             else
                             {
                                 // activate first elem, last list
-                                printf("+++++++++ s=%s [FAIL, ACT, any] -> MOD %s\n", lex.c_str(), nameof(cur_pair->first->type));
+                                //printf("+++++++++ s=%s [FAIL, ACT, any] -> MOD %s\n", lex.c_str(), nameof(cur_pair->first->type));
                                 next_pair->second = temp_token;
                                 // step on next in the mid
                                 return MOD;
@@ -894,13 +918,13 @@ namespace parcel
                         }
                     }
 
-                    printf("[seq].act() (FAIL) -> FAIL <reset> s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
+                    //printf("[seq].act() (FAIL) -> FAIL <reset> s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
                     // this->reset();
                     //  other elem
                     return FAIL;
                 }
 
-                printf("[seq].act() (UNDEF CASE) -> FAIL  s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
+                //printf("[seq].act() (UNDEF CASE) -> FAIL  s='%s' ring=%i\n", lex.c_str(), el_ring.pos());
                 return FAIL;
             };
         };
@@ -919,6 +943,10 @@ namespace parcel
             act_result act(string &lex, token *par, token *r2)
             {
                 return base->act(lex, par, r2);
+            }
+
+            ~prog_go() {
+                delete base;
             }
         };
 
@@ -949,6 +977,12 @@ namespace parcel
 
                 return res;
             };
+
+            ~token_hook() {
+                parcel::tools::Log.Link("~token_hook");
+                delete base;
+                delete tk;
+            }
         };
 
         // ------------- ANALYZER.

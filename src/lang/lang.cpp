@@ -2,7 +2,7 @@
 
 bool parcel::lang::is_basic_tag(string &str)
 {
-    lex_type tp = typeof(str);
+    lex_type tp = type::get_type(str);
     switch (tp)
     {
     case BL_NUMBER:
@@ -49,7 +49,7 @@ bool parcel::lang::is_instr_entrypoint(lex_type type)
 
 bool parcel::lang::is_basetype(string &str)
 {
-    lex_type tp = typeof(str);
+    lex_type tp = type::get_type(str);
     return is_basetype(tp);
 };
 
