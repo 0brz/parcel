@@ -38,4 +38,6 @@ add_executable(tt
     src/parse/token.h
 
     src/tools/dump.h
+    src/input/tokenizator.cpp
+    src/input/tokenizator.h
 )

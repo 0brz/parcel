@@ -225,6 +225,10 @@ public:
             return lexer::npos;
         }
 
+        if (cur == dotp+1) {
+            return lexer::npos;
+        }
+
         if (sz == 0)
         {
             return lexer::npos;
