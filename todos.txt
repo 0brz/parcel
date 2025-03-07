@@ -1,17 +1,13 @@
-Lex -> LexTable
-ParseElement -> ParseTree
-
-lextable_builder
-parseTree_builder
-
-bulder:
-buildInfo
-table.cleanup();
+- dots
+tagval
 
 
+prog
+    run()
+    errors
+    rebuild()
+    clean
 
-instr
-- prog_go
-- hooks
-- links
-- build_info
+hooks
+    prop
+    get
