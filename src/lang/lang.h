@@ -8,13 +8,15 @@
 #define LANG_LOGIC_AND '&'
 #define LANG_LOGIC_OR '|'
 
-#define LEX_SYMBOLS_NO_EXPR ":@!*^%$<>{}:\"'~;"
+#define LEX_SYMBOLS_NO_EXPR ":@!*^%$<>{}:\"'~-;"
 #define LEX_SYMBOLS_SPACES " \r\t\n"
 
 #define LANG_PREFIX '&'
 #define LANG_TAG_PREFIX ':'
+#define LANG_TAG_SEQUENCE_PREFIX '-'
 #define LANG_HOOK_PREFIX '$'
 #define LANG_LINK_PREFIX '@'
+
 
 using namespace parcel::type;
 

@@ -16,6 +16,7 @@ int main()
 
     printf("Client code...\n");
 
+        /*
     string sr = lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/source.txt");
     parcel::input::Tokenizator tz(sr);
     
@@ -23,12 +24,13 @@ int main()
     while(tz.next_token(cur_token)) {
         printf("cur_token=%s\n", cur_token.c_str());
     }
+        */
 
     printf("end\n");
 
     //std::cout << "\033[1;31mbold red text\033[0m\n" << endl;
 
-        /*
+       
     string sr = lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/lang.yml");
     LexTree *gt = parcel::build::build_lextree(sr);
     shared_ptr<parcel::parser::ParseCursor> cursor = make_shared<parcel::parser::ParseCursor>(0, 6);
@@ -36,8 +38,7 @@ int main()
     
     delete gt;
     delete ins;
-        */
-
+        
     /*
     if (gt != NULL)
     {
