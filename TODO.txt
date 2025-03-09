@@ -1,0 +1,20 @@
+
+#LIB API
+
+parcel::programm
+-tokens
+
+
+parcel::tools::Lexer
+parcel::tools::dump
+parcel::tools::Cleaner
+parcel::tools::Tokenizer
+
+
+# PARCEL
+
+pub.h
+parcel::programm
+pub.cpp (include all impls)
+
+all tools to include dir

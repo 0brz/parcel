@@ -18,7 +18,7 @@ lex *_new_hook_def(string &name)
     return b;
 }
 
-bool _is_literal(parcel::tools::lexer &lx)
+bool _is_literal(parcel::tools::Lexer &lx)
 {
     // 123.123.123 (ip...)
     // 123.123 (float)
@@ -105,7 +105,7 @@ bool _check_s(string &s, const char *contains)
 ============================
 */
 
-fn_arglist *try_build_fn_arglist(parcel::tools::lexer &lx, bool &out_build_status)
+fn_arglist *try_build_fn_arglist(parcel::tools::Lexer &lx, bool &out_build_status)
 {
     //
     auto old = lx.cursor_get();
@@ -212,7 +212,7 @@ fn_arglist *try_build_fn_arglist(parcel::tools::lexer &lx, bool &out_build_statu
     return args;
 };
 
-fn_ref *try_build_fn_ref(parcel::tools::lexer &lx)
+fn_ref *try_build_fn_ref(parcel::tools::Lexer &lx)
 {
     string fn_id;
     auto old = lx.cursor_get();
@@ -274,7 +274,7 @@ bool try_build_fn_expr(stack<string> &postfix, btree<fn_ref *> *tree)
         else
         {
             fn_ref *fn_ref = NULL;
-            parcel::tools::lexer fn_lx(_left);
+            parcel::tools::Lexer fn_lx(_left);
             if ((fn_ref = try_build_fn_ref(fn_lx)) == NULL)
                 return false;
 
@@ -296,7 +296,7 @@ bool try_build_fn_expr(stack<string> &postfix, btree<fn_ref *> *tree)
         else
         {
             fn_ref *fn_ref = NULL;
-            parcel::tools::lexer fn_lx(_right);
+            parcel::tools::Lexer fn_lx(_right);
             if ((fn_ref = try_build_fn_ref(fn_lx)) == NULL)
                 return false;
 
@@ -346,7 +346,7 @@ namespace utils
 
 #pragma region build impls
 
-void skip_seq_prefix(parcel::tools::lexer& lx) {
+void skip_seq_prefix(parcel::tools::Lexer& lx) {
     // bypass sequence prefix.
         char defis_delim;
         if (lx.next_symbol(defis_delim) && (defis_delim == LANG_TAG_SEQUENCE_PREFIX)) {
@@ -356,7 +356,7 @@ void skip_seq_prefix(parcel::tools::lexer& lx) {
         }
 }
 
-lex *parcel::build::inplace_build_tag(parcel::tools::lexer &lx)
+lex *parcel::build::inplace_build_tag(parcel::tools::Lexer &lx)
 {
     string tagname;
     auto c = lx.cursor_get();
@@ -378,7 +378,7 @@ lex *parcel::build::inplace_build_tag(parcel::tools::lexer &lx)
     return NULL;
 };
 
-lex *parcel::build::inplace_build_hook_def(parcel::tools::lexer &lx)
+lex *parcel::build::inplace_build_hook_def(parcel::tools::Lexer &lx)
 {
     DBG_FN_NAME()
 
@@ -402,7 +402,7 @@ lex *parcel::build::inplace_build_hook_def(parcel::tools::lexer &lx)
     return NULL;
 };
 
-lex *parcel::build::inplace_build_hook_ref(parcel::tools::lexer &lx)
+lex *parcel::build::inplace_build_hook_ref(parcel::tools::Lexer &lx)
 {
     DBG_FN_NAME()
 
@@ -422,7 +422,7 @@ lex *parcel::build::inplace_build_hook_ref(parcel::tools::lexer &lx)
     return NULL;
 };
 
-lex *parcel::build::inplace_build_link_def(parcel::tools::lexer &lx)
+lex *parcel::build::inplace_build_link_def(parcel::tools::Lexer &lx)
 {
     DBG_FN_NAME()
 
@@ -446,7 +446,7 @@ lex *parcel::build::inplace_build_link_def(parcel::tools::lexer &lx)
     return NULL;
 };
 
-lex *parcel::build::inplace_build_literal(parcel::tools::lexer &lx)
+lex *parcel::build::inplace_build_literal(parcel::tools::Lexer &lx)
 {
     DBG_FN_NAME()
 
@@ -496,7 +496,7 @@ lex *parcel::build::inplace_build_literal(parcel::tools::lexer &lx)
     }
 };
 
-lex *parcel::build::inplace_build_basetype(parcel::tools::lexer &lx)
+lex *parcel::build::inplace_build_basetype(parcel::tools::Lexer &lx)
 {
     DBG_FN_NAME()
 
@@ -516,7 +516,7 @@ lex *parcel::build::inplace_build_basetype(parcel::tools::lexer &lx)
     return NULL;
 };
 
-lex *parcel::build::inplace_build_fn_ref(parcel::tools::lexer &lx)
+lex *parcel::build::inplace_build_fn_ref(parcel::tools::Lexer &lx)
 {
     DBG_FN_NAME()
 
@@ -530,7 +530,7 @@ lex *parcel::build::inplace_build_fn_ref(parcel::tools::lexer &lx)
         return NULL;
 };
 
-lex *parcel::build::inplace_build_fn_expr(parcel::tools::lexer &lx)
+lex *parcel::build::inplace_build_fn_expr(parcel::tools::Lexer &lx)
 {
     DBG_FN_NAME()
 
@@ -548,7 +548,7 @@ lex *parcel::build::inplace_build_fn_expr(parcel::tools::lexer &lx)
     expr_s.append(")");
 
     string normalized_expr_buff = _clear_expr_string(expr_s);
-    parcel::tools::lexer lx2(normalized_expr_buff);
+    parcel::tools::Lexer lx2(normalized_expr_buff);
 
     // printf("FN_ARG=%s\n", normalized_expr_buff.c_str());
 
@@ -588,7 +588,7 @@ LexTree *parcel::build::build_lextree(string &src)
 
     offset_table<LinkedLex *> gt(lang::tabs_diff);
 
-    parcel::tools::lexer lx(src);
+    parcel::tools::Lexer lx(src);
     string cur;
     size_t line_offset = 0;
     size_t literals_offset = -1;

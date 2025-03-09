@@ -2,7 +2,7 @@
 
 
 // skip values like 'gt(500, 'a', "word")'
-bool skip_fn_proto(parcel::tools::lexer &lx)
+bool skip_fn_proto(parcel::tools::Lexer &lx)
 {
     string w;
     if (lx.next_id(w) != lx.npos)
@@ -16,7 +16,7 @@ bool skip_fn_proto(parcel::tools::lexer &lx)
     return false;
 };
 
-size_t parcel::expr::get_logic_entry(tools::lexer &lx)
+size_t parcel::expr::get_logic_entry(tools::Lexer &lx)
 {
     stack<char> brack_seq;
     short deep = 0;
@@ -79,7 +79,7 @@ size_t parcel::expr::get_logic_entry(tools::lexer &lx)
     return op_entry;
 };
 
-bool parcel::expr::to_postfix(tools::lexer &lx, stack<string> &call_stack)
+bool parcel::expr::to_postfix(tools::Lexer &lx, stack<string> &call_stack)
 {
     size_t entry = get_logic_entry(lx);
     string left;
@@ -107,12 +107,12 @@ bool parcel::expr::to_postfix(tools::lexer &lx, stack<string> &call_stack)
     if (entry > 0)
     {
         // parse left
-        tools::lexer lx_left(left);
+        tools::Lexer lx_left(left);
         to_postfix(lx_left, call_stack);
 
         //((gt(500) & less(300)) | diff(300))
         // parse right
-        tools::lexer lx_right(right);
+        tools::Lexer lx_right(right);
         to_postfix(lx_right, call_stack);
     }
 

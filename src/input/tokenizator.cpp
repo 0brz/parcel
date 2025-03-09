@@ -1,7 +1,7 @@
-#include "tokenizator.h"
+#include "tools/tokenizator.h"
 
 
-using namespace parcel::input;
+using namespace parcel::tools;
 
 
 void Tokenizator::set_source(string& s) {

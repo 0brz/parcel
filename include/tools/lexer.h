@@ -16,7 +16,7 @@ using namespace std;
 
 namespace parcel {
     namespace tools {
-        class lexer
+        class Lexer
         {
         private:
             int _cursor;
@@ -28,7 +28,7 @@ namespace parcel {
             const char *symbols_no_id = " @#%^&*(){}[]?><,.";
             const char *symbols_no_id_nospace = "@#%^&*(){}[]?><,.";
 
-            lexer(string &sr) : _src(sr), _sz(_src.size()), _cursor(0) {};
+            Lexer(string &sr) : _src(sr), _sz(_src.size()), _cursor(0) {};
 
             inline bool can_read() { return this->_cursor < _sz - 1; };
             inline int can_readn() { return _sz - 1 - this->_cursor; };
@@ -127,7 +127,7 @@ namespace parcel {
 
                 if (sz == 0)
                 {
-                    return lexer::npos;
+                    return Lexer::npos;
                 }
 
                 out = _src.substr(this->_cursor, sz);
@@ -157,7 +157,7 @@ namespace parcel {
 
                 if (sz == 0)
                 {
-                    return lexer::npos;
+                    return Lexer::npos;
                 }
 
                 out = _src.substr(this->_cursor, sz);
@@ -202,7 +202,7 @@ namespace parcel {
                     {
                         if (sz == 0)
                         {
-                            return lexer::npos;
+                            return Lexer::npos;
                         }
                         else
                         {
@@ -224,16 +224,16 @@ namespace parcel {
 
                 if (dotp == 0)
                 {
-                    return lexer::npos;
+                    return Lexer::npos;
                 }
 
                 if (cur == dotp+1) {
-                    return lexer::npos;
+                    return Lexer::npos;
                 }
 
                 if (sz == 0)
                 {
-                    return lexer::npos;
+                    return Lexer::npos;
                 }
 
                 out = _src.substr(this->_cursor, sz);
@@ -264,7 +264,7 @@ namespace parcel {
 
                 if (sz == 0)
                 {
-                    return lexer::npos;
+                    return Lexer::npos;
                 }
 
                 out = _src.substr(this->_cursor, sz);
@@ -278,13 +278,13 @@ namespace parcel {
                 if (begins == NULL &&
                     ends == NULL)
                 {
-                    return lexer::npos;
+                    return Lexer::npos;
                 }
 
                 // trash symbols logic
                 if (trash_delims == NULL)
                 {
-                    trash_delims = lexer::symbols_no_id;
+                    trash_delims = Lexer::symbols_no_id;
                 }
 
                 if (!can_readn())
@@ -325,7 +325,7 @@ namespace parcel {
 
                     if (_beg == string::npos)
                     {
-                        return lexer::npos;
+                        return Lexer::npos;
                     }
 
                     if (_end == string::npos)
@@ -355,7 +355,7 @@ namespace parcel {
                     size_t _trash_btwn = btw.find_first_of(trash_delims);
                     if (_trash_btwn != string::npos)
                     {
-                        return lexer::npos;
+                        return Lexer::npos;
                     }
 
                     // printf("__curs=%i _ends=%i\n", _cursor, _beg_ends);
@@ -385,19 +385,19 @@ namespace parcel {
                 if (begins == NULL &&
                     ends == NULL)
                 {
-                    return lexer::npos;
+                    return Lexer::npos;
                 }
 
-                auto _s = lexer::first_begins(_src, _cursor, begins);
+                auto _s = Lexer::first_begins(_src, _cursor, begins);
                 if (_s == -1)
                 {
-                    return lexer::npos;
+                    return Lexer::npos;
                 }
-                auto _e = lexer::last_ends(_src, _cursor, ends);
+                auto _e = Lexer::last_ends(_src, _cursor, ends);
                 // printf("__E=%i\n", _e);
                 if (_e == -1)
                 {
-                    return lexer::npos;
+                    return Lexer::npos;
                 }
 
                 auto sz(_e - _s + strlen(ends));
@@ -476,10 +476,10 @@ namespace parcel {
                 if (this->_cursor > 2)
                 {
                     string around = this->_src.substr(this->_cursor - 3, 3);
-                    os << "lexer: cs=" << this->_cursor << " '" << around.c_str() << "|'\n";
+                    os << "Lexer: cs=" << this->_cursor << " '" << around.c_str() << "|'\n";
                 }
                 else
-                    os << "lexer: cs=" << this->_cursor << "..|...\n";
+                    os << "Lexer: cs=" << this->_cursor << "..|...\n";
             }
 
             void get_cursor_dest(ostream &os)
@@ -560,8 +560,6 @@ namespace parcel {
                 return -1;
             }
         };
-
-
     }
 }
 

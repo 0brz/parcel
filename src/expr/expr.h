@@ -1,7 +1,7 @@
 #ifndef _EXPR_
 #define _EXPR_
 
-#include "../tools/lexer/lex.h"
+#include "tools/lexer.h"
 #include "../lang/lang.h"
 #include <stack>
 
@@ -9,8 +9,8 @@ namespace parcel
 {
     namespace expr
     {
-        size_t get_logic_entry(tools::lexer &lx);
-        bool to_postfix(tools::lexer &lx, stack<string> &call_stack);
+        size_t get_logic_entry(tools::Lexer &lx);
+        bool to_postfix(tools::Lexer &lx, stack<string> &call_stack);
     }
 }
 

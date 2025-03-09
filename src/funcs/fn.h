@@ -1,9 +1,9 @@
 #ifndef _FUNCS_
 #define _FUNCS_
 
+#include "tools/lexer.h"
 #include "../lang/lang.h"
 #include "../lexems/lexem.h"
-#include "../tools/lexer/lex.h"
 #include "../tools/btree.h"
 #include "../types/types.h"
 #include "../expr/expr.h"

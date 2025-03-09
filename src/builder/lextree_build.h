@@ -3,7 +3,7 @@
 
 #include "../lang/lang.h"
 #include "../lexems/lexem.h"
-#include "../tools/lexer/lex.h"
+#include "tools/lexer.h"
 #include "../tools/offset_table.h"
 #include "../types/types.h"
 #include "../expr/expr.h"
@@ -57,15 +57,15 @@ namespace parcel
             }
         };
 
-        lex *inplace_build_tag(tools::lexer &lx);
-        lex *inplace_build_basetype(tools::lexer &lx);
-        lex *inplace_build_hook_ref(tools::lexer &lx);
-        lex *inplace_build_hook_def(tools::lexer &lx);
-        lex *inplace_build_link_def(tools::lexer &lx);
+        lex *inplace_build_tag(tools::Lexer &lx);
+        lex *inplace_build_basetype(tools::Lexer &lx);
+        lex *inplace_build_hook_ref(tools::Lexer &lx);
+        lex *inplace_build_hook_def(tools::Lexer &lx);
+        lex *inplace_build_link_def(tools::Lexer &lx);
         // lex *inplace_build_link_ref(lexer &lx);
-        lex *inplace_build_literal(tools::lexer &lx);
-        lex *inplace_build_fn_expr(tools::lexer &lx);
-        lex *inplace_build_fn_ref(tools::lexer &lx);
+        lex *inplace_build_literal(tools::Lexer &lx);
+        lex *inplace_build_fn_expr(tools::Lexer &lx);
+        lex *inplace_build_fn_ref(tools::Lexer &lx);
 
         LexTree *build_lextree(string &src);
     }

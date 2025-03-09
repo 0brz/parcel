@@ -1,10 +1,10 @@
 #include "../include/parcel.h"
-#include "../include/tools.h"
+#include "../include/tools/lexer.h"
 
 int main( ) {
     parcel::Programm pg;
-    string src =  parcel::tools::lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/lang.yml");
-    parcel::tools::lexer lx(src);
+    string src =  parcel::tools::Lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/lang.yml");
+    parcel::tools::Lexer lx(src);
     
     if (pg.build(src.c_str())) {
         cout << "Builded!\n";
@@ -12,6 +12,4 @@ int main( ) {
     else {
         cout << "Not builded!\n";
     }
-    
-
 }
