@@ -337,11 +337,18 @@ ParseElement *deep_build(LinkedLex *current, BuildTable &table)
     return el;
 };
 
+void parcel::build::Instr::propagate(string& lex) {
+    for (prog_go* en : this->roots) {
+        en->act(lex, NULL, NULL);
+    }
+};
+
 Instr *parcel::build::build_parseinstr(LexTree *lextree)
 {
-    BuildTable bt(make_shared<ParseCursor>(0, 5));
+    BuildTable bt(make_shared<ParseCursor>(0, 0));
 
     Instr *tree = new Instr();
+    tree->cursor = bt.cursor;
 
     for (const auto &lex : lextree->roots)
     {

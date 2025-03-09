@@ -1,12 +1,7 @@
-#ifdef PARCEL_DEV
 
-#endif
+#ifndef _PARCEL_TOOLS_H_
+#define _PARCEL_TOOLS_H_
 
-#ifndef PARCEL_BUILD
-
-int tols_build()
-{
-    return 5;
-}
+#include "../src/tools/lexer/lex.h"
 
 #endif

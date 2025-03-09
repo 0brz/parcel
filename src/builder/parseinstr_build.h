@@ -45,11 +45,13 @@ namespace parcel
                 for (auto & v : roots) {
                     delete v;
                 }
-            }
+            };
+
+            void propagate(string& lex);
         };
 
         Instr *build_parseinstr(LexTree *lextree);
-
+        
     }
 }
 

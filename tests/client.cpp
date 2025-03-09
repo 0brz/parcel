@@ -26,19 +26,27 @@ int main()
     }
         */
 
-    printf("end\n");
+   
 
     //std::cout << "\033[1;31mbold red text\033[0m\n" << endl;
 
        
     string sr = lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/lang.yml");
+
     LexTree *gt = parcel::build::build_lextree(sr);
-    shared_ptr<parcel::parser::ParseCursor> cursor = make_shared<parcel::parser::ParseCursor>(0, 6);
+    
+    printf("lex builded.\n");
+
     Instr* ins = parcel::build::build_parseinstr(gt);
     
     delete gt;
+
+    printf("instr bulded.\n");
+
     delete ins;
         
+    printf("end\n");
+
     /*
     if (gt != NULL)
     {

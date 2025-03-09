@@ -18,6 +18,7 @@ using namespace parcel::lexems;
 using namespace parcel::lang;
 using namespace parcel::expr;
 using namespace parcel::funcs;
+using namespace parcel::tools;
 
 namespace parcel
 {
@@ -56,15 +57,15 @@ namespace parcel
             }
         };
 
-        lex *inplace_build_tag(lexer &lx);
-        lex *inplace_build_basetype(lexer &lx);
-        lex *inplace_build_hook_ref(lexer &lx);
-        lex *inplace_build_hook_def(lexer &lx);
-        lex *inplace_build_link_def(lexer &lx);
+        lex *inplace_build_tag(tools::lexer &lx);
+        lex *inplace_build_basetype(tools::lexer &lx);
+        lex *inplace_build_hook_ref(tools::lexer &lx);
+        lex *inplace_build_hook_def(tools::lexer &lx);
+        lex *inplace_build_link_def(tools::lexer &lx);
         // lex *inplace_build_link_ref(lexer &lx);
-        lex *inplace_build_literal(lexer &lx);
-        lex *inplace_build_fn_expr(lexer &lx);
-        lex *inplace_build_fn_ref(lexer &lx);
+        lex *inplace_build_literal(tools::lexer &lx);
+        lex *inplace_build_fn_expr(tools::lexer &lx);
+        lex *inplace_build_fn_ref(tools::lexer &lx);
 
         LexTree *build_lextree(string &src);
     }

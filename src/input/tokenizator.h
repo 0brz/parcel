@@ -18,10 +18,12 @@ namespace parcel {
         class Tokenizator {
             private:
             std::set<input::option> _options;
-            lexer _lex;
+            tools::lexer _lex;
 
             public:
                 Tokenizator(string& source) : _lex(source), _options{} {};
+                //Tokenizator(): _options{}, _lex(_holder) {};
+                void set_source(string& s);
                 bool next_token(string& in);
                 void clean_options();
                 void add_option(input::option opt);

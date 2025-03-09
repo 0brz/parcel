@@ -4,6 +4,11 @@
 using namespace parcel::input;
 
 
+void Tokenizator::set_source(string& s) {
+    _lex.set_buff(s);
+    _lex.cursor_set(0);
+};
+
 bool Tokenizator::next_token(string& in) {
     if (!_lex.can_read())
     {
