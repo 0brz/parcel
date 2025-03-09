@@ -1,14 +1,15 @@
 #include "lextree_build.h"
 #include <stack>
 
+#define DBG_LEVEL 0
+
 using namespace parcel::build;
 
-// fix
-lex *_new_lex(lex_type type, lvalue *val)
-{
-    lex *bl = new lex(type, val);
-    return bl;
-};
+#define dbg_msg(msg) if (DBG_LEVEL == 1)\
+    printf(msg);
+
+#define DBG_FN_NAME() if (DBG_LEVEL == 1)\
+    std::cout << __FUNCTION__ << "\n";
 
 lex *_new_hook_def(string &name)
 {
@@ -17,7 +18,7 @@ lex *_new_hook_def(string &name)
     return b;
 }
 
-bool _is_literal(lexer &lx)
+bool _is_literal(parcel::tools::lexer &lx)
 {
     // 123.123.123 (ip...)
     // 123.123 (float)
@@ -104,7 +105,7 @@ bool _check_s(string &s, const char *contains)
 ============================
 */
 
-fn_arglist *try_build_fn_arglist(lexer &lx, bool &out_build_status)
+fn_arglist *try_build_fn_arglist(parcel::tools::lexer &lx, bool &out_build_status)
 {
     //
     auto old = lx.cursor_get();
@@ -211,7 +212,7 @@ fn_arglist *try_build_fn_arglist(lexer &lx, bool &out_build_status)
     return args;
 };
 
-fn_ref *try_build_fn_ref(lexer &lx)
+fn_ref *try_build_fn_ref(parcel::tools::lexer &lx)
 {
     string fn_id;
     auto old = lx.cursor_get();
@@ -273,7 +274,7 @@ bool try_build_fn_expr(stack<string> &postfix, btree<fn_ref *> *tree)
         else
         {
             fn_ref *fn_ref = NULL;
-            lexer fn_lx(_left);
+            parcel::tools::lexer fn_lx(_left);
             if ((fn_ref = try_build_fn_ref(fn_lx)) == NULL)
                 return false;
 
@@ -295,7 +296,7 @@ bool try_build_fn_expr(stack<string> &postfix, btree<fn_ref *> *tree)
         else
         {
             fn_ref *fn_ref = NULL;
-            lexer fn_lx(_right);
+            parcel::tools::lexer fn_lx(_right);
             if ((fn_ref = try_build_fn_ref(fn_lx)) == NULL)
                 return false;
 
@@ -345,7 +346,17 @@ namespace utils
 
 #pragma region build impls
 
-lex *parcel::build::inplace_build_tag(lexer &lx)
+void skip_seq_prefix(parcel::tools::lexer& lx) {
+    // bypass sequence prefix.
+        char defis_delim;
+        if (lx.next_symbol(defis_delim) && (defis_delim == LANG_TAG_SEQUENCE_PREFIX)) {
+        }
+        else {
+            lx.cursor_move(-1);
+        }
+}
+
+lex *parcel::build::inplace_build_tag(parcel::tools::lexer &lx)
 {
     string tagname;
     auto c = lx.cursor_get();
@@ -358,7 +369,7 @@ lex *parcel::build::inplace_build_tag(lexer &lx)
             lx.cursor_move(1);
 
             lex_type type = type::get_type(tagname);
-            lex *_bl = _new_lex(type, NULL); // tagword doesnt have a value
+            lex *_bl = new lex(type, NULL); // tagword doesnt have a value
             return _bl;
         }
     }
@@ -367,8 +378,10 @@ lex *parcel::build::inplace_build_tag(lexer &lx)
     return NULL;
 };
 
-lex *parcel::build::inplace_build_hook_def(lexer &lx)
+lex *parcel::build::inplace_build_hook_def(parcel::tools::lexer &lx)
 {
+    DBG_FN_NAME()
+
     auto old = lx.cursor_get();
     if (lx.at(old) == LANG_HOOK_PREFIX)
     {
@@ -389,8 +402,10 @@ lex *parcel::build::inplace_build_hook_def(lexer &lx)
     return NULL;
 };
 
-lex *parcel::build::inplace_build_hook_ref(lexer &lx)
+lex *parcel::build::inplace_build_hook_ref(parcel::tools::lexer &lx)
 {
+    DBG_FN_NAME()
+
     auto old = lx.cursor_get();
     if (lx.at(old) == LANG_HOOK_PREFIX)
     {
@@ -398,7 +413,7 @@ lex *parcel::build::inplace_build_hook_ref(lexer &lx)
         string v;
         if (lx.next_id(v) != lx.npos)
         {
-            lex *bl = _new_lex(lex_type::HOOK_REF, new hook_ref(v));
+            lex *bl = new lex(lex_type::HOOK_REF, new hook_ref(v));
             return bl;
         }
     }
@@ -407,8 +422,10 @@ lex *parcel::build::inplace_build_hook_ref(lexer &lx)
     return NULL;
 };
 
-lex *parcel::build::inplace_build_link_def(lexer &lx)
+lex *parcel::build::inplace_build_link_def(parcel::tools::lexer &lx)
 {
+    DBG_FN_NAME()
+
     auto old = lx.cursor_get();
     if (lx.at(old) == LANG_LINK_PREFIX)
     {
@@ -419,7 +436,7 @@ lex *parcel::build::inplace_build_link_def(lexer &lx)
             lx.skip(" \r\t");
             if (lx.at(lx.cursor_get()) == LANG_TAG_PREFIX)
             {
-                lex *bl = _new_lex(lex_type::LINK_DEF, new link_def(v));
+                lex *bl = new lex(lex_type::LINK_DEF, new link_def(v));
                 return bl;
             }
         }
@@ -429,8 +446,10 @@ lex *parcel::build::inplace_build_link_def(lexer &lx)
     return NULL;
 };
 
-lex *parcel::build::inplace_build_literal(lexer &lx)
+lex *parcel::build::inplace_build_literal(parcel::tools::lexer &lx)
 {
+    DBG_FN_NAME()
+
     if (!_is_literal(lx))
         return NULL;
 
@@ -440,7 +459,7 @@ lex *parcel::build::inplace_build_literal(lexer &lx)
     if (lx.next_float(cur) != lx.npos)
     {
         float _val = stof(cur.c_str());
-        auto _bl = _new_lex(lex_type::LITR_FLOAT, new value_litr_float(_val));
+        auto _bl = new lex(lex_type::LITR_FLOAT, new value_litr_float(_val));
         return _bl;
         //_link_last_block(gt, _bl);
         // printf("~%zi [gt(link.last)] (float) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
@@ -448,7 +467,7 @@ lex *parcel::build::inplace_build_literal(lexer &lx)
     else if (lx.next_int(cur) != lx.npos)
     {
         int _val = stoi(cur.c_str());
-        auto _bl = _new_lex(lex_type::LITR_INT, new value_litr_int(_val));
+        auto _bl = new lex(lex_type::LITR_INT, new value_litr_int(_val));
         return _bl;
         //_link_last_block(gt, _bl);
         // printf("~%zi [gt(link.last)] (int) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
@@ -457,7 +476,7 @@ lex *parcel::build::inplace_build_literal(lexer &lx)
     {
         //
         string _val = string(begin(cur) + 1, end(cur) - 1);
-        auto _bl = _new_lex(lex_type::LITR_STR, new value_litr_string(_val));
+        auto _bl = new lex(lex_type::LITR_STR, new value_litr_string(_val));
         return _bl;
         //_link_last_block(gt, _bl);
         // printf("~%zi [gt(link.last)] (str) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
@@ -465,7 +484,7 @@ lex *parcel::build::inplace_build_literal(lexer &lx)
     else if (lx.next_like_rounded(cur, "'", "'", "") != lx.npos)
     {
         char _val = cur[1]; // we can take, because size of char view=3, like 'a', 'b'
-        auto _bl = _new_lex(lex_type::LITR_CHAR, new value_litr_char(_val));
+        auto _bl = new lex(lex_type::LITR_CHAR, new value_litr_char(_val));
         return _bl;
         //_link_last_block(gt, _bl);
         // printf("~%zi [gt(link.last)] (char) %s -> %s\n", line_offset, _last_name.c_str(), cur.c_str());
@@ -477,8 +496,10 @@ lex *parcel::build::inplace_build_literal(lexer &lx)
     }
 };
 
-lex *parcel::build::inplace_build_basetype(lexer &lx)
+lex *parcel::build::inplace_build_basetype(parcel::tools::lexer &lx)
 {
+    DBG_FN_NAME()
+
     size_t old = lx.cursor_get();
     string id;
 
@@ -495,8 +516,10 @@ lex *parcel::build::inplace_build_basetype(lexer &lx)
     return NULL;
 };
 
-lex *parcel::build::inplace_build_fn_ref(lexer &lx)
+lex *parcel::build::inplace_build_fn_ref(parcel::tools::lexer &lx)
 {
+    DBG_FN_NAME()
+
     fn_ref *v = try_build_fn_ref(lx);
     if (v != NULL)
     {
@@ -507,8 +530,10 @@ lex *parcel::build::inplace_build_fn_ref(lexer &lx)
         return NULL;
 };
 
-lex *parcel::build::inplace_build_fn_expr(lexer &lx)
+lex *parcel::build::inplace_build_fn_expr(parcel::tools::lexer &lx)
 {
+    DBG_FN_NAME()
+
     string expr_s;
     auto old = lx.cursor_get();
 
@@ -523,7 +548,7 @@ lex *parcel::build::inplace_build_fn_expr(lexer &lx)
     expr_s.append(")");
 
     string normalized_expr_buff = _clear_expr_string(expr_s);
-    lexer lx2(normalized_expr_buff);
+    parcel::tools::lexer lx2(normalized_expr_buff);
 
     // printf("FN_ARG=%s\n", normalized_expr_buff.c_str());
 
@@ -559,9 +584,11 @@ lex *parcel::build::inplace_build_fn_expr(lexer &lx)
 
 LexTree *parcel::build::build_lextree(string &src)
 {
+    DBG_FN_NAME()
+
     offset_table<LinkedLex *> gt(lang::tabs_diff);
 
-    lexer lx(src);
+    parcel::tools::lexer lx(src);
     string cur;
     size_t line_offset = 0;
     size_t literals_offset = -1;
@@ -572,6 +599,9 @@ LexTree *parcel::build::build_lextree(string &src)
         // DEFINES
         // vardef
         // hook
+
+        lx.skip(" \t");
+
         lex *bl = NULL;
         if ((bl = inplace_build_hook_def(lx)) != NULL)
         {
@@ -601,6 +631,8 @@ LexTree *parcel::build::build_lextree(string &src)
             printf("~%zi [gt(nolink))].link\n", line_offset);
             continue;
         }
+
+        skip_seq_prefix(lx);
 
         // LITERALS, VALUES
         lex *lit;
@@ -695,7 +727,7 @@ LexTree *parcel::build::build_lextree(string &src)
         }
     }
 
-    // printf("Build lex graph end.\n");
+    printf("Build lex graph end.\n");
 
     vector<LinkedLex *> entrypoints = gt.get_by_offset(gt.min_level());
     LexTree *tree = new LexTree(entrypoints);

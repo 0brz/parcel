@@ -9,8 +9,8 @@ namespace parcel
 {
     namespace expr
     {
-        size_t get_logic_entry(lexer &lx);
-        bool to_postfix(lexer &lx, stack<string> &call_stack);
+        size_t get_logic_entry(tools::lexer &lx);
+        bool to_postfix(tools::lexer &lx, stack<string> &call_stack);
     }
 }
 

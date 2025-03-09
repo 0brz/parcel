@@ -6,8 +6,8 @@ include_directories(include)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 
-add_executable(tt
-    tests/client.cpp
+add_library(parcellib SHARED 
+    #tests/cl2.cpp
     #src/tools/lex.h
 
     
@@ -38,4 +38,18 @@ add_executable(tt
     src/parse/token.h
 
     src/tools/dump.h
+    src/input/tokenizator.cpp
+    src/input/tokenizator.h
+
+    src/parcel.cpp
+    src/parcelapi.cpp
 )
+
+
+
+add_executable(tt
+    tests/cl2.cpp
+)
+
+target_link_libraries(tt 
+    parcellib)

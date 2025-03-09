@@ -9,21 +9,44 @@
 #include <../src/tools/dump.h>
 #include <../src/tools/log.h>
 
+#include <../src/input/tokenizator.h>
 
 int main()
 {
-    //std::cout << "\033[1;31mbold red text\033[0m\n" << endl;
 
     printf("Client code...\n");
+
+        /*
+    string sr = lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/source.txt");
+    parcel::input::Tokenizator tz(sr);
+    
+    string cur_token;
+    while(tz.next_token(cur_token)) {
+        printf("cur_token=%s\n", cur_token.c_str());
+    }
+        */
+
+   
+
+    //std::cout << "\033[1;31mbold red text\033[0m\n" << endl;
+
+       
     string sr = lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/lang.yml");
+
     LexTree *gt = parcel::build::build_lextree(sr);
-    shared_ptr<parcel::parser::ParseCursor> cursor = make_shared<parcel::parser::ParseCursor>(0, 6);
+    
+    printf("lex builded.\n");
+
     Instr* ins = parcel::build::build_parseinstr(gt);
     
     delete gt;
-    delete ins;
 
+    printf("instr bulded.\n");
+
+    delete ins;
+        
     printf("end\n");
+
     /*
     if (gt != NULL)
     {

@@ -1,4 +1,8 @@
 
 $ex1:
-  list:
-    word
+  set:
+    - word
+    - num
+    - 'r'
+    - "cur"
+    - 123
