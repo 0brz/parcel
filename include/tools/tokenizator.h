@@ -10,14 +10,14 @@ using namespace std;
 
 
 namespace parcel {
-    namespace input {
+    namespace tools {
         enum option {
             FlaotAsTwoInts,
         };
 
         class Tokenizator {
             private:
-            std::set<input::option> _options;
+            std::set<tools::option> _options;
             tools::Lexer _lex;
 
             public:
@@ -26,8 +26,8 @@ namespace parcel {
                 void set_source(string& s);
                 bool next_token(string& in);
                 void clean_options();
-                void add_option(input::option opt);
-                void del_option(input::option opt);
+                void add_option(tools::option opt);
+                void del_option(tools::option opt);
         };
     }
 }

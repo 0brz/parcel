@@ -6,7 +6,7 @@ include_directories(include)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 
-add_library(parcellib SHARED 
+add_library(parcellib STATIC 
     #tests/cl2.cpp
     #src/tools/lex.h
 
@@ -35,14 +35,14 @@ add_library(parcellib SHARED
     src/parse/elements.cpp
     src/parse/elements.h
     src/parse/token.cpp
-    src/parse/token.h
+    #src/parse/token.h
 
     src/tools/dump.h
     src/input/tokenizator.cpp
-    src/input/tokenizator.h
+    #src/input/tokenizator.h
 
     src/parcel.cpp
-    src/parcelapi.cpp
+    #src/parcelapi.cpp
 )
 
 
@@ -50,6 +50,7 @@ add_library(parcellib SHARED
 add_executable(tt
     tests/cl2.cpp
 )
+
 
 target_link_libraries(tt 
     parcellib)
