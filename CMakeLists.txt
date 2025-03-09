@@ -21,7 +21,7 @@ add_library(parcellib SHARED
     src/funcs/fn.h
     
     src/tools/offset_table.h
-    src/tools/lexer/lex.h
+    #src/tools/lexer/lex.h
     src/tools/btree.h
     src/tools/tree.h
     src/tools/log.h

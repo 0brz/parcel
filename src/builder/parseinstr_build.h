@@ -3,7 +3,7 @@
 
 #include "../lang/lang.h"
 #include "../lexems/lexem.h"
-#include "../tools/lexer/lex.h"
+#include "tools/lexer.h"
 #include "../tools/offset_table.h"
 #include "../types/types.h"
 #include "../expr/expr.h"

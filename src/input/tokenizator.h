@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 #include <set>
-#include "../tools/lexer/lex.h"
+#include "tools/lexer.h"
 
 using namespace std;
 
@@ -18,7 +18,7 @@ namespace parcel {
         class Tokenizator {
             private:
             std::set<input::option> _options;
-            tools::lexer _lex;
+            tools::Lexer _lex;
 
             public:
                 Tokenizator(string& source) : _lex(source), _options{} {};
