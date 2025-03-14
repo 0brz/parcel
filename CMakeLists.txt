@@ -45,12 +45,4 @@ add_library(parcellib STATIC
     #src/parcelapi.cpp
 )
 
-
-
-add_executable(tt
-    tests/cl2.cpp
-)
-
-
-target_link_libraries(tt 
-    parcellib)
+add_subdirectory(tests)

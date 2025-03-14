@@ -4,10 +4,14 @@ project(bound_parsing)
 
 include_directories(include)
 
-add_executable(tt
+enable_testing()
+add_subdirectory(googletest)
 
-    src/tests/client.cpp
-    src/tools/lex.h
-    src/tools/logger.h
-    src/tools/dump.h
-)
+add_executable(core
+    parcel_api.cpp)
+
+target_link_libraries(core 
+    parcellib)
+
+
+target_link_libraries(core gtest_main gmock_main)
