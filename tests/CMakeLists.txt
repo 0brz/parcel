@@ -9,4 +9,5 @@ add_executable(tt
     src/tests/client.cpp
     src/tools/lex.h
     src/tools/logger.h
+    src/tools/dump.h
 )

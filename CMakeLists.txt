@@ -37,7 +37,7 @@ add_library(parcellib STATIC
     src/parse/token.cpp
     #src/parse/token.h
 
-    src/tools/dump.h
+    src/tools/dump.cpp
     src/input/tokenizator.cpp
     #src/input/tokenizator.h
 

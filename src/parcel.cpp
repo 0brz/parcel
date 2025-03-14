@@ -65,6 +65,7 @@ void parcel::Programm::run(const char* parseSource) {
     // propagate.
     string lx;
     while(_tokenizator.next_token(lx)) {
+        printf("prop=%s\n", lx.c_str());
         _instr->propagate(lx);
     };
 };
@@ -89,6 +90,11 @@ tokens::token* Programm::find_hook(const char* name) {
 };
 
 
-
+void Programm::clean() {
+    // clear instructions.
+    if (this->_instr != NULL) {
+        delete this->_instr;
+    }
+};
 
 
