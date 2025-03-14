@@ -1,8 +1,8 @@
 
 $ex1:
   set:
-    - word
     - num
-    - 'r'
-    - "cur"
     - 123
+
+go:
+  $ex1
