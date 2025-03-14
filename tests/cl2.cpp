@@ -3,7 +3,9 @@
 #include "../include/dump.h"
 
 int main( ) {
+
     parcel::Programm pg;
+
     string src =  parcel::tools::Lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/lang.yml");
     string src_input =  parcel::tools::Lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/source.txt");
     parcel::tools::Lexer lx(src);

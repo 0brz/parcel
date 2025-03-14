@@ -27,31 +27,29 @@ using namespace parcel::build;
 
 namespace parcel
 {
-    namespace build
+    struct Instr
     {
-        struct Instr
-        {
-            std::map<string, token_hook *> hooks;
-            std::vector<prog_go *> roots;
-            shared_ptr<ParseCursor> cursor;
-            Instr() {};
-            ~Instr() {
-                // clear hooks
-                for (auto & v : hooks) {
-                    delete v.second;
-                }
+        std::map<string, token_hook *> hooks;
+        std::vector<prog_go *> roots;
+        shared_ptr<ParseCursor> cursor;
+        Instr() {};
+        ~Instr() {
+            // clear hooks
+            for (auto & v : hooks) {
+                delete v.second;
+            }
 
-                // clear go
-                for (auto & v : roots) {
-                    delete v;
-                }
-            };
-
-            void propagate(string& lex);
+            // clear go
+            for (auto & v : roots) {
+                delete v;
+            }
         };
 
+        void propagate(string& lex);
+    };
+
+    namespace build {
         Instr *build_parseinstr(LexTree *lextree);
-        
     }
 }
 

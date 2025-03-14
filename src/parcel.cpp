@@ -19,7 +19,6 @@ using namespace parcel::build;
 */
 
 Programm::Programm() : 
-    _cursor(make_shared<parser::ParseCursor>(0, 0)),
     _empty(""),
     _tokenizator(_empty),
     _instr(NULL) {};
@@ -60,7 +59,7 @@ void parcel::Programm::run(const char* parseSource) {
     cp.append(" ");
 
     _tokenizator.set_source(cp);
-    (*_cursor).size = cp.size();
+    (*this->_instr->cursor).size = cp.size();
 
     // propagate.
     string lx;

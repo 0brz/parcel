@@ -8,19 +8,13 @@
 #include "tokens.h"
 
 namespace parcel {
-    namespace parser {
-        struct ParseCursor;
-    };
 
-    namespace build {
-        struct Instr;
-    };
+    struct Instr;
 
     class Programm {
         private:
-            shared_ptr<parser::ParseCursor> _cursor;
             tools::Tokenizator _tokenizator;
-            parcel::build::Instr* _instr;
+            Instr* _instr;
             string _empty;
 
         public:
