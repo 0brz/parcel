@@ -71,7 +71,7 @@ string parcel::values_to_string(tokens::token* head, const char* delimiter) {
                     q.push(n);
         }
         else {
-            ss << cur->val->str();
+            ss << cur->val->to_string();
         }
 
         ss << delimiter;
@@ -133,7 +133,7 @@ void parcel::Programm::run(const char* parseSource) {
     // propagate.
     string lx;
     while(_tokenizator.next_token(lx)) {
-        //printf("prop=%s\n", lx.c_str());
+        //printf("prop='%s'\n", lx.c_str());
         _instr->propagate(lx);
     };
 };

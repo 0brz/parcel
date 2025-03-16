@@ -1,0 +1,17 @@
+
+$lit_num:
+  set:
+    - 200
+    - "good"
+    - "master_piece"
+    - "fr13end"
+    - "_not_good"
+    - "v"
+    - "0.0.0.1"
+
+$all_data:
+  set:
+    - $lit_num
+
+go:
+  $all_data

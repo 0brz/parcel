@@ -1,0 +1,17 @@
+
+$lit_num:
+  set:
+    - "abc-123_@(*)2--"
+    - "okay"
+    - "_some_id_"
+    - "v"
+    - "ok250"
+    - 'd'
+    - "0.0.0.1"
+
+$all_data:
+  set:
+    - $lit_num
+
+go:
+  $all_data

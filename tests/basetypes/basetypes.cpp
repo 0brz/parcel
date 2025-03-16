@@ -55,3 +55,9 @@ TEST_F(SingleValue_set,   char_is_ok) {
     }
 };
 
+int main(int argc, char **argv) {
+
+    ::testing::InitGoogleTest(&argc, argv);
+
+    return RUN_ALL_TESTS();
+}

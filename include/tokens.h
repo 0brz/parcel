@@ -36,6 +36,7 @@ namespace parcel
         struct tvalue
         {
             virtual const char *str() = 0;
+            virtual string to_string() = 0;
         };
 
         class token
@@ -57,7 +58,11 @@ namespace parcel
             const char *str()
             {
                 return v.c_str();
-            }
+            };
+
+            string to_string() {
+                return v;
+            };
         };
 
         struct val_string : tvalue
@@ -68,6 +73,10 @@ namespace parcel
             {
                 return v.c_str();
             }
+
+            string to_string() {
+                return v;
+            };
         };
 
         struct val_float : tvalue
@@ -78,6 +87,10 @@ namespace parcel
             {
                 return "<float>";
             }
+
+            string to_string() {
+               return std::to_string(v);
+            };
         };
 
         struct val_int : tvalue
@@ -88,6 +101,10 @@ namespace parcel
             {
                 return "<int>";
             }
+
+            string to_string() {
+                return std::to_string(v);
+             };
         };
 
         struct val_char : tvalue
@@ -98,6 +115,10 @@ namespace parcel
             {
                 return v.c_str();
             }
+
+            string to_string() {
+                return v;
+             };
         };
 
         struct val_id : tvalue
@@ -108,6 +129,10 @@ namespace parcel
             {
                 return v.c_str();
             }
+
+            string to_string() {
+                return v;
+             };
         };
 
         struct val_num : tvalue
@@ -119,6 +144,10 @@ namespace parcel
                 // string s = std::to_string(v);
                 return v.c_str();
             }
+
+            string to_string() {
+                return v;
+            };
         };
 
         struct val_list : tvalue
@@ -130,6 +159,10 @@ namespace parcel
             {
                 return "<list>";
             }
+
+            string to_string() {
+                return "<list>";
+             };
 
             ~val_list() {
                 
@@ -144,6 +177,10 @@ namespace parcel
             {
                 return "<vec>";
             }
+
+            string to_string() {
+                return "<vec>";
+             };
         };
 
         struct val_set : tvalue
@@ -155,6 +192,10 @@ namespace parcel
             {
                 return "<set>";
             }
+
+            string to_string() {
+                return "<set>";
+             };
         };
 
         struct val_seq : tvalue
@@ -166,6 +207,10 @@ namespace parcel
             {
                 return "<seq>";
             }
+
+            string to_string() {
+                return "<seq>";
+             };
         };
     }
 }

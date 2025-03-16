@@ -180,15 +180,25 @@ namespace parcel
         struct literal_string : ParseValue
         {
             string val;
+            int _cursor = 0;
+            size_t _val_size;
+            string _trash_skip;
 
             void reset() {};
 
+            bool _check(string& lex) {
+                return lex == val;
+            }
+
             act_result act(string &lex, token *par, token *t2 = NULL)
             {
-                printf("STRING COMP=%s %s\n", lex.c_str(), val.c_str());
-                if (!lex.empty() && lex == val)
+                //printf("STRING COMP=%s %s\n", lex.c_str(), val.c_str());
+                
+
+                if (_check(lex))
                 {
-                    printf("STRING COMP= OKKKKKKKKKKKKKKKKK\n");
+                    _cursor = 0;
+
                     if (par != NULL)
                     {
                         par->type = tokens::type::literal_string;
@@ -203,7 +213,7 @@ namespace parcel
             }
 
             literal_string(const char *t) : val(t) {};
-            literal_string(string &t) : val(t) {};
+            literal_string(string &t) : val(t), _trash_skip(LEX_SYMBOLS_SPACES), _val_size(t.size()) {};
         };
 
         struct literal_float : ParseValue
@@ -277,7 +287,7 @@ namespace parcel
 
             act_result act(string &lex, token *par, token *t2 = NULL)
             {
-                if (!lex.empty() && lex.at(0) == val)
+                if (lex.size() == 1 && lex.at(0) == val)
                 {
                     if (par != NULL)
                     {
