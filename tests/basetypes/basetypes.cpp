@@ -2,15 +2,15 @@
 #include <tools/lexer.h>
 #include <dump.h>
 
-#include "googletest/googlemock/include/gmock/gmock.h"
-#include "googletest/googletest/include/gtest/gtest.h"
+#include "../googletest/googlemock/include/gmock/gmock.h"
+#include "../googletest/googletest/include/gtest/gtest.h"
 
 struct SingleValue_set : public testing::Test {
     parcel::Programm pg;
     void SetUp()
     {
-        string lang =  parcel::tools::Lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/single_values.yml");
-        string source =  parcel::tools::Lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/single_values.txt");    
+        string lang =  parcel::tools::Lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/basetypes/basetypes.yml");
+        string source =  parcel::tools::Lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/basetypes/basetypes.txt");    
         
         pg.build(lang.c_str());
         pg.run(source.c_str());
@@ -20,10 +20,6 @@ struct SingleValue_set : public testing::Test {
     void TearDown() {
         //pg.clean();
     };
-};
-
-TEST_F(SingleValue_set, build_ok) {
-    ASSERT_TRUE(pg.is_builded() == true);
 };
 
 TEST_F(SingleValue_set, word_is_ok) {
@@ -59,10 +55,3 @@ TEST_F(SingleValue_set,   char_is_ok) {
     }
 };
 
-
-int main(int argc, char **argv) {
-
-    ::testing::InitGoogleTest(&argc, argv);
-
-    return RUN_ALL_TESTS();
-}
