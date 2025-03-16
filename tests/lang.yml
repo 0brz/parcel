@@ -1,8 +1,7 @@
 
 $ex1:
   set:
-    - num
-    - 123
+    - word
 
 go:
   $ex1

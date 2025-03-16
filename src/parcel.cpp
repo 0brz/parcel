@@ -18,6 +18,75 @@ using namespace parcel::build;
             tokens::token* find_hook(const char* name);
 */
 
+void _ltrim(string& str) {
+    if (str.find_first_of(' ') != string::npos) {
+        str.erase(0, str.find_first_not_of(' '));
+    }
+};
+
+void _rtrim(string& str) {
+    if (str.find_first_of(' ') != string::npos)  {
+        str.erase(str.find_last_not_of(' '), str.find_first_of(' '));
+    }
+    
+};
+
+string parcel::values_to_string(tokens::token* head, const char* delimiter) {
+    
+    stringstream ss;
+
+    queue<token *> q;
+    q.push(head);
+
+    while (!q.empty())
+    {
+        auto cur = q.front();
+
+        if (cur->type == parcel::tokens::list)
+        {
+            val_list *ls = static_cast<val_list *>(cur->val);
+            if (ls != NULL)
+                for (token *n : ls->v)
+                    q.push(n);
+        }
+        else if (cur->type == parcel::tokens::set)
+        {
+            val_set *ls = static_cast<val_set *>(cur->val);
+            if (ls != NULL)
+                for (token *n : ls->v)
+                    q.push(n);
+        }
+        else if (cur->type == parcel::tokens::vec)
+        {
+            val_vector *ls = static_cast<val_vector *>(cur->val);
+            if (ls != NULL)
+                for (token *n : ls->v)
+                    q.push(n);
+        }
+        else if (cur->type == parcel::tokens::seq)
+        {
+            val_seq *ls = static_cast<val_seq *>(cur->val);
+            if (ls != NULL)
+                for (token *n : ls->v)
+                    q.push(n);
+        }
+        else {
+            ss << cur->val->str();
+        }
+
+        ss << delimiter;
+
+        q.pop();
+    }
+
+    auto out_str = ss.str();
+
+    _ltrim(out_str);
+    _rtrim(out_str);
+
+    return out_str;
+}
+
 Programm::Programm() : 
     _empty(""),
     _tokenizator(_empty),

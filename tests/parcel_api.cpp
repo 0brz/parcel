@@ -21,9 +21,9 @@ struct ParcelTest : public testing::Test {
     };
 };
 
-TEST_F(ParcelTest, parcel_build_ok) {
+TEST_F(ParcelTest, is_builded) {
     ASSERT_TRUE(pg.is_builded() == true);
-}
+};
 
 
 int main(int argc, char **argv) {

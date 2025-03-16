@@ -10,7 +10,13 @@ add_subdirectory(googletest)
 add_executable(core
     parcel_api.cpp)
 
+add_executable(client
+    client.cpp)
+
 target_link_libraries(core 
+    parcellib)
+
+target_link_libraries(client 
     parcellib)
 
 

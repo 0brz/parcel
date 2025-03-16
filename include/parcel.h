@@ -11,6 +11,9 @@ namespace parcel {
 
     struct Instr;
 
+    //string to_string(tokens::token* head);
+    string values_to_string(tokens::token* head, const char* delimiter);
+
     class Programm {
         private:
             tools::Tokenizator _tokenizator;
