@@ -8,7 +8,7 @@ enable_testing()
 add_subdirectory(googletest)
 
 add_executable(core
-    parcel_api.cpp)
+    single_values.cpp)
 
 add_executable(client
     client.cpp)

@@ -12,7 +12,7 @@ struct TreeValue
     TreeValue(TypeOf &v) : val(v), entries{} {};
     ~TreeValue()
     {
-        parcel::tools::Log.Warning("~[TreeValue]");
+        //parcel::tools::Log.Warning("~[TreeValue]");
     }
 };
 

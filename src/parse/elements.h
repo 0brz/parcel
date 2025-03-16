@@ -967,7 +967,6 @@ namespace parcel
 
             act_result act(string &lex, token *par, token *r2)
             {
-                printf("[token_hook] par\n");
                 act_result res = base->act(lex, tk);
                 if (res == act_result::FAIL)
                 {
@@ -979,7 +978,7 @@ namespace parcel
             };
 
             ~token_hook() {
-                parcel::tools::Log.Link("~token_hook");
+                //parcel::tools::Log.Link("~token_hook");
                 delete base;
                 delete tk;
             }

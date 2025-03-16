@@ -26,7 +26,7 @@ void _ltrim(string& str) {
 
 void _rtrim(string& str) {
     if (str.find_first_of(' ') != string::npos)  {
-        str.erase(str.find_last_not_of(' '), str.find_first_of(' '));
+        str.erase(str.find_last_not_of(' ')+1, str.find_first_of(' '));
     }
     
 };
@@ -133,7 +133,7 @@ void parcel::Programm::run(const char* parseSource) {
     // propagate.
     string lx;
     while(_tokenizator.next_token(lx)) {
-        printf("prop=%s\n", lx.c_str());
+        //printf("prop=%s\n", lx.c_str());
         _instr->propagate(lx);
     };
 };

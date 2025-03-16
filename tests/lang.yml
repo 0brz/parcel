@@ -1,7 +1,0 @@
-
-$ex1:
-  set:
-    - word
-
-go:
-  $ex1

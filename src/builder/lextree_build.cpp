@@ -609,7 +609,7 @@ LexTree *parcel::build::build_lextree(string &src)
 
             gt.add(linked, line_offset);
 
-            printf("~%zi [gt(nolink))].hook_def\n", line_offset);
+            //printf("~%zi [gt(nolink))].hook_def\n", line_offset);
             continue;
         }
         else if ((bl = inplace_build_hook_ref(lx)) != NULL)
@@ -619,7 +619,7 @@ LexTree *parcel::build::build_lextree(string &src)
             utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
-            printf("~%zi [gt(nolink))].hook_ref\n", line_offset);
+            //printf("~%zi [gt(nolink))].hook_ref\n", line_offset);
             continue;
         }
         else if ((bl = inplace_build_link_def(lx)) != NULL)
@@ -628,7 +628,7 @@ LexTree *parcel::build::build_lextree(string &src)
 
             gt.add(linked, line_offset);
 
-            printf("~%zi [gt(nolink))].link\n", line_offset);
+            //printf("~%zi [gt(nolink))].link\n", line_offset);
             continue;
         }
 
@@ -643,7 +643,7 @@ LexTree *parcel::build::build_lextree(string &src)
             utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
-            printf("~%zi [gt(link-last))].literal\n", line_offset);
+            //printf("~%zi [gt(link-last))].literal\n", line_offset);
             continue;
         }
 
@@ -656,7 +656,7 @@ LexTree *parcel::build::build_lextree(string &src)
             utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
-            printf("~%zi [gt(link-last))].fn_expr\n", line_offset);
+            //printf("~%zi [gt(link-last))].fn_expr\n", line_offset);
             continue;
         }
         else if ((fn = inplace_build_fn_ref(lx)) != NULL)
@@ -666,7 +666,7 @@ LexTree *parcel::build::build_lextree(string &src)
             utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
-            printf("~%zi [gt(link-last))].fn_ref\n", line_offset);
+            //printf("~%zi [gt(link-last))].fn_ref\n", line_offset);
             continue;
         }
 
@@ -680,7 +680,7 @@ LexTree *parcel::build::build_lextree(string &src)
             utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
-            printf("~%zi [gt(link-last))].tag\n", line_offset);
+            //printf("~%zi [gt(link-last))].tag\n", line_offset);
             continue;
         }
 
@@ -694,7 +694,7 @@ LexTree *parcel::build::build_lextree(string &src)
             utils::link_to_parent(gt, linked, line_offset);
             gt.add(linked, line_offset);
 
-            printf("~%zi [gt(link-last))].basetype\n", line_offset);
+            //printf("~%zi [gt(link-last))].basetype\n", line_offset);
             continue;
         }
 

@@ -1,0 +1,21 @@
+
+$word_hook:
+  set:
+    - word
+
+$num_hook:
+  set:
+    - num
+
+$char_hook:
+  set:
+    - char
+
+$all_data:
+  set:
+    - $num_hook
+    - $word_hook
+    - $char_hook
+
+go:
+  $all_data
