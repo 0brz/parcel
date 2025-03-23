@@ -38,11 +38,10 @@ parcel is a statically typed language inside cpp for describing the structure an
 ## Build/check tests (cmake)
 Build (CMAKE)
 install tests/googletest:
+- `cd tests`
+- run `git clone https://github.com/google/googletest.git`
 
-cd tests
-run git clone https://github.com/google/googletest.git
 main build (in root)
-
-mkdir build
-cmake ..
-run ./tests/core
+- `mkdir build`
+- `cmake ..`
+- run `./tests/core`
