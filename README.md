@@ -1,36 +1,36 @@
-parcel - custom language for parsing texts, data.
+# parcel (parsing language lib)
+parcel is a statically typed language inside cpp for describing the structure and rules of source data parsing.
 
+## Language keywords & features
 
+#### user type defs (links):
+- `@sample_link: ...` - describes the type for further reuse
 
-### Build (CMAKE)
-install tests/googletest:
-1. cd tests
-2. run `git clone https://github.com/google/googletest.git`
+#### getting data (hooks):
+- `&sample_hook: ...` - after parsing, the user can see what data was received. All accepted tokens stored in hooks. User can see them.
 
-main build (in root)
-1. mkdir build
-2. cmake ..
-3. run `./tests/core`
+#### non-sequence collections:
+- `set` - an accumulate collection that accepts one of the subtypes
+- `list` - an accumulate collection that accepts only one subtype
+#### sequence collections:
+- sequence collection describes many subtypes (elements) for sequential build deep sturcture. When all the items inside the collection are built, this structure accepts.
+- `vector` - it not contain any other subtypes when builds. Build-progress move to begining after first fail subtype build.
+- `seq` - (sequence) could contains any other subtypes when builds. Build-progress is accumulating when parsing.
 
+#### basetypes:
+- `word` - accept an word (letters only) like 'sun', 'weather'
+- `id` - accept an id (letters + '_' + '-' + nums) like 'bar_100', '__foo'
+- `num` - numeric (now, int only)
+- `char` - any single char
 
-features:
-    hooks
-    funcs
-    or/and value
-    if
-    data.to()
-    multithreading
+#### literals:
+- `int/float` like 123.50, 1240
+- `char` like 'a', 'B'
+- `string` like "good weather", "Roboto92<<", "@me--"
 
-- vardefs
-- hooks
-- build-in funcs
-- MT
-- lang
-
-
-goals:
-- lexing..
-- lex_graph
-- parser_graph
-- value_graph
-- MT
+## Build (cmake)
+1. cloning. `git clone https://github.com/0brz/parcel.git`
+2. use root `CMakeLists.txt` to build/link parcellib in your project. 
+3. you can build with no tests
+4. use public api (parcel/include) in your project. Main is `#include <parcel.h>`
+ 
