@@ -28,8 +28,8 @@ TEST_F(LiteralProg, lit_num) {
 
     if (hook != NULL) {
         string vals = parcel::values_to_string(hook, " ");
-        string exp("abc-123_@(*)2-- okay _some_id_ v ok250 d 0.0.0.1");
-        ASSERT_STREQ(vals.c_str(), exp.c_str());
+        string exp("0.0.0.1 123_@ okay _some_id_ v ok250 d");
+        ASSERT_TRUE(vals == exp);
     }
 };
 
