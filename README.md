@@ -34,3 +34,15 @@ parcel is a statically typed language inside cpp for describing the structure an
 3. you can build with no tests
 4. use public api (parcel/include) in your project. Main is `#include <parcel.h>`
  
+
+## Build/check tests (cmake)
+Build (CMAKE)
+install tests/googletest:
+
+cd tests
+run git clone https://github.com/google/googletest.git
+main build (in root)
+
+mkdir build
+cmake ..
+run ./tests/core
