@@ -10,3 +10,5 @@ add_subdirectory(googletest)
 add_subdirectory(basetypes)
 
 add_subdirectory(literals)
+
+add_subdirectory(collections)
