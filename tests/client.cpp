@@ -1,103 +1,91 @@
-#include <iostream>
+#include <parcel.h>
+#include <tools/lexer.h>
+#include <dump.h>
+#include <algorithm>
+#include <ranges>
 
-#define PARCEL_DEV
-#include <../include/parcel.h>
-#include <../include/tools.h>
-#include <../src/builder/lextree_build.h>
-#include <../src/tools/lexer/lex.h>
-#include <../src/builder/parseinstr_build.h>
-#include <../src/tools/dump.h>
-#include <../src/tools/log.h>
+using namespace std;
 
-#include <../src/input/tokenizator.h>
-
-int main()
-{
-
-    printf("Client code...\n");
-
-        /*
-    string sr = lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/source.txt");
-    parcel::input::Tokenizator tz(sr);
+namespace ex {
+    bool act_alpha(const char a) {
+        return (a >= 'a' && a <= 'z') ||
+                (a >= 'A' && a <= 'Z');
+    };
     
-    string cur_token;
-    while(tz.next_token(cur_token)) {
-        printf("cur_token=%s\n", cur_token.c_str());
-    }
-        */
-
-   
-
-    //std::cout << "\033[1;31mbold red text\033[0m\n" << endl;
-
-       
-    string sr = lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/lang.yml");
-
-    LexTree *gt = parcel::build::build_lextree(sr);
+    bool act_numeric(const char v) {
+        return '0' <= v && v <= '9';
+    };
     
-    printf("lex builded.\n");
-
-    Instr* ins = parcel::build::build_parseinstr(gt);
     
-    delete gt;
+    bool act_id_symbol(const char v) {
+        switch (v)
+        {
+        case '_':
+        case '-':
+            return true;
+    
+        default:
+            return false;
+        }
+    };
 
-    printf("instr bulded.\n");
+    bool act_word(string& lex) {
+        return std::all_of(begin(lex), end(lex), [](const char v) {
+            return act_alpha(v);
+        });
+    };
+    
+    bool act_num(string& lex) {
+        return std::all_of(begin(lex), end(lex), [](const char v) {
+            return act_numeric(v);
+        });
+    };
+    
+    bool act_id(string& lex) {
+        if (lex.size() > 0 && act_numeric(lex.at(0))) {
+            return false;
+        }
+    
+        return std::all_of(begin(lex), end(lex), [](const char v) {
+            return (act_numeric(v) == true) || (act_alpha(v) == true) || (act_id_symbol(v) == true) == true;
+        });
+    };
+    
+};
 
-    delete ins;
+
+
+int main(int argc, char **argv) {
         
-    printf("end\n");
-
-    /*
-    if (gt != NULL)
-    {
-        tools::dump::lextable(gt);
-
-        instr ins(0, 5);
-        ins.build(gt);
-
-        // working with tokenizer.
-        std::vector<string> toks{
-            "13", "w1", "w2", "a", "!", "_", "12.55", "13.1234", "1235"};
-        for (string &s : toks)
-        {
-            ins.propagate(s);
-            ins.move_cursor(1);
-        }
-
-        printf("propagate=ok\n");
-        parcel::parser::token_hook *k1 = ins.find_hook("ex1");
-        if (k1 != NULL)
-        {
-            tools::dump::hook(k1);
-        }
-
-        delete gt;
+    string t("\n");
+    cout << ex::act_alpha(t[0]) << "\n";
+    cout << ex::act_id_symbol(t[0]) << "\n";
+    cout << ex::act_numeric(t[0]) << "\n";
+    cout << ex::act_id(t) << "\n";
 
 
-        ///////////////////
-        void propagate(string &lex)
-            {
-                for (prog_go *e : reg_entries)
-                {
-                    e->act(lex, NULL, NULL);
-                }
-            };
+    return 5;
+    parcel::Programm pg;
 
-            void move_cursor(size_t to)
-            {
-                (*cursor).pos += to;
-            };
+    string src =  parcel::tools::Lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/single_values.yml");
+    string src_input =  parcel::tools::Lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/single_values.txt");
 
-            token_hook *find_hook(string name)
-            {
-                auto f = map_hooks.find(name);
-                if (f != end(map_hooks))
-                {
-                    return (*f).second;
-                }
-                else
-                    return NULL;
-            };
+    if (pg.build(src.c_str())) {
+        cout << "Builded!\n";
     }
-        */
+    else {
+        cout << "Not builded!\n";
+    }
+
+    // TESTING
+    if (pg.is_builded()) {
+        printf("run prog.\n");
+        pg.run(src_input.c_str());
+    }
+
+    // parcel::tools::dump
+    vector<parcel::tokens::token*> s = pg.get_hooks();
+    for (auto & v: s) {
+        parcel::dump::hook(v);
+    }
 }

@@ -1,5 +1,18 @@
 parcel - custom language for parsing texts, data.
 
+
+
+### Build (CMAKE)
+install tests/googletest:
+1. cd tests
+2. run `git clone https://github.com/google/googletest.git`
+
+main build (in root)
+1. mkdir build
+2. cmake ..
+3. run `./tests/core`
+
+
 features:
     hooks
     funcs
@@ -8,8 +21,6 @@ features:
     data.to()
     multithreading
 
-
-### release.v1
 - vardefs
 - hooks
 - build-in funcs

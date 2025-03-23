@@ -32,7 +32,7 @@ namespace parcel
             LexTree(std::vector<LinkedLex *> &v) : roots(v) {};
             ~LexTree() {
 
-                parcel::tools::Log.Warning("~LexTree");
+                //parcel::tools::Log.Warning("~LexTree");
 
                 queue<LinkedLex*> q;
                 for (auto & v : roots) {
@@ -43,8 +43,6 @@ namespace parcel
                     LinkedLex* cur = q.front();
                     q.pop();
 
-                    printf("LEX=%s childs=%i\n", cur->val->name(), cur->entries.size());
-
                     for(auto & v : cur->entries) {
                         q.push(v);
                     }
@@ -53,7 +51,7 @@ namespace parcel
                     delete cur;
                 }
 
-                parcel::tools::Log.Warning("~LexTree end.");
+                //parcel::tools::Log.Warning("~LexTree end.");
             }
         };
 

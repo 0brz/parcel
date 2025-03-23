@@ -47,7 +47,7 @@ namespace collections
         ParseElement *list = new ParseElement(lex_type::BL_LIST, new parcel::parser::list(build_next));
         table.all_builds.push_back(list);
 
-        printf("deep_build: [ok] <list>\n");
+        //printf("deep_build: [ok] <list>\n");
         return list;
     };
 
@@ -76,7 +76,7 @@ namespace collections
         ParseElement *set = new ParseElement(lex_type::BL_SET, new parcel::parser::set(set_values));
         table.all_builds.push_back(set);
 
-        printf("deep_build: [ok] <set(%i)>\n", set_values.size());
+        //printf("deep_build: [ok] <set(%i)>\n", set_values.size());
         return set;
     };
 };
@@ -109,7 +109,7 @@ namespace sequences
         ParseElement *el = new ParseElement(lex_type::BL_VEC, new parcel::parser::vector(vec_values, table.cursor));
 
         table.all_builds.push_back(el);
-        printf("deep_build: [ok] <vec(%i)>\n", vec_values.size());
+        //printf("deep_build: [ok] <vec(%i)>\n", vec_values.size());
 
         return el;
     };
@@ -140,7 +140,7 @@ namespace sequences
         ParseElement *el = new ParseElement(lex_type::BL_SEQ, new parcel::parser::seq(seq_values, table.cursor));
 
         table.all_builds.push_back(el);
-        printf("deep_build: [ok] <seq(%i)>\n", seq_values.size());
+        //printf("deep_build: [ok] <seq(%i)>\n", seq_values.size());
 
         return el;
     };
@@ -236,7 +236,7 @@ namespace literal
         ParseElement *el = new ParseElement(lex_type::LITR_CHAR, new parcel::parser::literal_char(v->value));
         table.all_builds.push_back(el);
 
-        printf("deep_build: [ok] <litr.char)>\n");
+        //printf("deep_build: [ok] <litr.char)>\n");
         return el;
     };
 
@@ -253,7 +253,7 @@ namespace literal
         ParseElement *el = new ParseElement(lex_type::LITR_INT, new parcel::parser::literal_int(sv.c_str()));
         table.all_builds.push_back(el);
 
-        printf("deep_build: [ok] <litr.int)>\n");
+        //printf("deep_build: [ok] <litr.int)>\n");
         return el;
     };
 
@@ -269,7 +269,7 @@ namespace literal
         ParseElement *el = new ParseElement(lex_type::LITR_FLOAT, new parcel::parser::literal_float(v->value));
         table.all_builds.push_back(el);
 
-        printf("deep_build: [ok] <litr.float)>\n");
+        //printf("deep_build: [ok] <litr.float)>\n");
         return el;
     };
 
@@ -285,7 +285,7 @@ namespace literal
         ParseElement *el = new ParseElement(lex_type::LITR_STR, new parcel::parser::literal_string(v->value));
         table.all_builds.push_back(el);
 
-        printf("deep_build: [ok] <litr.string)>\n");
+        //printf("deep_build: [ok] <litr.string)>\n");
         return el;
     };
 };

@@ -4,10 +4,16 @@ project(bound_parsing)
 
 include_directories(include)
 
-add_executable(tt
+add_executable(client client.cpp)
 
-    src/tests/client.cpp
-    src/tools/lex.h
-    src/tools/logger.h
-    src/tools/dump.h
-)
+target_link_libraries(client 
+    parcellib)
+
+enable_testing()
+add_subdirectory(googletest)
+
+add_subdirectory(basetypes)
+
+add_subdirectory(literals)
+
+add_subdirectory(collections)

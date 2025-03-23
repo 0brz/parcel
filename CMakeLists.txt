@@ -32,6 +32,8 @@ add_library(parcellib STATIC
     src/builder/parseinstr_build.h
 
     src/tools/ring.h
+    src/parse/activates.h
+    src/parse/activates.cpp
     src/parse/elements.cpp
     src/parse/elements.h
     src/parse/token.cpp
@@ -45,12 +47,4 @@ add_library(parcellib STATIC
     #src/parcelapi.cpp
 )
 
-
-
-add_executable(tt
-    tests/cl2.cpp
-)
-
-
-target_link_libraries(tt 
-    parcellib)
+add_subdirectory(tests)

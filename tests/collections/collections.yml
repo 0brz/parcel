@@ -1,0 +1,25 @@
+
+$fn_no_params:
+  list:
+    vector:
+      - "fn"
+      - word
+      - "("
+      - ")"
+
+$fn_with_params:
+  list:
+    seq:
+      - "fn"
+      - word
+      - "("
+      - id
+      - ")"
+
+$all_data:
+  set:
+    - $fn_no_params
+    - $fn_with_params
+
+go:
+  $all_data

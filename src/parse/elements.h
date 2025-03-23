@@ -11,11 +11,15 @@
 #include "../tools/ring.h"
 #include "../tools/log.h"
 #include <memory>
+#include <algorithm>
+#include <ranges>
+#include "activates.h"
 
 using namespace std;
 using namespace parcel::tokens;
 using namespace parcel::type;
 using namespace parcel::lang;
+
 
 namespace parcel
 {
@@ -93,8 +97,7 @@ namespace parcel
             void reset() {};
             act_result act(string &lex, token *par, token *t2 = NULL)
             {
-                // printf("pr_word\n");
-                if (!isalpha(lex[0]))
+                if (!act_word(lex))
                     return FAIL;
 
                 par->type = tokens::type::word;
@@ -108,15 +111,12 @@ namespace parcel
             void reset() {};
             act_result act(string &lex, token *par, token *t2 = NULL)
             {
-                // printf("pr_num\n");
-                if (lex[0] >= '0' && lex[0] <= '9')
-                {
+                if (act_num(lex)) {
                     par->type = tokens::type::number;
                     par->val = new val_num(lex);
                     return ACT;
                 }
 
-                // int v = stoi(lex);
                 return FAIL;
             }
         };
@@ -126,15 +126,13 @@ namespace parcel
             void reset() {};
             act_result act(string &lex, token *par, token *t2 = NULL)
             {
-                // printf("pr_num\n");
-                if (lex.size() == 1)
+                if (lex.size() == 1 && !act_escape_char(lex.at(0)))
                 {
                     par->type = tokens::type::CHAR;
                     par->val = new val_char(lex.at(0));
                     return ACT;
                 }
 
-                // int v = stoi(lex);
                 return FAIL;
             }
         };
@@ -144,31 +142,12 @@ namespace parcel
             void reset() {};
             act_result act(string &lex, token *par, token *t2 = NULL)
             {
-                // printf("pr_num\n");
-                if (lex.size() > 1)
-                {
-                    bool success = true;
-                    for (int i = 0; i < lex.size() - 1; i++)
-                    {
-                        if (is_id_char(lex[i]) && is_id_char(lex[i + 1]))
-                        {
-                        }
-                        else
-                        {
-                            success = false;
-                            break;
-                        };
-                    }
-
-                    if (success)
-                    {
-                        par->type = tokens::type::ID;
-                        par->val = new val_id(lex);
-                        return ACT;
-                    }
+                if (act_id(lex)) {
+                    par->type = tokens::type::ID;
+                    par->val = new val_id(lex);
+                    return ACT;
                 }
 
-                // int v = stoi(lex);
                 return FAIL;
             }
         };
@@ -180,15 +159,25 @@ namespace parcel
         struct literal_string : ParseValue
         {
             string val;
+            int _cursor = 0;
+            size_t _val_size;
+            string _trash_skip;
 
             void reset() {};
 
+            bool _check(string& lex) {
+                return lex == val;
+            }
+
             act_result act(string &lex, token *par, token *t2 = NULL)
             {
-                printf("STRING COMP=%s %s\n", lex.c_str(), val.c_str());
-                if (!lex.empty() && lex == val)
+                //printf("STRING COMP=%s %s\n", lex.c_str(), val.c_str());
+                
+
+                if (_check(lex))
                 {
-                    printf("STRING COMP= OKKKKKKKKKKKKKKKKK\n");
+                    _cursor = 0;
+
                     if (par != NULL)
                     {
                         par->type = tokens::type::literal_string;
@@ -203,7 +192,7 @@ namespace parcel
             }
 
             literal_string(const char *t) : val(t) {};
-            literal_string(string &t) : val(t) {};
+            literal_string(string &t) : val(t), _trash_skip(LEX_SYMBOLS_SPACES), _val_size(t.size()) {};
         };
 
         struct literal_float : ParseValue
@@ -277,7 +266,7 @@ namespace parcel
 
             act_result act(string &lex, token *par, token *t2 = NULL)
             {
-                if (!lex.empty() && lex.at(0) == val)
+                if (lex.size() == 1 && lex.at(0) == val)
                 {
                     if (par != NULL)
                     {
@@ -967,7 +956,6 @@ namespace parcel
 
             act_result act(string &lex, token *par, token *r2)
             {
-                printf("[token_hook] par\n");
                 act_result res = base->act(lex, tk);
                 if (res == act_result::FAIL)
                 {
@@ -979,7 +967,7 @@ namespace parcel
             };
 
             ~token_hook() {
-                parcel::tools::Log.Link("~token_hook");
+                //parcel::tools::Log.Link("~token_hook");
                 delete base;
                 delete tk;
             }

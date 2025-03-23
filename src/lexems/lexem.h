@@ -28,7 +28,7 @@ namespace parcel
             lex(lex_type type, lvalue *val) : type(type), value(val) {};
             ~lex()
             {
-                parcel::tools::Log.Warning("~[lex]");
+                //parcel::tools::Log.Warning("~[lex]");
                 if (value != NULL)
                 {
                     delete value;
