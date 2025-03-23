@@ -32,6 +32,8 @@ add_library(parcellib STATIC
     src/builder/parseinstr_build.h
 
     src/tools/ring.h
+    src/parse/activates.h
+    src/parse/activates.cpp
     src/parse/elements.cpp
     src/parse/elements.h
     src/parse/token.cpp

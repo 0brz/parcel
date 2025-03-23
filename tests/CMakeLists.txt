@@ -4,6 +4,11 @@ project(bound_parsing)
 
 include_directories(include)
 
+add_executable(client client.cpp)
+
+target_link_libraries(client 
+    parcellib)
+
 enable_testing()
 add_subdirectory(googletest)
 

@@ -11,11 +11,15 @@
 #include "../tools/ring.h"
 #include "../tools/log.h"
 #include <memory>
+#include <algorithm>
+#include <ranges>
+#include "activates.h"
 
 using namespace std;
 using namespace parcel::tokens;
 using namespace parcel::type;
 using namespace parcel::lang;
+
 
 namespace parcel
 {
@@ -93,8 +97,7 @@ namespace parcel
             void reset() {};
             act_result act(string &lex, token *par, token *t2 = NULL)
             {
-                // printf("pr_word\n");
-                if (!isalpha(lex[0]))
+                if (!act_word(lex))
                     return FAIL;
 
                 par->type = tokens::type::word;
@@ -108,15 +111,12 @@ namespace parcel
             void reset() {};
             act_result act(string &lex, token *par, token *t2 = NULL)
             {
-                // printf("pr_num\n");
-                if (lex[0] >= '0' && lex[0] <= '9')
-                {
+                if (act_num(lex)) {
                     par->type = tokens::type::number;
                     par->val = new val_num(lex);
                     return ACT;
                 }
 
-                // int v = stoi(lex);
                 return FAIL;
             }
         };
@@ -126,15 +126,13 @@ namespace parcel
             void reset() {};
             act_result act(string &lex, token *par, token *t2 = NULL)
             {
-                // printf("pr_num\n");
-                if (lex.size() == 1)
+                if (lex.size() == 1 && !act_escape_char(lex.at(0)))
                 {
                     par->type = tokens::type::CHAR;
                     par->val = new val_char(lex.at(0));
                     return ACT;
                 }
 
-                // int v = stoi(lex);
                 return FAIL;
             }
         };
@@ -144,31 +142,12 @@ namespace parcel
             void reset() {};
             act_result act(string &lex, token *par, token *t2 = NULL)
             {
-                // printf("pr_num\n");
-                if (lex.size() > 1)
-                {
-                    bool success = true;
-                    for (int i = 0; i < lex.size() - 1; i++)
-                    {
-                        if (is_id_char(lex[i]) && is_id_char(lex[i + 1]))
-                        {
-                        }
-                        else
-                        {
-                            success = false;
-                            break;
-                        };
-                    }
-
-                    if (success)
-                    {
-                        par->type = tokens::type::ID;
-                        par->val = new val_id(lex);
-                        return ACT;
-                    }
+                if (act_id(lex)) {
+                    par->type = tokens::type::ID;
+                    par->val = new val_id(lex);
+                    return ACT;
                 }
 
-                // int v = stoi(lex);
                 return FAIL;
             }
         };

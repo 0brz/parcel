@@ -22,13 +22,24 @@ struct SingleValue_set : public testing::Test {
     };
 };
 
+TEST_F(SingleValue_set, id_hook) {
+    auto hook = pg.find_hook("id_hook");
+    ASSERT_NE(hook, NULL);
+
+    if (hook != NULL) {
+        string vals = parcel::values_to_string(hook, " ");
+        string exp("id1 _id3 _guid-11-22-33-44_ apple Island PROTOTYPE CocaCola A a b B");
+        ASSERT_STREQ(vals.c_str(), exp.c_str());
+    }
+};
+
 TEST_F(SingleValue_set, word_is_ok) {
     auto hook = pg.find_hook("word_hook");
     ASSERT_NE(hook, NULL);
 
     if (hook != NULL) {
         string vals = parcel::values_to_string(hook, " ");
-        string exp("good Q A B");
+        string exp("apple Island PROTOTYPE CocaCola A a b B");
         ASSERT_STREQ(vals.c_str(), exp.c_str());
     }
 };
@@ -39,7 +50,7 @@ TEST_F(SingleValue_set,   num_is_ok) {
 
     if (hook != NULL) {
         string vals = parcel::values_to_string(hook, " ");
-        string exp("250");
+        string exp("1 22 333");
         ASSERT_STREQ(vals.c_str(), exp.c_str());
     }
 };
@@ -50,7 +61,7 @@ TEST_F(SingleValue_set,   char_is_ok) {
 
     if (hook != NULL) {
         string vals = parcel::values_to_string(hook, " ");
-        string exp("Q A B");
+        string exp("1 A a b B");
         ASSERT_STREQ(vals.c_str(), exp.c_str());
     }
 };

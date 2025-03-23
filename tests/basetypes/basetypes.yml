@@ -3,6 +3,10 @@ $word_hook:
   set:
     - word
 
+$id_hook:
+  set:
+    - id
+
 $num_hook:
   set:
     - num
@@ -16,6 +20,7 @@ $all_data:
     - $num_hook
     - $word_hook
     - $char_hook
+    - $id_hook
 
 go:
   $all_data
