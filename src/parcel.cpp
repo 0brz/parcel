@@ -102,7 +102,7 @@ bool parcel::Programm::build(const char* sourceLang, const build_callback cb) {
         return false;
     }
     
-    _instr = parcel::build::build_parseinstr(gt);
+    _instr = parcel::build::build_parseinstr(gt, cb);
     delete gt;
 
     if (_instr == NULL) {
@@ -144,8 +144,10 @@ void parcel::Programm::run(const char* parseSource) {
 
 std::vector<token*> Programm::get_hooks() {
     std::vector<token*>  v;
-    for (auto & s : _instr->hooks) {
-        v.push_back(s.second->tk);
+    if (_instr != NULL) {
+        for (auto & s : _instr->hooks) {
+            v.push_back(s.second->tk);
+        }
     }
 
     return v;
@@ -153,12 +155,15 @@ std::vector<token*> Programm::get_hooks() {
 
 tokens::token* Programm::find_hook(const char* name) {
     string nm(name);
-    auto fn = _instr->hooks.find(nm);
-    if (fn == end(_instr->hooks)) {
-        return NULL;
-    }
+    if (_instr != NULL) {
+        auto fn = _instr->hooks.find(nm);
+        if (fn == end(_instr->hooks)) {
+            return NULL;
+        }
 
-    return (*fn).second->tk;
+        return (*fn).second->tk;
+    }
+    else return NULL;
 };
 
 

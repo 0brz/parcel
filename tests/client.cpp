@@ -67,20 +67,17 @@ int main(int argc, char **argv) {
             printf("Error when building: %s\n", msg.c_str()); 
         }})) {
     }
-    else {
-        cout << "Not builded!\n";
-    }
 
     // TESTING
     if (pg.is_builded()) {
         printf("run prog.\n");
         pg.run(src_input.c_str());
-    }
 
-    // parcel::tools::dump
-    vector<parcel::tokens::token*> s = pg.get_hooks();
-    for (auto & v: s) {
-        parcel::dump::hook(v);
-        // convert hook
+        // parcel::tools::dump
+        vector<parcel::tokens::token*> s = pg.get_hooks();
+        for (auto & v: s) {
+            parcel::dump::hook(v);
+            // convert hook
+        }
     }
 }

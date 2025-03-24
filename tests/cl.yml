@@ -15,6 +15,9 @@ $char_hook:
   set:
     - char
 
+123
+"12fff"
+
 $all_data:
   set:
     - $num_hook

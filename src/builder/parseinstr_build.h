@@ -13,6 +13,7 @@
 // #include "lex_build.h"
 #include <vector>
 #include <memory>
+#include <callbacks.h>
 
 using namespace std;
 using namespace parcel::type;
@@ -49,7 +50,7 @@ namespace parcel
     };
 
     namespace build {
-        Instr *build_parseinstr(LexTree *lextree);
+        Instr *build_parseinstr(LexTree *lextree, const build_callback cb);
     }
 }
 
