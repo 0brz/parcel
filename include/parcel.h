@@ -6,6 +6,7 @@
 #include <memory>
 #include "tools/tokenizator.h"
 #include "tokens.h"
+#include "callbacks.h"
 
 namespace parcel {
 
@@ -23,6 +24,7 @@ namespace parcel {
         public:
             Programm();
             bool build(const char* langSource);
+            bool build(const char* langSource, const build_callback cb);
             void run(const char* parseSource);
             std::vector<tokens::token*> get_hooks();
             tokens::token* find_hook(const char* name);

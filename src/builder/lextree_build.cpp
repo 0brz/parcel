@@ -1,5 +1,6 @@
 #include "lextree_build.h"
 #include <stack>
+#include <callbacks.h>
 
 #define DBG_LEVEL 0
 
@@ -582,7 +583,7 @@ lex *parcel::build::inplace_build_fn_expr(parcel::tools::Lexer &lx)
 
 #pragma endregion
 
-LexTree *parcel::build::build_lextree(string &src)
+LexTree *parcel::build::build_lextree(string &src, const parcel::build_callback cb)
 {
     DBG_FN_NAME()
 
@@ -705,16 +706,18 @@ LexTree *parcel::build::build_lextree(string &src)
         }
         else if (lx.can_read())
         {
-            // if_word_ex
             char t = lx.at(lx.cursor_get());
             if ((!_is_tspace(t) && !_is_special_delim(t)))
             {
-                parcel::tools::Log.Error("[LexTree] error: unrecognized symbol.");
-
                 stringstream at;
                 lx.get_cursor_dest(at);
-                printf("[build] lex_graph: unrecognized symbol sequence at (%c) '%s'\n", t, at.str().c_str());
 
+                char msg_buff[64];
+                sprintf(msg_buff, "[build] lex_graph: unrecognized symbol sequence at (%c) '%s'", t, at.str().c_str());
+                if (cb) {
+                    cb(false, msg_buff);
+                }
+                
                 // cleanup builded blocks
                 vector<LinkedLex *> entries = gt.get_by_offset(gt.min_level());
                 LexTree *tree = new LexTree(entries);
@@ -726,8 +729,6 @@ LexTree *parcel::build::build_lextree(string &src)
                 lx.cursor_move(1);
         }
     }
-
-    printf("Build lex graph end.\n");
 
     vector<LinkedLex *> entrypoints = gt.get_by_offset(gt.min_level());
     LexTree *tree = new LexTree(entrypoints);

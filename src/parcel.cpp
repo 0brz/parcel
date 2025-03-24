@@ -92,11 +92,11 @@ Programm::Programm() :
     _tokenizator(_empty),
     _instr(NULL) {};
 
-bool parcel::Programm::build(const char* sourceLang) {
+bool parcel::Programm::build(const char* sourceLang, const build_callback cb) {
     string sourceHolder(sourceLang);
     
     // get errors.
-    LexTree *gt = parcel::build::build_lextree(sourceHolder);
+    LexTree *gt = parcel::build::build_lextree(sourceHolder, cb);
     if (gt == NULL) {
         // error log
         return false;
@@ -111,6 +111,10 @@ bool parcel::Programm::build(const char* sourceLang) {
     }
 
     return true;
+}
+
+bool parcel::Programm::build(const char* sourceLang) {
+    return build(sourceLang, NULL);
 };
 
 bool parcel::Programm::is_builded() {
