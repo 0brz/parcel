@@ -983,7 +983,9 @@ namespace parcel
 
             act_result act(string &lex, token *par, token *r2)
             {
-                if (ref_on->act(lex, par, r2)==ACT) {
+                printf("BUILD_BY_REF, ref=%s\n", nameof(ref_on->tk->type));
+                auto st = ref_on->act(lex, par, r2);
+                if (st==ACT) {
                     if (par != NULL) {
                         delete par;
                     }
@@ -994,7 +996,7 @@ namespace parcel
                     return ACT;
                 }
                 
-                return MOD;
+                return st;
             };
 
             ~token_hook_ref() {

@@ -1,7 +1,8 @@
 
 $word_hook:
-  vec:
+  vector:
     - word
+    - " "
     - num
 
 $all_data:

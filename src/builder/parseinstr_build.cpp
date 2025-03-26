@@ -348,7 +348,7 @@ BuildElementImpl _find_build_impl(lex_type type)
         return (*fn).second;
     else
     {
-        parcel::tools::Log.Error("_find_build_impl=null\n");
+        parcel::tools::Log.Error("_find_build_impl=null");
         return NULL;
     }
 };
