@@ -194,18 +194,27 @@ namespace entries
 
 namespace refs
 {
+
+
     ParseElement *build_hook_ref(LinkedLex *current, BuildTable &table)
     {
         hook_ref *v = static_cast<hook_ref *>(current->val->value);
         if (v != NULL)
         {
+            // find used hook, pick his base
+
             // use hook with linking.
             auto find_hook = table.hooks.find(v->name);
             if (find_hook != end(table.hooks))
             {
-                token_hook *hk = (*find_hook).second;
-                ParseElement *he = new ParseElement(lex_type::HOOK_REF, hk);
-                return he;
+                // обернуть elem_impl в хук реф
+                //ParseElement* hook_ref_impl = new ParseElement(lex_type::HOOK_REF, )
+
+                //token_hook *hk = (*find_hook).second;
+                //ParseElement *he = new ParseElement(lex_type::HOOK_REF, hk);
+                
+                token_hook_ref* ref = new token_hook_ref((*find_hook).second);
+                return new ParseElement(lex_type::HOOK_REF, ref);
             }
         }
 
@@ -319,6 +328,7 @@ map<lex_type, BuildElementImpl> build_impls{
     {BL_SEQ, &(sequences::build_seq)},
     // REFS
     {HOOK_REF, &(refs::build_hook_ref)},
+    //{HOOK_DEF, &(entries::build_hook)},
     // BT
     {BL_WORD, &(basetypes::build_word)},
     {BL_CHAR, &(basetypes::build_char)},
@@ -337,7 +347,10 @@ BuildElementImpl _find_build_impl(lex_type type)
     if (fn != end(build_impls))
         return (*fn).second;
     else
+    {
+        parcel::tools::Log.Error("_find_build_impl=null\n");
         return NULL;
+    }
 };
 
 ParseElement *deep_build(LinkedLex *current, BuildTable &table)

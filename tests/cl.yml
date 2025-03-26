@@ -1,29 +1,12 @@
 
 $word_hook:
-  set:
+  vec:
     - word
-
-$id_hook:
-  set:
-    - id
-
-$num_hook:
-  set:
     - num
 
-$char_hook:
-  set:
-    - char
-
-123
-"12fff"
-
 $all_data:
-  set:
-    - $num_hook
+  list:
     - $word_hook
-    - $char_hook
-    - $id_hook
 
 go:
   $all_data
