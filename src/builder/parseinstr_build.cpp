@@ -10,6 +10,7 @@ struct BuildTable
     std::map<string, token_hook *> hooks;
     std::vector<prog_go *> entries;
     shared_ptr<ParseCursor> cursor;
+    parcel::build_callback build_cb;
     BuildTable(shared_ptr<ParseCursor> &&cursor) : cursor(cursor), entries{}, hooks{}, all_builds{} {};
 };
 
@@ -31,7 +32,9 @@ namespace collections
     {
         if (!utils::check_lex_size(current, 1))
         {
-            printf("deep_build: [ERR] <list> check_lex_size\n");
+            if (table.build_cb) 
+                table.build_cb(false, "build.instruction: element=List erorr='List must contain at least 1 sub-element.'"); 
+
             return NULL;
         }
 
@@ -39,15 +42,15 @@ namespace collections
         ParseElement *build_next = deep_build(pick_next, table);
         if (build_next == NULL)
         {
-            printf("deep_build: [ERR] <list> build_next returned 'null'\n");
+            if (table.build_cb) 
+                table.build_cb(false, "build.instruction: element=List erorr='sub-element build error (ret null).'"); 
+
             return NULL;
         }
 
-        // table.all_builds.push_back(build_next);
         ParseElement *list = new ParseElement(lex_type::BL_LIST, new parcel::parser::list(build_next));
         table.all_builds.push_back(list);
 
-        //printf("deep_build: [ok] <list>\n");
         return list;
     };
 
@@ -55,7 +58,9 @@ namespace collections
     {
         if (!utils::check_lex_size(current, 1))
         {
-            printf("deep_build: [ERR] <set> check_lex_size\n");
+            if (table.build_cb) 
+                table.build_cb(false, "build.instruction: element=Set erorr='Set must contain at least 1 sub-element.'"); 
+
             return NULL;
         }
 
@@ -66,7 +71,9 @@ namespace collections
             ParseElement *child_build = deep_build(l, table);
             if (child_build == NULL)
             {
-                printf("deep_build: [ERR] <set> Error with build child element. lex=%s\n", l->val->name());
+                if (table.build_cb) 
+                    table.build_cb(false, "build.instruction: element=Set erorr='sub-element build error.'"); 
+
                 return NULL;
             }
 
@@ -76,7 +83,6 @@ namespace collections
         ParseElement *set = new ParseElement(lex_type::BL_SET, new parcel::parser::set(set_values));
         table.all_builds.push_back(set);
 
-        //printf("deep_build: [ok] <set(%i)>\n", set_values.size());
         return set;
     };
 };
@@ -87,7 +93,9 @@ namespace sequences
     {
         if (!utils::check_lex_size(current, 1))
         {
-            printf("deep_build: [ERR] <vec> check_lex_size\n");
+            if (table.build_cb) 
+                table.build_cb(false, "build.instruction: element=Vec erorr='Vec must contain at least 1 sub-element.'"); 
+
             return NULL;
         }
 
@@ -99,7 +107,9 @@ namespace sequences
             ParseElement *child_build = deep_build(l, table);
             if (child_build == NULL)
             {
-                printf("deep_build: [ERR] <vec> Error with build child element. lex=%s\n", l->val->name());
+                if (table.build_cb) 
+                    table.build_cb(false, "build.instruction: element=Vec erorr='Vec sub-element build error.'"); 
+
                 return NULL;
             }
 
@@ -109,7 +119,6 @@ namespace sequences
         ParseElement *el = new ParseElement(lex_type::BL_VEC, new parcel::parser::vector(vec_values, table.cursor));
 
         table.all_builds.push_back(el);
-        //printf("deep_build: [ok] <vec(%i)>\n", vec_values.size());
 
         return el;
     };
@@ -118,7 +127,9 @@ namespace sequences
     {
         if (!utils::check_lex_size(current, 1))
         {
-            printf("deep_build: [ERR] <seq> check_lex_size\n");
+            if (table.build_cb) 
+                table.build_cb(false, "build.instruction: element=Seq erorr='Seq must contain at least 1 sub-element.'"); 
+
             return NULL;
         }
 
@@ -130,7 +141,9 @@ namespace sequences
             ParseElement *child_build = deep_build(l, table);
             if (child_build == NULL)
             {
-                printf("deep_build: [ERR] <seq> Error with build child element. lex=%s\n", l->val->name());
+                if (table.build_cb) 
+                    table.build_cb(false, "build.instruction: element=Seq erorr='Seq sub-element build error.'"); 
+
                 return NULL;
             }
 
@@ -140,7 +153,6 @@ namespace sequences
         ParseElement *el = new ParseElement(lex_type::BL_SEQ, new parcel::parser::seq(seq_values, table.cursor));
 
         table.all_builds.push_back(el);
-        //printf("deep_build: [ok] <seq(%i)>\n", seq_values.size());
 
         return el;
     };
@@ -166,7 +178,9 @@ namespace entries
     {
         if (!utils::check_lex_size(current, 1))
         {
-            // log err
+            if (table.build_cb) 
+                table.build_cb(false, "build.instruction: element=Go erorr='Go must contain at least 1 sub-element.'"); 
+
             return NULL;
         }
 
@@ -180,20 +194,32 @@ namespace entries
 
 namespace refs
 {
+
+
     ParseElement *build_hook_ref(LinkedLex *current, BuildTable &table)
     {
         hook_ref *v = static_cast<hook_ref *>(current->val->value);
         if (v != NULL)
         {
+            // find used hook, pick his base
+
             // use hook with linking.
             auto find_hook = table.hooks.find(v->name);
             if (find_hook != end(table.hooks))
             {
-                token_hook *hk = (*find_hook).second;
-                ParseElement *he = new ParseElement(lex_type::HOOK_REF, hk);
-                return he;
+                // обернуть elem_impl в хук реф
+                //ParseElement* hook_ref_impl = new ParseElement(lex_type::HOOK_REF, )
+
+                //token_hook *hk = (*find_hook).second;
+                //ParseElement *he = new ParseElement(lex_type::HOOK_REF, hk);
+                
+                token_hook_ref* ref = new token_hook_ref((*find_hook).second);
+                return new ParseElement(lex_type::HOOK_REF, ref);
             }
         }
+
+        if (table.build_cb) 
+            table.build_cb(false, "build.instruction: element=hook erorr='can't cast lex value'"); 
 
         return NULL;
     };
@@ -229,14 +255,15 @@ namespace literal
         value_litr_char *v = static_cast<value_litr_char *>(current->val->value);
         if (v == NULL)
         {
-            printf("deep_build: [ERR] <litr.char> cant cast LEX-Value\n");
+            if (table.build_cb) 
+                table.build_cb(false, "build.instruction: element=literal.Char erorr='can't cast lex value'"); 
+
             return NULL;
         }
 
         ParseElement *el = new ParseElement(lex_type::LITR_CHAR, new parcel::parser::literal_char(v->value));
         table.all_builds.push_back(el);
 
-        //printf("deep_build: [ok] <litr.char)>\n");
         return el;
     };
 
@@ -245,7 +272,9 @@ namespace literal
         value_litr_int *v = static_cast<value_litr_int *>(current->val->value);
         if (v == NULL)
         {
-            printf("deep_build: [ERR] <litr.int> cant cast LEX-Value\n");
+            if (table.build_cb) 
+                table.build_cb(false, "build.instruction: element=literal.Int erorr='can't cast lex value'"); 
+
             return NULL;
         }
 
@@ -253,7 +282,6 @@ namespace literal
         ParseElement *el = new ParseElement(lex_type::LITR_INT, new parcel::parser::literal_int(sv.c_str()));
         table.all_builds.push_back(el);
 
-        //printf("deep_build: [ok] <litr.int)>\n");
         return el;
     };
 
@@ -262,14 +290,15 @@ namespace literal
         value_litr_float *v = static_cast<value_litr_float *>(current->val->value);
         if (v == NULL)
         {
-            printf("deep_build: [ERR] <litr.float> cant cast LEX-Value\n");
+            if (table.build_cb) 
+                table.build_cb(false, "build.instruction: element=literal.Float erorr='can't cast lex value'"); 
+
             return NULL;
         }
 
         ParseElement *el = new ParseElement(lex_type::LITR_FLOAT, new parcel::parser::literal_float(v->value));
         table.all_builds.push_back(el);
 
-        //printf("deep_build: [ok] <litr.float)>\n");
         return el;
     };
 
@@ -278,14 +307,15 @@ namespace literal
         value_litr_string *v = static_cast<value_litr_string *>(current->val->value);
         if (v == NULL)
         {
-            printf("deep_build: [ERR] <litr.string> cant cast LEX-Value\n");
+            if (table.build_cb) 
+                table.build_cb(false, "build.instruction: element=literal.String erorr='can't cast lex value'"); 
+
             return NULL;
         }
 
         ParseElement *el = new ParseElement(lex_type::LITR_STR, new parcel::parser::literal_string(v->value));
         table.all_builds.push_back(el);
 
-        //printf("deep_build: [ok] <litr.string)>\n");
         return el;
     };
 };
@@ -298,6 +328,7 @@ map<lex_type, BuildElementImpl> build_impls{
     {BL_SEQ, &(sequences::build_seq)},
     // REFS
     {HOOK_REF, &(refs::build_hook_ref)},
+    //{HOOK_DEF, &(entries::build_hook)},
     // BT
     {BL_WORD, &(basetypes::build_word)},
     {BL_CHAR, &(basetypes::build_char)},
@@ -316,7 +347,10 @@ BuildElementImpl _find_build_impl(lex_type type)
     if (fn != end(build_impls))
         return (*fn).second;
     else
+    {
+        parcel::tools::Log.Error("_find_build_impl=null");
         return NULL;
+    }
 };
 
 ParseElement *deep_build(LinkedLex *current, BuildTable &table)
@@ -328,7 +362,9 @@ ParseElement *deep_build(LinkedLex *current, BuildTable &table)
     auto impl = _find_build_impl(ttype);
     if (impl == NULL)
     {
-        // log
+        if (table.build_cb) 
+            table.build_cb(false, "build.instruction: global-error='can't find build implementation for lex'"); 
+
         return NULL;
     }
 
@@ -343,9 +379,10 @@ void parcel::Instr::propagate(string& lex) {
     }
 };
 
-parcel::Instr *parcel::build::build_parseinstr(LexTree *lextree)
+parcel::Instr *parcel::build::build_parseinstr(LexTree *lextree, const build_callback cb)
 {
     BuildTable bt(make_shared<ParseCursor>(0, 0));
+    bt.build_cb = cb;
 
     Instr *tree = new Instr();
     tree->cursor = bt.cursor;
@@ -354,8 +391,9 @@ parcel::Instr *parcel::build::build_parseinstr(LexTree *lextree)
     {
         if (!parcel::lang::is_instr_entrypoint(lex->val->type))
         {
-            // log err.
-            printf("UNRECOGNIZED ENTRYPOINT\n");
+            if (bt.build_cb) 
+                bt.build_cb(false, "build.instruction: global-error='Unrecognized programm entrypoint'"); 
+
             return NULL;
         }
 
@@ -372,7 +410,10 @@ parcel::Instr *parcel::build::build_parseinstr(LexTree *lextree)
         }
         else
         {
-            printf("instr_builder: [ERR] unrecognized prog entry lex.\n");
+            if (bt.build_cb) 
+                bt.build_cb(false, "build.instruction: global-error='Unrecognized programm entrypoint condition'"); 
+
+            return NULL;
         }
     }
 

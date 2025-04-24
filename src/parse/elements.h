@@ -327,12 +327,11 @@ namespace parcel
                     }
                     else
                     {
-                        printf("__[list]: ACT s=%s\n", lex.c_str());
+                        //printf("__[list]: ACT s=%s\n", lex.c_str());
                     }
 
                     if (par->val != NULL)
                     {
-                        // printf("list_add_1\n");
                         list_add(par, el_t);
                         // printf("list_add\n");
                         el_t = create_tk_for(el);
@@ -939,6 +938,7 @@ namespace parcel
             }
         };
 
+
         struct token_hook : ParseValue
         {
             string name;
@@ -970,6 +970,37 @@ namespace parcel
                 //parcel::tools::Log.Link("~token_hook");
                 delete base;
                 delete tk;
+            }
+        };
+
+        struct token_hook_ref : ParseValue
+        {
+            token_hook *ref_on; // by value
+
+            void reset() {};
+
+            token_hook_ref(token_hook* r) : ref_on(r){};
+
+            act_result act(string &lex, token *par, token *r2)
+            {
+                printf("BUILD_BY_REF, ref=%s\n", nameof(ref_on->tk->type));
+                auto st = ref_on->act(lex, par, r2);
+                if (st==ACT) {
+                    if (par != NULL) {
+                        delete par;
+                    }
+
+                    par = new token();
+                    par->type == ref_on_hook;
+                    par->val = ref_on->tk->val;
+                    return ACT;
+                }
+                
+                return st;
+            };
+
+            ~token_hook_ref() {
+                //parcel::tools::Log.Link("~token_hook");
             }
         };
 

@@ -44,7 +44,7 @@ void parcel::dump::hook(parcel::tokens::token *h) {
                 // cout << setw(cur.second) << "[List] (";
                 for (token *n : ls->v)
                 {
-                    // cout <<tk_nameof(cur.first->type) << ",";
+                    //cout <<tk_nameof(cur.first->type) << ",";
                     q.push({n, cur.second + 3});
                 }
             }

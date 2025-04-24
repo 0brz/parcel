@@ -1,0 +1,13 @@
+
+$word_hook:
+  vector:
+    - word
+    - " "
+    - num
+
+$all_data:
+  list:
+    - $word_hook
+
+go:
+  $all_data

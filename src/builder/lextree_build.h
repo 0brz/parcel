@@ -11,6 +11,7 @@
 #include "../tools/tree.h"
 #include <queue>
 #include "../tools/log.h"
+#include <callbacks.h>
 
 using namespace std;
 using namespace parcel::type;
@@ -65,7 +66,7 @@ namespace parcel
         lex *inplace_build_fn_expr(tools::Lexer &lx);
         lex *inplace_build_fn_ref(tools::Lexer &lx);
 
-        LexTree *build_lextree(string &src);
+        LexTree *build_lextree(string &src, const build_callback cb);
     }
 }
 

@@ -57,35 +57,27 @@ namespace ex {
 
 int main(int argc, char **argv) {
         
-    string t("\n");
-    cout << ex::act_alpha(t[0]) << "\n";
-    cout << ex::act_id_symbol(t[0]) << "\n";
-    cout << ex::act_numeric(t[0]) << "\n";
-    cout << ex::act_id(t) << "\n";
-
-
-    return 5;
     parcel::Programm pg;
 
-    string src =  parcel::tools::Lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/single_values.yml");
-    string src_input =  parcel::tools::Lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/single_values.txt");
+    string src =  parcel::tools::Lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/cl.yml");
+    string src_input =  parcel::tools::Lexer::read_source_file("/home/gcreep/github.local/parcel_dev/parcel/tests/cl.txt");
 
-    if (pg.build(src.c_str())) {
-        cout << "Builded!\n";
-    }
-    else {
-        cout << "Not builded!\n";
+    if (pg.build(src.c_str(), [](bool ok, string msg) {
+        if (!ok) {
+            printf("Error when building: %s\n", msg.c_str()); 
+        }})) {
     }
 
     // TESTING
     if (pg.is_builded()) {
         printf("run prog.\n");
         pg.run(src_input.c_str());
-    }
 
-    // parcel::tools::dump
-    vector<parcel::tokens::token*> s = pg.get_hooks();
-    for (auto & v: s) {
-        parcel::dump::hook(v);
+        // parcel::tools::dump
+        vector<parcel::tokens::token*> s = pg.get_hooks();
+        for (auto & v: s) {
+            parcel::dump::hook(v);
+            // convert hook
+        }
     }
 }

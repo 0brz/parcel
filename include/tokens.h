@@ -26,7 +26,9 @@ namespace parcel
             literal_string,
             literal_char,
             literal_float,
-            literal_int
+            literal_int,
+            
+            ref_on_hook
         };
 
         const char *nameof(type type);
@@ -210,6 +212,21 @@ namespace parcel
 
             string to_string() {
                 return "<seq>";
+             };
+        };
+
+        struct val_hook_ref: tvalue
+        {
+            token* hook_impl;
+            val_hook_ref(token* hook_impl) : hook_impl(hook_impl) {};
+            val_hook_ref() {};
+            const char *str()
+            {
+                return "<hook_ref>";
+            }
+
+            string to_string() {
+                return "<hook_ref>";
              };
         };
     }
