@@ -1,3 +1,9 @@
+
+### todo now
+i want fix some structs and rewrite logic. 
+also i want make it more faster.
+
+
 # parcel (parsing language lib)
 parcel is a statically typed language inside cpp for describing the structure and rules of source data parsing.
 
